@@ -60,9 +60,7 @@
       </div>
       <div class="row">
         <span class="pill">💰 Budget: <span id="walletTop" class="mono"></span></span>
-        <span class="pill">🗓️ School Day: <span id="gameDateTop" class="mono"></span></span>
         <span class="pill">📅 Game Year: <span id="gameYearTop" class="mono"></span></span>
-        <button class="primary" onclick="nextSchoolDay()">➡️ Next School Day</button>
         <button onclick="backupData()">⬇️ Backup</button>
         <button onclick="restoreData()">⬆️ Restore</button>
         <button class="danger" onclick="resetAll()">Reset</button>
@@ -90,15 +88,6 @@
           <button class="primary" onclick="runAllScheduled()">▶️ Run All (Shift)</button>
         </div>
       </div>
-
-      <div class="row" style="margin-top:10px;">
-        <button class="primary" onclick="startSchoolDay()">🌅 Start School Day</button>
-        <span class="pill">📣 PR: <span id="prMeter" class="mono"></span>/100</span>
-        <button onclick="viewComplaints()">📨 Complaints</button>
-        <button onclick="runSurpriseAudit()">🕵️ Surprise Audit</button>
-      </div>
-      <div id="opsBanner" class="small muted" style="margin-top:8px;"></div>
-
       <div class="small muted" style="margin-top:8px;">
         Uses your assigned route buses. If an assigned bus is <b>DOWN</b>, you must choose a <b>Sub Bus</b>. Field Trips stay ad-hoc.
       </div>
@@ -182,7 +171,6 @@
           <select id="checkBus"></select>
         </div>
         <button class="primary" onclick="doPreTrip()">Pre-Trip</button>
-        <button onclick="doAllPreTrips()">✅ Pre-Trip ALL Buses</button>
         <button onclick="doPostTrip()">Post-Trip (No Defect)</button>
         <button class="danger" onclick="reportDefect()">🚨 Report Defect</button>
       </div>
@@ -283,6 +271,7 @@
         </div>
 
         <div id="driversPanel" style="margin-top:12px;"></div>
+
         <div id="hiringPanel" style="margin-top:10px;"></div>
 
         <div class="card" style="margin-top:10px;">
@@ -368,9 +357,6 @@ function fmtMiles(n){
 }
 
 function todayISO(){ return new Date().toISOString().slice(0,10); }
-function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
-function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 
 /* =========================
    GAME CONSTANTS
@@ -381,7 +367,7 @@ const ROUTES = [
   { id:"rural",        name:"Rural Route",                  miles:42, pay:220, wear:1.4, risk:1.3 },
   { id:"special",      name:"Special Ed Route",             miles:22, pay:180, wear:1.6, risk:1.4 },
 
-  // Extra built-ins (daily)
+  // A few extra built-ins (daily)
   { id:"midday_k",     name:"Midday Kindergarten Shuttle",  miles:10, pay:80,  wear:0.9, risk:0.9 },
   { id:"vo_tech",      name:"Vo-Tech / Career Center",      miles:34, pay:210, wear:1.3, risk:1.2 },
   { id:"late_run",     name:"Late Bus (After-School)",      miles:26, pay:170, wear:1.2, risk:1.2 },
@@ -405,15 +391,14 @@ const MAINT_INTERVALS = { oil: 4000, tires: 30000, brakes: 18000 };
 const state = load() || {
   wallet: 5000,
   gameYear: new Date().getFullYear(),
-  gameDate: todayISO(),           // IN-GAME SCHOOL DAY
   lotInventory: [],
   buses: [],
   drivers: [],
   logs: [],
-  routeAssignments: {},           // { routeId: busId }
-  dispatch: {},                   // { "YYYY-MM-DD": { morning:{routeId:{driverId}}, afternoon:{...} } }
+  routeAssignments: {}, // { routeId: busId }
+  dispatch: {},         // { "YYYY-MM-DD": { morning:{routeId:{driverId}}, afternoon:{...} } }
   hiring: { pool: [] },
-  customRoutes: [],               // user-created routes
+  customRoutes: [],     // user-created routes
   board: {
     lastMeetingKey: null,
     maintenanceMultiplier: 1.0,
@@ -424,18 +409,7 @@ const state = load() || {
     conditionWearMod: 1.0,
     subCostPerRoute: 0
   },
-  schoolYear: { startMonth: 8, startDay: 1, lastStartedYear: null },
-
-  // REALISM OPS
-  ops: {
-    dayStartedKey: null,
-    absentDrivers: [],
-    lateDrivers: [],
-    prScore: 70,
-    complaints: {},   // { dateKey: [ {type, msg, createdAt} ] }
-    audits: {}        // { dateKey: { score, notes[], createdAt } }
-  },
-  busDayFlags: {}     // { dateKey: { busId: { am:boolean, pm:boolean } } }
+  schoolYear: { startMonth: 8, startDay: 1, lastStartedYear: null }
 };
 
 function randomDriverTrait(){
@@ -467,7 +441,6 @@ function normalizeState(){
 
   if(typeof state.wallet !== "number") state.wallet = 5000;
   if(typeof state.gameYear !== "number") state.gameYear = thisYear;
-  if(!state.gameDate) state.gameDate = todayISO();
 
   if(!Array.isArray(state.buses)) state.buses = [];
   if(!Array.isArray(state.drivers)) state.drivers = [];
@@ -494,16 +467,6 @@ function normalizeState(){
   if(!("startMonth" in state.schoolYear)) state.schoolYear.startMonth = 8;
   if(!("startDay" in state.schoolYear)) state.schoolYear.startDay = 1;
   if(!("lastStartedYear" in state.schoolYear)) state.schoolYear.lastStartedYear = null;
-
-  // Ops realism
-  if(!state.ops) state.ops = {};
-  if(!("dayStartedKey" in state.ops)) state.ops.dayStartedKey = null;
-  if(!Array.isArray(state.ops.absentDrivers)) state.ops.absentDrivers = [];
-  if(!Array.isArray(state.ops.lateDrivers)) state.ops.lateDrivers = [];
-  if(typeof state.ops.prScore !== "number") state.ops.prScore = 70;
-  if(!state.ops.complaints) state.ops.complaints = {};
-  if(!state.ops.audits) state.ops.audits = {};
-  if(!state.busDayFlags) state.busDayFlags = {};
 
   state.buses.forEach(b => {
     if(!("assignedDriverId" in b)) b.assignedDriverId = null;
@@ -555,35 +518,20 @@ normalizeState();
 save();
 
 /* =========================
-   IN-GAME DAY CONTROL
+   ROUTE COLLECTIONS (BUILT-IN + CUSTOM)
 ========================= */
-function dispatchKey(){ return state.gameDate; }
-
-function nextSchoolDay(){
-  let d = new Date(state.gameDate + "T00:00:00");
-  do {
-    d.setDate(d.getDate() + 1);
-  } while (d.getDay() === 0 || d.getDay() === 6); // skip Sun/Sat
-
-  state.gameDate = d.toISOString().slice(0,10);
-
-  // New day: ensure dispatch slots exist; clear "day started" flag
-  ensureDispatchDay();
-  if(state.ops) state.ops.dayStartedKey = null;
-
-  save();
-  renderAll();
+function allRoutes(){
+  return [...ROUTES, ...(state.customRoutes || [])];
+}
+function dailyRoutes(){
+  return allRoutes().filter(r => !r.isAdhoc && r.id !== "field");
+}
+function adHocRoutes(){
+  return allRoutes().filter(r => r.id === "field" || r.isAdhoc);
 }
 
 /* =========================
-   ROUTES (BUILT-IN + CUSTOM)
-========================= */
-function allRoutes(){ return [...ROUTES, ...(state.customRoutes || [])]; }
-function dailyRoutes(){ return allRoutes().filter(r => !r.isAdhoc && r.id !== "field"); }
-function adHocRoutes(){ return allRoutes().filter(r => r.id === "field" || r.isAdhoc); }
-
-/* =========================
-   CUSTOM ROUTES
+   CUSTOM ROUTES (ADD/DELETE/RENDER)
 ========================= */
 function addCustomRoute(){
   const name = document.getElementById("newRouteName").value.trim();
@@ -609,6 +557,7 @@ function addCustomRoute(){
   });
 
   if(type === "daily"){
+    if(!state.routeAssignments) state.routeAssignments = {};
     state.routeAssignments[id] = state.routeAssignments[id] || "";
   }
 
@@ -670,193 +619,6 @@ function renderCustomRoutes(){
 }
 
 /* =========================
-   OPS REALISM: CALLOFFS, COMPLAINTS, AUDITS, DEADHEAD
-========================= */
-function ensureOpsForDay(dayKey){
-  if(!state.ops.complaints[dayKey]) state.ops.complaints[dayKey] = [];
-  if(!state.busDayFlags[dayKey]) state.busDayFlags[dayKey] = {};
-}
-
-function opsBannerText(dayKey){
-  const absent = state.ops.absentDrivers.length;
-  const late = state.ops.lateDrivers.length;
-  const started = state.ops.dayStartedKey === dayKey ? "✅ Started" : "⏳ Not started";
-  return `${started} • Absences: ${absent} • Late: ${late}`;
-}
-
-function startSchoolDay(){
-  const dayKey = dispatchKey();
-  ensureOpsForDay(dayKey);
-
-  if(state.ops.dayStartedKey === dayKey){
-    alert("School day already started.");
-    return;
-  }
-
-  state.ops.absentDrivers = [];
-  state.ops.lateDrivers = [];
-
-  const activeDrivers = state.drivers.filter(d => !d.isRetired);
-
-  const absentRate = 0.07;
-  const lateRate = 0.10;
-
-  activeDrivers.forEach(d => {
-    if(d.status !== "available") return;
-
-    if(Math.random() < absentRate){
-      d.status = "sick";
-      state.ops.absentDrivers.push(d.id);
-    } else if(Math.random() < lateRate){
-      state.ops.lateDrivers.push(d.id);
-    }
-  });
-
-  state.ops.dayStartedKey = dayKey;
-
-  // Sometimes: surprise audit kicks off
-  if(Math.random() < 0.12){
-    autoAudit(dayKey, true);
-  }
-
-  // Small PR drift
-  state.ops.prScore = clamp((state.ops.prScore || 0) + randInt(-2,2), 0, 100);
-
-  state.logs.push({
-    id: uid(), busId: "", date: dayKey, miles: 0,
-    note: `🌅 School day started • Call-offs: ${state.ops.absentDrivers.length} • Late: ${state.ops.lateDrivers.length}`,
-    createdAt: Date.now()
-  });
-
-  save();
-  renderAll();
-
-  alert(`🌅 Day Started: ${dayKey}\nCall-offs: ${state.ops.absentDrivers.length}\nLate: ${state.ops.lateDrivers.length}`);
-}
-
-function viewComplaints(){
-  const dayKey = dispatchKey();
-  ensureOpsForDay(dayKey);
-  const list = state.ops.complaints[dayKey];
-  if(!list.length) return alert(`No complaints for ${dayKey} 🎉`);
-
-  const text = list.slice(-15).map((c,i)=>`${i+1}) ${c.type}: ${c.msg}`).join("\n");
-  alert(`📨 Complaints (${dayKey})\n\n${text}`);
-}
-
-function addComplaint(type, msg){
-  const dayKey = dispatchKey();
-  ensureOpsForDay(dayKey);
-  state.ops.complaints[dayKey].push({ type, msg, createdAt: Date.now() });
-
-  const impact =
-    type === "Late" ? -3 :
-    type === "Dirty Bus" ? -4 :
-    type === "Rough Ride" ? -2 :
-    type === "No-Show" ? -8 :
-    type === "Audit" ? -2 :
-    -1;
-
-  state.ops.prScore = clamp((state.ops.prScore || 0) + impact, 0, 100);
-
-  if(type === "No-Show" || type === "Dirty Bus"){
-    state.logs.push({ id: uid(), busId: "", date: dayKey, miles: 0, note:`📨 Complaint: ${type} — ${msg}`, createdAt: Date.now() });
-  }
-}
-
-function runSurpriseAudit(){
-  const dayKey = dispatchKey();
-  autoAudit(dayKey, false);
-  save();
-  renderAll();
-}
-
-function autoAudit(dayKey, wasAuto){
-  ensureOpsForDay(dayKey);
-
-  const buses = state.buses;
-  const active = buses.filter(b => b.status === "active");
-  const preTripDone = active.filter(b => b.lastPreTripDate === dayKey).length;
-  const preTripPct = active.length ? preTripDone / active.length : 1;
-
-  const majorDefects = buses.filter(b => b.defect && b.defect.level === "major").length;
-  const downBuses = buses.filter(b => b.status === "down").length;
-
-  let score = 100;
-  score -= Math.round((1 - preTripPct) * 40);
-  score -= majorDefects * 8;
-  score -= downBuses * 4;
-  score = clamp(score, 0, 100);
-
-  const notes = [];
-  notes.push(`Pre-Trip completion: ${Math.round(preTripPct*100)}%`);
-  if(majorDefects) notes.push(`Major defects open: ${majorDefects}`);
-  if(downBuses) notes.push(`Buses DOWN: ${downBuses}`);
-
-  state.ops.audits[dayKey] = { score, notes, createdAt: Date.now() };
-
-  if(score >= 90){
-    state.ops.prScore = clamp((state.ops.prScore || 0) + 2, 0, 100);
-  } else if(score < 70){
-    const penalty = 150;
-    state.wallet = Math.max(0, Number(state.wallet || 0) - penalty);
-    addComplaint("Audit", `Audit score ${score}. Office got heat from the board.`);
-    alert(`🕵️ Audit Result: ${score}/100\n-${penalty} budget (training / corrective action)\n\n${notes.join("\n")}`);
-    return;
-  }
-
-  alert(`${wasAuto ? "🕵️ Surprise Audit (auto)" : "🕵️ Surprise Audit"}: ${score}/100\n\n${notes.join("\n")}`);
-}
-
-function ensureBusFlags(dayKey, busId){
-  ensureOpsForDay(dayKey);
-  if(!state.busDayFlags[dayKey][busId]) state.busDayFlags[dayKey][busId] = { am:false, pm:false };
-  return state.busDayFlags[dayKey][busId];
-}
-
-function applyDeadheadIfNeeded(bus, shift){
-  const dayKey = dispatchKey();
-  const flags = ensureBusFlags(dayKey, bus.id);
-  const deadheadMiles = 3;
-  const wear = 0.8;
-
-  if(shift === "morning" && !flags.am){
-    flags.am = true;
-    bus.odometer += deadheadMiles;
-    bus.condition = Math.max(0, Number(bus.condition || 70) - wear);
-    state.logs.push({ id: uid(), busId: bus.id, date: dayKey, miles: deadheadMiles, note:`🚐 Deadhead (AM): yard → start`, createdAt: Date.now() });
-  }
-
-  if(shift === "afternoon" && !flags.pm){
-    flags.pm = true;
-    bus.odometer += deadheadMiles;
-    bus.condition = Math.max(0, Number(bus.condition || 70) - wear);
-    state.logs.push({ id: uid(), busId: bus.id, date: dayKey, miles: deadheadMiles, note:`🚐 Deadhead (PM): end → yard`, createdAt: Date.now() });
-  }
-}
-
-function maybeComplaint(bus, driver, usedSub, skippedPreTrip){
-  const cond = Number(bus.condition || 70);
-
-  let pLate = 0.04;
-  let pDirty = 0.03;
-  let pRough = 0.02;
-
-  if(usedSub) pLate += 0.06;
-  if(skippedPreTrip) pLate += 0.03;
-  if(state.ops.lateDrivers.includes(driver.id)) pLate += 0.10;
-
-  if(cond < 55) pDirty += 0.06;
-  if(cond < 40) pDirty += 0.10;
-
-  if(cond < 50) pRough += 0.05;
-
-  if(Math.random() < pLate) addComplaint("Late", `${driver.name} ran late due to congestion / loading time.`);
-  if(Math.random() < pDirty) addComplaint("Dirty Bus", `Parents complained bus looked messy or smelled off.`);
-  if(Math.random() < pRough) addComplaint("Rough Ride", `Rough ride / hard stops report came in.`);
-}
-
-/* =========================
    SCHOOL YEAR (Option B)
 ========================= */
 function saveSchoolYearSettings(){
@@ -905,6 +667,9 @@ function startNewSchoolYear(startYear){
 /* =========================
    BUS LOT (Thomas Built)
 ========================= */
+function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
 function msrpFor(year, trim){
   const base = 98000 + (year - 2018) * 1800;
   const trimAdd = trim === "HDX" ? 11000 : trim === "C2" ? 7000 : 0;
@@ -1084,7 +849,7 @@ function doPreTrip(){
   const bus = byId(state.buses, busId);
   if(!bus) return;
 
-  const t = dispatchKey();
+  const t = todayISO();
   bus.lastPreTripDate = t;
   bus.preTripStreak = (bus.preTripStreak || 0) + 1;
   bus.condition = Math.min(100, Number(bus.condition || 70) + 0.5);
@@ -1099,49 +864,12 @@ function doPreTrip(){
   alert(`✅ Pre-Trip complete for ${bus.name}`);
 }
 
-function doAllPreTrips(){
-  const t = dispatchKey();
-  const activeBuses = state.buses.filter(b => b.status === "active");
-
-  if(!activeBuses.length){
-    return alert("No active buses to pre-trip.");
-  }
-
-  const toUpdate = activeBuses.filter(b => b.lastPreTripDate !== t);
-
-  if(!toUpdate.length){
-    return alert("All active buses already have Pre-Trip completed for today.");
-  }
-
-  if(!confirm(`Complete Pre-Trip for ${toUpdate.length} active bus(es) for ${t}?`)) return;
-
-  toUpdate.forEach(bus => {
-    bus.lastPreTripDate = t;
-    bus.preTripStreak = (bus.preTripStreak || 0) + 1;
-    bus.condition = Math.min(100, Number(bus.condition || 70) + 0.5);
-  });
-
-  state.logs.push({
-    id: uid(),
-    busId: "",
-    date: t,
-    miles: 0,
-    note: `✅ Bulk Pre-Trip completed for ${toUpdate.length} bus(es)`,
-    createdAt: Date.now()
-  });
-
-  save();
-  renderAll();
-
-  alert(`✅ Bulk Pre-Trip complete!\n${toUpdate.length} bus(es) updated for ${t}.`);
-}
-
 function doPostTrip(){
   const busId = document.getElementById("checkBus").value;
   const bus = byId(state.buses, busId);
   if(!bus) return;
 
-  const t = dispatchKey();
+  const t = todayISO();
   bus.lastPostTripDate = t;
   bus.condition = Math.min(100, Number(bus.condition || 70) + 0.3);
 
@@ -1165,9 +893,8 @@ function reportDefect(){
 
   const major = confirm("Is this a MAJOR defect?\n\nOK = Major (bus out of service)\nCancel = Minor");
 
-  const t = dispatchKey();
-  bus.defect = { level: major ? "major" : "minor", note, date: t };
-  bus.lastPostTripDate = t;
+  bus.defect = { level: major ? "major" : "minor", note, date: todayISO() };
+  bus.lastPostTripDate = todayISO();
 
   if(major){
     bus.status = "down";
@@ -1177,7 +904,7 @@ function reportDefect(){
   state.logs.push({
     id: uid(),
     busId: bus.id,
-    date: t,
+    date: todayISO(),
     miles: 0,
     note: `🚨 Defect reported (${major ? "MAJOR" : "minor"}): ${note}`,
     createdAt: Date.now()
@@ -1229,7 +956,7 @@ function doRepair(busId){
   bus.condition = Math.min(100, Number(bus.condition || 70) + 20);
   bus.defect = null;
 
-  state.logs.push({ id: uid(), busId: bus.id, date: dispatchKey(), miles: 0, note:`🔧 Repair: -$${cost}`, createdAt: Date.now() });
+  state.logs.push({ id: uid(), busId: bus.id, date: todayISO(), miles: 0, note:`🔧 Repair: -$${cost}`, createdAt: Date.now() });
 
   save();
   renderAll();
@@ -1245,7 +972,7 @@ function doService(busId){
   bus.serviceBoost = Math.min(30, Number(bus.serviceBoost || 0) + 10);
   bus.condition = Math.min(100, Number(bus.condition || 70) + 10);
 
-  state.logs.push({ id: uid(), busId: bus.id, date: dispatchKey(), miles: 0, note:`🧽 Service: -$${cost}`, createdAt: Date.now() });
+  state.logs.push({ id: uid(), busId: bus.id, date: todayISO(), miles: 0, note:`🧽 Service: -$${cost}`, createdAt: Date.now() });
 
   save();
   renderAll();
@@ -1261,7 +988,7 @@ function doUpgrade(busId){
   bus.reliabilityMod = Math.min(0.25, Number(bus.reliabilityMod || 0) + 0.05);
   bus.condition = Math.min(100, Number(bus.condition || 70) + 8);
 
-  state.logs.push({ id: uid(), busId: bus.id, date: dispatchKey(), miles: 0, note:`🧩 Upgrade: -$${cost}`, createdAt: Date.now() });
+  state.logs.push({ id: uid(), busId: bus.id, date: todayISO(), miles: 0, note:`🧩 Upgrade: -$${cost}`, createdAt: Date.now() });
 
   save();
   renderAll();
@@ -1285,7 +1012,7 @@ function serviceItem(busId, item){
   bus.defect = null;
 
   state.logs.push({
-    id: uid(), busId: bus.id, date: dispatchKey(), miles: 0,
+    id: uid(), busId: bus.id, date: todayISO(), miles: 0,
     note: `🛠️ Serviced: ${item.toUpperCase()} (-$${cost})`,
     createdAt: Date.now()
   });
@@ -1337,7 +1064,7 @@ function inspectBus(busId){
     bus.maintenanceNote = "Failed inspection";
   }
 
-  state.logs.push({ id: uid(), busId: bus.id, date: dispatchKey(), miles: 0, note:`🧪 Inspection: ${result.toUpperCase()}`, createdAt: Date.now() });
+  state.logs.push({ id: uid(), busId: bus.id, date: todayISO(), miles: 0, note:`🧪 Inspection: ${result.toUpperCase()}`, createdAt: Date.now() });
 
   save();
   renderAll();
@@ -1383,7 +1110,7 @@ function maybeAutoBreakWithRoute(bus, route, skippedPreTrip){
 
   const activeBuses = state.buses.filter(b => b.status === "active");
   if(activeBuses.length < 2){
-    state.logs.push({ id: uid(), busId: bus.id, date: dispatchKey(), miles: 0, note:`⚠️ Near-breakdown avoided (no sub available)`, createdAt: Date.now() });
+    state.logs.push({ id: uid(), busId: bus.id, date: todayISO(), miles: 0, note:`⚠️ Near-breakdown avoided (no sub available)`, createdAt: Date.now() });
     return;
   }
 
@@ -1402,7 +1129,7 @@ function maybeAutoBreakWithRoute(bus, route, skippedPreTrip){
   bus.maintenanceNote = events[Math.floor(Math.random() * events.length)];
   bus.subBusId = subBus.id;
 
-  state.logs.push({ id: uid(), busId: bus.id, date: dispatchKey(), miles: 0, note:`🚧 Breakdown: ${bus.maintenanceNote}`, createdAt: Date.now() });
+  state.logs.push({ id: uid(), busId: bus.id, date: todayISO(), miles: 0, note:`🚧 Breakdown: ${bus.maintenanceNote}`, createdAt: Date.now() });
 }
 
 /* =========================
@@ -1439,7 +1166,7 @@ function applyTrainingIncidentIfAny(bus, driver, route){
   if(e.extraMiles){
     bus.odometer += e.extraMiles;
     state.logs.push({
-      id: uid(), busId: bus.id, date: dispatchKey(), miles: e.extraMiles,
+      id: uid(), busId: bus.id, date: todayISO(), miles: e.extraMiles,
       note: `🎓 Training incident: ${e.msg}`,
       createdAt: Date.now()
     });
@@ -1506,7 +1233,7 @@ function clearMentor(){
 }
 
 /* =========================
-   HIRING
+   HIRING (2 + 5)
 ========================= */
 function generateName(){
   const first = ["Pat","Casey","Jordan","Taylor","Morgan","Riley","Avery","Sam","Cameron","Drew","Jamie","Alex"];
@@ -1629,7 +1356,7 @@ function retireDriverById(driverId, reason="Manual retirement"){
     if(b.assignedDriverId === d.id) b.assignedDriverId = null;
   });
 
-  state.logs.push({ id: uid(), busId: "", date: dispatchKey(), miles: 0, note:`🎉 Driver retired: ${d.name} (${reason})`, createdAt: Date.now() });
+  state.logs.push({ id: uid(), busId: "", date: todayISO(), miles: 0, note:`🎉 Driver retired: ${d.name} (${reason})`, createdAt: Date.now() });
 
   save();
   renderAll();
@@ -1688,7 +1415,7 @@ function runRoute(){
   if(driver.isRetired) return alert("Driver is retired.");
   if(driver.status !== "available") return alert(`${driver.name} is unavailable.`);
 
-  const t = dispatchKey();
+  const t = todayISO();
   const skippedPreTrip = (bus.lastPreTripDate !== t);
   if(skippedPreTrip){
     if(!confirm(`⚠️ Pre-Trip not completed for ${bus.name} today.\nRun anyway? (Higher risk)`)) return;
@@ -1696,8 +1423,6 @@ function runRoute(){
 
   const shift = getDispatchShift();
   const rules = SHIFT_RULES[shift] || SHIFT_RULES.morning;
-
-  applyDeadheadIfNeeded(bus, shift);
 
   state.logs.push({
     id: uid(),
@@ -1723,7 +1448,6 @@ function runRoute(){
 
   applyTrainingIncidentIfAny(bus, driver, route);
   maybeAutoBreakWithRoute(bus, route, skippedPreTrip);
-  maybeComplaint(bus, driver, false, skippedPreTrip);
 
   save();
   renderAll();
@@ -1735,6 +1459,7 @@ function runRoute(){
    ROUTE ASSIGNMENTS + DISPATCH
 ========================= */
 function setAssignedBus(routeId, busId){
+  if(!state.routeAssignments) state.routeAssignments = {};
   state.routeAssignments[routeId] = busId || "";
   save();
   renderAll();
@@ -1750,6 +1475,8 @@ function pickSubBus(excludeBusId){
   if(!Number.isFinite(idx) || idx < 0 || idx >= options.length) return null;
   return options[idx];
 }
+
+function dispatchKey(){ return todayISO(); }
 
 function ensureDispatchDay(){
   const key = dispatchKey();
@@ -1781,8 +1508,794 @@ function getDispatchDriver(routeId){
 function driverDisplay(d){
   const yrs = driverExperienceYears(d);
   const trait = d.trait?.name ? ` • ${d.trait.name}` : "";
-  const lateTag = state.ops?.lateDrivers?.includes(d.id) ? " • LATE" : "";
-  return `${d.name} (${yrs}y${trait}${lateTag})`;
+  return `${d.name} (${yrs}y${trait})`;
 }
 
-function runScheduledRoute
+function runScheduledRouteWithDriver(routeId, driverId){
+  const route = allRoutes().find(r => r.id === routeId);
+  if(!route) return alert("Route not found.");
+
+  const assignedBusId = state.routeAssignments?.[routeId] || "";
+  if(!assignedBusId) return alert(`No bus assigned to ${route.name}. Assign one first.`);
+
+  const assignedBus = byId(state.buses, assignedBusId);
+  if(!assignedBus) return alert("Assigned bus no longer exists. Reassign this route.");
+
+  const driver = byId(state.drivers, driverId);
+  if(!driverId || !driver) return alert("Pick a driver for this route.");
+  if(driver.isRetired) return alert("That driver is retired.");
+  if(driver.status !== "available") return alert(`${driver.name} is not available today.`);
+
+  let busToUse = assignedBus;
+  let usedSub = false;
+
+  if(assignedBus.status === "down"){
+    const sub = pickSubBus(assignedBus.id);
+    if(!sub) return alert("No sub bus selected (or none available). Route not run.");
+    busToUse = sub;
+    usedSub = true;
+  }
+
+  const t = todayISO();
+  const skippedPreTrip = (busToUse.lastPreTripDate !== t);
+  if(skippedPreTrip){
+    const ok = confirm(`⚠️ Pre-Trip not completed for ${busToUse.name} today.\nRun anyway?`);
+    if(!ok) return;
+  }
+
+  const shift = getDispatchShift();
+  const rules = SHIFT_RULES[shift] || SHIFT_RULES.morning;
+
+  state.logs.push({
+    id: uid(),
+    busId: busToUse.id,
+    date: t,
+    miles: route.miles,
+    note: usedSub
+      ? `${route.name} (${shift.toUpperCase()} • SUB for ${assignedBus.name})`
+      : `${route.name} (${shift.toUpperCase()} • Assigned)`,
+    createdAt: Date.now()
+  });
+
+  busToUse.odometer = Number(busToUse.odometer || 0) + route.miles;
+
+  let wear = route.wear * 1.2 * rules.wearMult;
+  wear *= (1 + (maintenanceRiskMultiplier(busToUse) - 1) * 0.6);
+  if(skippedPreTrip) wear *= 1.15;
+  if(busToUse.defect) wear *= busToUse.defect.level === "major" ? 1.25 : 1.10;
+  wear *= (state.board?.conditionWearMod || 1.0);
+
+  busToUse.condition = Math.max(0, Number(busToUse.condition || 70) - wear);
+
+  let pay = Math.round(route.pay * rules.payMult);
+  if(usedSub) pay = Math.max(0, pay - SUB_LATE_PENALTY);
+
+  if(state.board?.driverPolicy === "strict" && usedSub){
+    const extra = Number(state.board.subCostPerRoute || 0);
+    state.wallet = Math.max(0, Number(state.wallet || 0) - extra);
+  }
+
+  state.wallet = Number(state.wallet || 0) + pay;
+
+  applyTrainingIncidentIfAny(busToUse, driver, route);
+  maybeAutoBreakWithRoute(busToUse, route, skippedPreTrip);
+
+  save();
+  renderAll();
+
+  alert(
+    `✅ Dispatched ${route.name} (${shift.toUpperCase()})\n` +
+    `Bus: ${busToUse.name}${usedSub ? ` (SUB for ${assignedBus.name})` : ""}\n` +
+    `Driver: ${driver.name}\n` +
+    `+$${pay} • ${route.miles} miles` +
+    (usedSub ? `\n(Late start penalty: -$${SUB_LATE_PENALTY})` : "")
+  );
+}
+
+function runAllScheduled(){
+  ensureDispatchDay();
+  const routes = dailyRoutes();
+
+  for(const r of routes){
+    const driverId = getDispatchDriver(r.id);
+    if(!driverId){
+      alert(`Missing driver for: ${r.name}\nAssign drivers in Dispatch View first.`);
+      return;
+    }
+  }
+
+  for(const r of routes){
+    runScheduledRouteWithDriver(r.id, getDispatchDriver(r.id));
+  }
+}
+
+/* =========================
+   SCHOOL BOARD
+========================= */
+function quarterKey(){
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3) + 1;
+  return `${state.gameYear}-${q}`;
+}
+
+function holdBoardMeeting(){
+  const key = quarterKey();
+  state.board.lastMeetingKey = key;
+  state.board.activeProposals = generateBoardProposals();
+  save();
+  renderAll();
+}
+
+function generateBoardProposals(){
+  const proposals = [];
+
+  const base = [
+    {
+      title: "Fleet Safety Initiative Grant",
+      desc: "State grant opportunity if you commit to stronger inspections this year.",
+      impactText: "+$3,000 budget, but inspections get stricter.",
+      applyYes(){
+        state.wallet += 3000;
+        state.board.inspectionStrictness = Math.min(1.5, state.board.inspectionStrictness + 0.15);
+      },
+      applyNo(){}
+    },
+    {
+      title: "Budget Freeze",
+      desc: "Board wants to pause extra spending due to district finances.",
+      impactText: "Next-year allocation reduced.",
+      applyYes(){
+        state.board.nextYearAllocationMod = (state.board.nextYearAllocationMod || 1.0) * 0.85;
+      },
+      applyNo(){}
+    },
+    {
+      title: "Preventive Maintenance Mandate",
+      desc: "Extra PM checks to reduce breakdowns (more cost, less wear).",
+      impactText: "Maintenance costs ↑, condition wear ↓.",
+      applyYes(){
+        state.board.maintenanceMultiplier = Math.min(1.5, state.board.maintenanceMultiplier + 0.15);
+        state.board.conditionWearMod = (state.board.conditionWearMod || 1.0) * 0.85;
+      },
+      applyNo(){}
+    },
+    {
+      title: "Strict Driver Policy",
+      desc: "Coverage must be planned. Sub operations cost money, fewer breakdowns.",
+      impactText: "Subs cost $40 per route, breakdowns ↓ a bit.",
+      applyYes(){
+        state.board.driverPolicy = "strict";
+        state.board.subCostPerRoute = 40;
+        state.board.breakdownMod = (state.board.breakdownMod || 1.0) * 0.9;
+      },
+      applyNo(){
+        state.board.driverPolicy = "standard";
+        state.board.subCostPerRoute = 0;
+      }
+    },
+    {
+      title: "Replace Oldest Bus",
+      desc: "Board wants optics: retire one bus older than 15 years (if any).",
+      impactText: "Retire 1 old bus, then +$1,500 credit.",
+      applyYes(){
+        const year = state.gameYear;
+        const old = state.buses
+          .map(b => ({ b, age: Math.max(0, year - (b.inServiceYear || year)) }))
+          .filter(x => x.age >= 15)
+          .sort((a,b)=> b.age - a.age)[0];
+
+        if(old){
+          const busId = old.b.id;
+          state.buses = state.buses.filter(b => b.id !== busId);
+          state.logs = state.logs.filter(l => l.busId !== busId);
+          Object.keys(state.routeAssignments).forEach(k=>{
+            if(state.routeAssignments[k] === busId) state.routeAssignments[k] = "";
+          });
+          state.wallet += 1500;
+        } else {
+          state.wallet += 300;
+        }
+      },
+      applyNo(){}
+    }
+  ];
+
+  const count = randInt(2,3);
+  const pool = [...base];
+  for(let i=0;i<count;i++){
+    const idx = randInt(0, pool.length-1);
+    proposals.push(pool.splice(idx,1)[0]);
+  }
+
+  return proposals;
+}
+
+function voteProposal(idx, yes){
+  const p = state.board.activeProposals?.[idx];
+  if(!p) return;
+
+  if(yes) p.applyYes(); else p.applyNo();
+
+  state.logs.push({ id: uid(), busId: "", date: todayISO(), miles: 0, note:`🗳️ Board vote: ${p.title} → ${yes ? "YES" : "NO"}`, createdAt: Date.now() });
+
+  state.board.activeProposals.splice(idx,1);
+  if(state.board.activeProposals.length === 0) delete state.board.activeProposals;
+
+  save();
+  renderAll();
+}
+
+/* =========================
+   YEAR ADVANCE
+========================= */
+function advanceYear(){
+  state.gameYear += 1;
+
+  const mod = state.board?.nextYearAllocationMod || 1.0;
+  const allocation = Math.round(2500 * mod);
+  state.wallet = Math.round((state.wallet || 0) + allocation);
+
+  generateLotForYear(state.gameYear);
+  processTrainingGraduations();
+  processDriverRetirements();
+
+  save();
+  renderAll();
+
+  alert(`📅 New Year: ${state.gameYear}\n💰 Allocation: +$${allocation.toLocaleString()}`);
+}
+
+/* =========================
+   BACKUP / RESTORE / RESET
+========================= */
+function backupData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `busboss_backup_${todayISO()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function restoreData(){
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = "application/json";
+  inp.onchange = () => {
+    const file = inp.files?.[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const obj = JSON.parse(String(reader.result));
+        localStorage.setItem("busboss_v1", JSON.stringify(obj));
+        location.reload();
+      }catch(e){
+        alert("Invalid backup file.");
+      }
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+function resetAll(){
+  if(!confirm("Reset everything? This clears all buses/drivers/routes/logs.")) return;
+  localStorage.removeItem("busboss_v1");
+  location.reload();
+}
+
+/* =========================
+   RENDERING
+========================= */
+function setSelect(id, optionsHtml){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.innerHTML = optionsHtml;
+}
+
+function renderTop(){
+  document.getElementById("walletTop").textContent = `$${Number(state.wallet||0).toLocaleString()}`;
+  document.getElementById("gameYearTop").textContent = String(state.gameYear);
+}
+
+function renderFleet(){
+  if(!state.buses.length){
+    document.getElementById("fleetPanel").innerHTML = `<div class="muted">No buses yet. Add one or buy from the lot.</div>`;
+    return;
+  }
+
+  const rows = state.buses.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(b=>{
+    const age = busAge(b);
+    const odo = Number(b.odometer||0);
+    const cond = Math.round(Number(b.condition||70));
+    const status = b.status === "down"
+      ? `🚧 DOWN <span class="small muted">Sub: ${escapeHtml(byId(state.buses, b.subBusId)?.name || "None")}</span><div class="small muted">${escapeHtml(b.maintenanceNote || "")}</div>`
+      : `✅ Active`;
+
+    const defectLine = b.defect
+      ? `🚨 ${b.defect.level.toUpperCase()} DEFECT: ${escapeHtml(b.defect.note)}`
+      : `No reported defects`;
+
+    return `
+      <tr>
+        <td>
+          <div><strong>${escapeHtml(b.name)}</strong></div>
+          <div class="small muted">Age: ${age} yrs • Odo: ${fmtMiles(odo)} mi • Condition: ${cond}/100</div>
+          <div class="small">${status}</div>
+          <div class="small muted">${defectLine}</div>
+        </td>
+        <td class="right nowrap">
+          <button onclick="inspectBus('${b.id}')">Inspect</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  document.getElementById("fleetPanel").innerHTML = `
+    <table>
+      <thead><tr><th>Bus</th><th class="right">Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderGarage(){
+  document.getElementById("walletGarage").textContent = `$${Number(state.wallet||0).toLocaleString()}`;
+
+  if(!state.buses.length){
+    document.getElementById("garage").innerHTML = `<div class="muted">No buses yet.</div>`;
+    return;
+  }
+
+  const rows = state.buses.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(b=>{
+    const age = busAge(b);
+    const odo = Number(b.odometer||0);
+    const cond = Math.round(Number(b.condition||70));
+    const rep = Math.round(repairCost(b));
+    const svc = Math.round(serviceCost(b));
+    const upg = Math.round(upgradeCost(b));
+    const rv  = retireValue(b);
+
+    const oilDue = isOverdue(b,"oil") ? "🛢️ OIL OVERDUE" : "Oil OK";
+    const tireDue = isOverdue(b,"tires") ? "🛞 TIRES OVERDUE" : "Tires OK";
+    const brakeDue = isOverdue(b,"brakes") ? "🛑 BRAKES OVERDUE" : "Brakes OK";
+
+    const defectLine = b.defect
+      ? `🚨 ${b.defect.level.toUpperCase()} DEFECT: ${escapeHtml(b.defect.note)}`
+      : `No reported defects`;
+
+    const status = b.status === "down"
+      ? `🚧 DOWN — Sub: ${escapeHtml(byId(state.buses, b.subBusId)?.name || "None")}<div class="small muted">${escapeHtml(b.maintenanceNote||"")}</div>`
+      : `✅ Active`;
+
+    return `
+      <tr>
+        <td>
+          <div><strong>${escapeHtml(b.name)}</strong></div>
+          <div class="small muted">Age: ${age} yrs • Odo: ${fmtMiles(odo)} mi • Condition: ${cond}/100</div>
+          <div class="small">${status}</div>
+          <div class="small muted">${oilDue} • ${tireDue} • ${brakeDue}</div>
+          <div class="small muted">${defectLine}</div>
+        </td>
+        <td class="right nowrap">
+          <div class="row" style="justify-content:flex-end;">
+            <button onclick="doRepair('${b.id}')" ${state.wallet < rep ? "disabled":""}>Repair ($${rep})</button>
+            <button onclick="doService('${b.id}')" ${state.wallet < svc ? "disabled":""}>Service ($${svc})</button>
+            <button onclick="doUpgrade('${b.id}')" ${state.wallet < upg ? "disabled":""}>Upgrade ($${upg})</button>
+            <button onclick="serviceItem('${b.id}','oil')">Oil</button>
+            <button onclick="serviceItem('${b.id}','tires')">Tires</button>
+            <button onclick="serviceItem('${b.id}','brakes')">Brakes</button>
+            <button class="danger" onclick="doRetireBus('${b.id}')">Retire (+$${rv})</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  document.getElementById("garage").innerHTML = `
+    <table>
+      <thead><tr><th>Bus</th><th class="right">Garage Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderBusLot(){
+  document.getElementById("gameYear").textContent = String(state.gameYear);
+
+  if(!state.lotInventory.length){
+    document.getElementById("busLot").innerHTML =
+      `<div class="muted">Lot is empty. Click “Refresh Lot”.</div>`;
+    return;
+  }
+
+  const rows = state.lotInventory
+    .slice()
+    .sort((a,b)=> (b.year - a.year) || (a.price - b.price))
+    .map(b => {
+      const canBuy = state.wallet >= b.price;
+      return `
+        <tr>
+          <td>
+            <div><strong>${escapeHtml(b.name)}</strong></div>
+            <div class="small muted">${escapeHtml(b.make)} • ${escapeHtml(b.model)} • Year: ${b.year} • Condition: ${b.condition}/100 • Warranty: ${b.warranty}yr</div>
+          </td>
+          <td class="mono nowrap">$${b.price.toLocaleString()}</td>
+          <td class="right nowrap">
+            <button class="primary" onclick="buyLotBus('${b.lotId}')" ${canBuy ? "" : "disabled"}>Buy</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+  document.getElementById("busLot").innerHTML = `
+    <table>
+      <thead><tr><th>Available Buses</th><th class="nowrap">Price</th><th class="right">Action</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderDrivers(){
+  if(!state.drivers.length){
+    document.getElementById("driversPanel").innerHTML = `<div class="muted">No drivers yet. Add one or hire.</div>`;
+    return;
+  }
+
+  const rows = state.drivers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(d=>{
+    const yrs = driverExperienceYears(d);
+    const traitName = d.trait?.name || "—";
+    const retiredBadge = d.isRetired ? ` <span class="pill" style="border-color:#c33">Retired</span>` : "";
+    const badges = (d.badges && d.badges.length) ? d.badges.map(b => `<span class="pill">${escapeHtml(b)}</span>`).join(" ") : "";
+    const mentor = d.mentorDriverId ? byId(state.drivers, d.mentorDriverId) : null;
+    const mentorLine = isTrainee(d) ? `<div class="small muted">Mentor: ${escapeHtml(mentor?.name || "None")}</div>` : "";
+
+    return `
+      <tr>
+        <td>
+          <strong>${escapeHtml(d.name)}</strong>${retiredBadge}
+          <div class="small muted">${escapeHtml(d.nick || "")}</div>
+          <div class="small muted">${yrs} yrs • Trait: ${escapeHtml(traitName)}</div>
+          ${mentorLine}
+          <div class="small">${badges}</div>
+        </td>
+        <td class="nowrap">
+          <select onchange="setDriverStatus('${d.id}', this.value)" ${d.isRetired ? "disabled":""}>
+            <option value="available" ${d.status==="available"?"selected":""}>✅ Available</option>
+            <option value="sick" ${d.status==="sick"?"selected":""}>🤒 Sick</option>
+            <option value="vacation" ${d.status==="vacation"?"selected":""}>🏖️ Vacation</option>
+            <option value="sub" ${d.status==="sub"?"selected":""}>🧑‍🔧 Sub</option>
+          </select>
+        </td>
+        <td class="right nowrap">
+          <button onclick="retireDriverById('${d.id}')" ${d.isRetired ? "disabled":""}>Retire</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  document.getElementById("driversPanel").innerHTML = `
+    <table>
+      <thead><tr><th>Driver</th><th>Status</th><th class="right">Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function renderHiringPanel(){
+  const panel = document.getElementById("hiringPanel");
+  if(!panel) return;
+
+  if(!state.hiring.pool || !state.hiring.pool.length){
+    panel.innerHTML = `<div class="muted">No candidates right now. Open the Hiring Pool or Training Program.</div>`;
+    return;
+  }
+
+  panel.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Trait</th>
+          <th class="nowrap">Experience</th>
+          <th class="nowrap">Cost</th>
+          <th class="right">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${state.hiring.pool.map(c => {
+          const yrs = Math.max(0, state.gameYear - Number(c.hiredYear || state.gameYear));
+          const tag = c.kind === "training" ? "🎓 Training" : "🎤 Pool";
+          const extra = c.kind === "training"
+            ? `<div class="small muted">Graduates next year → ${escapeHtml(c.training.graduateTo.name)}</div>`
+            : `<div class="small muted">${tag}</div>`;
+          const canHire = state.wallet >= c.hireCost;
+
+          return `
+            <tr>
+              <td>
+                <strong>${escapeHtml(c.name)}</strong> <span class="pill">${tag}</span>
+                <div class="small muted">${escapeHtml(c.nick || "")}</div>
+                ${extra}
+              </td>
+              <td>${escapeHtml(c.trait.name)}</td>
+              <td class="nowrap">${yrs} yr(s)</td>
+              <td class="nowrap mono">$${Number(c.hireCost).toLocaleString()}</td>
+              <td class="right nowrap">
+                <button class="primary" onclick="hireCandidate('${c.candId}')" ${canHire ? "" : "disabled"}>Hire</button>
+              </td>
+            </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderMentorDropdowns(){
+  const tSel = document.getElementById("mentorTrainee");
+  const mSel = document.getElementById("mentorMentor");
+  if(!tSel || !mSel) return;
+
+  const trainees = state.drivers.filter(isTrainee);
+  const mentors = state.drivers.filter(isMentorEligible);
+
+  tSel.innerHTML = trainees.map(d => {
+    const yrs = driverExperienceYears(d);
+    return `<option value="${d.id}">${escapeHtml(d.name)} (${yrs}y)</option>`;
+  }).join("") || `<option value="">No trainees</option>`;
+
+  mSel.innerHTML = mentors.map(d => {
+    const yrs = driverExperienceYears(d);
+    return `<option value="${d.id}">${escapeHtml(d.name)} (${yrs}y)</option>`;
+  }).join("") || `<option value="">No mentors</option>`;
+}
+
+function renderRouteAssignments(){
+  const panel = document.getElementById("routeAssignmentsPanel");
+  if(!panel) return;
+
+  const buses = state.buses.slice().sort((a,b)=> a.name.localeCompare(b.name));
+  const busOpts = (selectedId) =>
+    `<option value="">— Unassigned —</option>` +
+    buses.map(b => {
+      const downTag = b.status === "down" ? " 🚧" : "";
+      return `<option value="${b.id}" ${b.id===selectedId ? "selected":""}>${escapeHtml(b.name)}${downTag}</option>`;
+    }).join("");
+
+  const rows = dailyRoutes().map(r => {
+    const assignedId = state.routeAssignments?.[r.id] || "";
+    const assigned = byId(state.buses, assignedId);
+    const status = !assigned
+      ? `<span class="pill" style="border-color:#c33">NO BUS</span>`
+      : assigned.status === "down"
+        ? `<span class="pill" style="border-color:#c33">DOWN</span>`
+        : `<span class="pill">Active</span>`;
+
+    return `
+      <tr>
+        <td>
+          <strong>${escapeHtml(r.name)}</strong>
+          <div class="small muted">${r.miles} mi • +$${r.pay} • Wear x${r.wear}</div>
+        </td>
+        <td>
+          <select onchange="setAssignedBus('${r.id}', this.value)">
+            ${busOpts(assignedId)}
+          </select>
+        </td>
+        <td>${status}</td>
+      </tr>
+    `;
+  }).join("");
+
+  panel.innerHTML = `
+    <table>
+      <thead><tr><th>Daily Route</th><th>Assigned Bus</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="small muted" style="margin-top:8px;">Ad-hoc routes are run from the Ad-hoc runner.</div>
+  `;
+}
+
+function renderDispatch(){
+  ensureDispatchDay();
+  const key = dispatchKey();
+  document.getElementById("dispatchDate").textContent = key;
+
+  const shift = getDispatchShift();
+  const rules = SHIFT_RULES[shift] || SHIFT_RULES.morning;
+
+  const panel = document.getElementById("dispatchPanel");
+  if(!panel) return;
+
+  const availableDrivers = state.drivers
+    .filter(d => !d.isRetired && d.status === "available")
+    .sort((a,b)=> a.name.localeCompare(b.name));
+
+  const driverOptions = (selectedId) =>
+    `<option value="">— Select driver —</option>` +
+    availableDrivers.map(d => `
+      <option value="${d.id}" ${d.id===selectedId ? "selected":""}>${escapeHtml(driverDisplay(d))}</option>
+    `).join("");
+
+  const rows = dailyRoutes().map(r => {
+    const busId = state.routeAssignments?.[r.id] || "";
+    const bus = byId(state.buses, busId);
+    const driverId = getDispatchDriver(r.id);
+
+    const busText = bus ? escapeHtml(bus.name) : "Unassigned";
+    const busStatus = !bus
+      ? `<span class="pill" style="border-color:#c33">NO BUS</span>`
+      : bus.status === "down"
+        ? `<span class="pill" style="border-color:#c33">DOWN (SUB REQUIRED)</span>`
+        : `<span class="pill">Active</span>`;
+
+    const preTripOk = bus && bus.lastPreTripDate === key;
+    const preTripTag = bus
+      ? (preTripOk ? `<span class="pill">Pre-Trip ✅</span>` : `<span class="pill" style="border-color:#c90">Pre-Trip ⚠️</span>`)
+      : "";
+
+    const payShown = Math.round(r.pay * rules.payMult);
+
+    return `
+      <tr>
+        <td>
+          <strong>${escapeHtml(r.name)}</strong>
+          <div class="small muted">${r.miles} mi • +$${payShown} (${shift}) • Wear x${(r.wear * rules.wearMult).toFixed(2)}</div>
+        </td>
+        <td>
+          <div>${busText}</div>
+          <div class="small">${busStatus} ${preTripTag}</div>
+        </td>
+        <td>
+          <select onchange="setDispatchDriver('${r.id}', this.value)">
+            ${driverOptions(driverId)}
+          </select>
+        </td>
+        <td class="right nowrap">
+          <button class="primary" onclick="runScheduledRouteWithDriver('${r.id}', getDispatchDriver('${r.id}'))">Run</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  panel.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Route</th>
+          <th>Assigned Bus</th>
+          <th>Today’s Driver (${escapeHtml(shift)})</th>
+          <th class="right">Dispatch</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="small muted" style="margin-top:8px;">
+      Field Trips & ad-hoc custom routes stay in the Ad-hoc Route Runner.
+    </div>
+  `;
+}
+
+function renderBoard(){
+  const pol = state.board.driverPolicy === "strict" ? "Strict Driver Policy" : "Standard Policy";
+  document.getElementById("boardPolicy").textContent =
+    `${pol} • Maint x${Number(state.board.maintenanceMultiplier||1).toFixed(2)} • Inspect x${Number(state.board.inspectionStrictness||1).toFixed(2)}`;
+
+  const panel = document.getElementById("boardPanel");
+  if(!panel) return;
+
+  if(!state.board.activeProposals){
+    panel.innerHTML = `<div class="muted">No active proposals. Click “Board Meeting”.</div>`;
+    return;
+  }
+
+  panel.innerHTML = state.board.activeProposals.map((p, idx) => `
+    <div class="card" style="margin:10px 0;">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+        <div>
+          <div><strong>${escapeHtml(p.title)}</strong></div>
+          <div class="small muted">${escapeHtml(p.desc)}</div>
+          <div class="small">Impact: ${escapeHtml(p.impactText)}</div>
+        </div>
+        <div class="row">
+          <button class="primary" onclick="voteProposal(${idx}, true)">Vote YES</button>
+          <button onclick="voteProposal(${idx}, false)">Vote NO</button>
+        </div>
+      </div>
+    </div>
+  `).join("") + `<div class="small muted">Vote all items to end the meeting.</div>`;
+}
+
+function renderLog(){
+  const panel = document.getElementById("logPanel");
+  if(!panel) return;
+
+  const items = state.logs.slice().sort((a,b)=> (b.createdAt||0) - (a.createdAt||0)).slice(0,20);
+  if(!items.length){
+    panel.innerHTML = `<div class="muted">No activity yet.</div>`;
+    return;
+  }
+
+  panel.innerHTML = `
+    <table>
+      <thead><tr><th>Date</th><th>Bus</th><th>Note</th><th class="right">Miles</th></tr></thead>
+      <tbody>
+        ${items.map(l=>{
+          const busName = l.busId ? (byId(state.buses, l.busId)?.name || "—") : "—";
+          return `
+            <tr>
+              <td class="mono nowrap">${escapeHtml(l.date || "")}</td>
+              <td>${escapeHtml(busName)}</td>
+              <td>${escapeHtml(l.note || "")}</td>
+              <td class="right mono nowrap">${Number(l.miles||0) ? fmtMiles(l.miles) : ""}</td>
+            </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderSchoolYearSettings(){
+  document.getElementById("syMonth").value = String(state.schoolYear.startMonth || 8);
+  document.getElementById("syDay").value = String(state.schoolYear.startDay || 1);
+}
+
+function renderAll(){
+  renderTop();
+
+  const busOptions =
+    `<option value="">— Select bus —</option>` +
+    state.buses.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(b=>{
+      const down = b.status === "down" ? " 🚧" : "";
+      return `<option value="${b.id}">${escapeHtml(b.name)}${down}</option>`;
+    }).join("");
+
+  const driverOptions =
+    `<option value="">— Select driver —</option>` +
+    state.drivers
+      .filter(d => !d.isRetired)
+      .slice()
+      .sort((a,b)=>a.name.localeCompare(b.name))
+      .map(d=>{
+        const yrs = driverExperienceYears(d);
+        const t = d.trait?.name ? ` • ${d.trait.name}` : "";
+        const statusTag = d.status !== "available" ? ` (${d.status})` : "";
+        return `<option value="${d.id}">${escapeHtml(d.name)} (${yrs}y${escapeHtml(t)})${escapeHtml(statusTag)}</option>`;
+      }).join("");
+
+  setSelect("routeBus", busOptions);
+  setSelect("routeDriver", driverOptions);
+  setSelect("checkBus", busOptions);
+
+  const routeType = document.getElementById("routeType");
+  if(routeType){
+    routeType.innerHTML = adHocRoutes().map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
+    routeType.value = "field";
+  }
+
+  renderCustomRoutes();
+  renderFleet();
+  renderGarage();
+  renderBusLot();
+  renderDrivers();
+  renderHiringPanel();
+  renderMentorDropdowns();
+  renderRouteAssignments();
+  renderDispatch();
+  renderBoard();
+  renderLog();
+  renderSchoolYearSettings();
+
+  maybeAutoStartNewSchoolYear();
+}
+
+renderAll();
+</script>
+</body>
+</html>
