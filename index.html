@@ -1231,41 +1231,33 @@ function pickSubBus(excludeBusId){
 /* =========================
    RUN ROUTES
 ========================= */
+
 function runScheduledRoute(routeId){
   const route=dailyRoutes().find(r=>r.id===routeId);
   if(!route) return;
 
-  const resolved = resolveDriverForRouteToday(routeId);
+  // Coverage override for today
+  const resolved = (typeof resolveDriverForRouteToday==="function")
+    ? resolveDriverForRouteToday(routeId)
+    : { cancelled:false, driverId:getRouteDriverId(routeId), overtime:false };
+
   if(resolved.cancelled){
     addComplaint("Cancelled", `${route.name} was cancelled today.`);
     save(); renderAll();
     return alert(`🚫 Route cancelled: ${route.name}`);
   }
+
   const driverId = resolved.driverId;
-  const overtime = resolved.overtime;
+  const overtime = !!resolved.overtime;
 
-  // Bus for this route: use route assignment first; if none, use driver's home bus (if set)
-  let assignedBusId = state.routeAssignments[routeId] || "";
-  if(!assignedBusId && driverId){
-    assignedBusId = getDriverHomeBusId(driverId);
-  }
-  if(!assignedBusId){
-    addComplaint("No-Show", `${route.name} had no bus assigned (route or driver).`);
-    return alert(`No bus assigned for ${route.name}.\nAssign a route bus OR give ${driver.name} a home bus.`);
-  }
-
-  const busAssigned=byId(state.buses,assignedBusId);
-  if(!busAssigned){
-    addComplaint("No-Show", `${route.name} assigned bus missing.`);
-    return alert(`Assigned bus missing for ${route.name}. Re-assign it.`);
-  }
-
-  const driverId=getRouteDriverId(routeId);
   if(!driverId){
     addComplaint("No-Show", `${route.name} had no driver assigned.`);
     save(); renderAll();
-    return alert(`🚫 NO DRIVER ASSIGNED\n${route.name}\nComplaint added.`);
+    return alert(`🚫 NO DRIVER ASSIGNED
+${route.name}
+Complaint added.`);
   }
+
   const driver=byId(state.drivers,driverId);
   if(!driver || driver.isRetired){
     addComplaint("No-Show", `${route.name} driver missing/retired.`);
@@ -1278,25 +1270,35 @@ function runScheduledRoute(routeId){
     return alert(`Driver unavailable: ${driver.name} (${driver.status})`);
   }
 
+  // Bus for this route: route assignment first; if none, driver's home bus
+  let assignedBusId = state.routeAssignments[routeId] || "";
+  if(!assignedBusId){
+    assignedBusId = getDriverHomeBusId(driverId);
+  }
+  if(!assignedBusId){
+    addComplaint("No-Show", `${route.name} had no bus assigned (route or driver).`);
+    save(); renderAll();
+    return alert(`No bus assigned for ${route.name}.
+Assign a route bus OR give ${driver.name} a home bus.`);
+  }
+
+  const busAssigned=byId(state.buses,assignedBusId);
+  if(!busAssigned){
+    addComplaint("No-Show", `${route.name} assigned bus missing.`);
+    save(); renderAll();
+    return alert(`Assigned bus missing for ${route.name}. Re-assign it.`);
+  }
+
   const shift=getShift();
   const rules=SHIFT_RULES[shift] || SHIFT_RULES.morning;
 
+  // Time conflict check (overtime can bypass)
   const win = routeWindow(route, shift);
-  if(win){
-    if(driverBusy(driver.id, shift, win)){
-      addComplaint("No-Show", `${driver.name} double-booked during this time window for ${route.name}.`);
-      save(); renderAll();
-      return alert(`⛔ Driver already assigned to another route during ${route.time?.[shift]?.start || ""}-${route.time?.[shift]?.end || ""}.`);
-    }
-  }
-
-  const win = routeWindow(route, shift);
-  if(win){
-    if(driverBusy(driver.id, shift, win)){
-      addComplaint("No-Show", `${driver.name} double-booked during this time window for ${route.name}.`);
-      save(); renderAll();
-      return alert(`⛔ Driver already assigned to another route during ${route.time?.[shift]?.start || ""}-${route.time?.[shift]?.end || ""}.\nChoose a different driver (Route Assignments) or change times.`);
-    }
+  if(win && driverBusy(driver.id, shift, win) && !overtime){
+    addComplaint("No-Show", `${driver.name} double-booked during this time window for ${route.name}.`);
+    save(); renderAll();
+    return alert(`⛔ Driver already assigned to another route during ${route.time?.[shift]?.start || ""}-${route.time?.[shift]?.end || ""}.
+Choose a different driver or use Overtime coverage.`);
   }
 
   let busToUse=busAssigned;
@@ -1316,7 +1318,8 @@ function runScheduledRoute(routeId){
   const t=dispatchKey();
   const skippedPreTrip = (busToUse.lastPreTripDate !== t);
   if(skippedPreTrip){
-    if(!confirm(`⚠️ Pre-Trip not completed for ${busToUse.name} today.\nRun anyway? (Higher risk)`)) return;
+    if(!confirm(`⚠️ Pre-Trip not completed for ${busToUse.name} today.
+Run anyway? (Higher risk)`)) return;
   }
 
   applyDeadheadIfNeeded(busToUse, shift);
@@ -1337,7 +1340,8 @@ function runScheduledRoute(routeId){
 
   maybeAutoBreak(busToUse, route, driver, skippedPreTrip);
   maybeComplaint(busToUse, driver, usedSub, skippedPreTrip);
-  maybeIncident(busToUse, route, driver, shift, overtime || false);
+  if(typeof maybeIncident==="function") maybeIncident(busToUse, route, driver, shift, overtime);
+
   recomputeAdvocacy();
 
   save(); renderAll();
@@ -1359,6 +1363,15 @@ function runAdhocRoute(){
 
   const shift=getShift();
   const rules=SHIFT_RULES[shift] || SHIFT_RULES.morning;
+
+  const win = routeWindow(route, shift);
+  if(win){
+    if(driverBusy(driver.id, shift, win)){
+      addComplaint("No-Show", `${driver.name} double-booked during this time window for ${route.name}.`);
+      save(); renderAll();
+      return alert(`⛔ Driver already assigned to another route during ${route.time?.[shift]?.start || ""}-${route.time?.[shift]?.end || ""}.`);
+    }
+  }
 
   const t=dispatchKey();
   const skippedPreTrip = (bus.lastPreTripDate !== t);
@@ -1384,6 +1397,7 @@ function runAdhocRoute(){
 
   maybeAutoBreak(bus, route, driver, skippedPreTrip);
   maybeComplaint(bus, driver, false, skippedPreTrip);
+  if(typeof maybeIncident==="function") maybeIncident(bus, route, driver, shift, false);
   recomputeAdvocacy();
 
   save(); renderAll();
