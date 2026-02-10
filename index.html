@@ -453,6 +453,58 @@ function timeToMin(s){
   if(!(hh>=0&&hh<=23&&mm>=0&&mm<=59)) return null;
   return hh*60+mm;
 }
+
+function routeById(id){ return allRoutes().find(r=>r.id===id); }
+
+function editRoute(routeId){
+  const r = routeById(routeId);
+  if(!r) return;
+  const name = prompt("Route name:", r.name||"") ?? r.name;
+  const milesStr = prompt("Miles:", String(r.miles??0)) ?? String(r.miles??0);
+  const payStr = prompt("Pay (+$):", String(r.pay??0)) ?? String(r.pay??0);
+  const wearStr = prompt("Wear multiplier (e.g., 1.2):", String(r.wear??1.0)) ?? String(r.wear??1.0);
+  const riskStr = prompt("Risk multiplier (e.g., 1.1):", String(r.risk??1.0)) ?? String(r.risk??1.0);
+  const school = prompt("School tag (elementary/middle/high/other):", (r.school||"other")) ?? (r.school||"other");
+  const amStart = prompt("AM start (HH:MM 24h):", r.time?.morning?.start||"07:00") ?? (r.time?.morning?.start||"07:00");
+  const amEnd   = prompt("AM end (HH:MM 24h):", r.time?.morning?.end||"08:00") ?? (r.time?.morning?.end||"08:00");
+  const pmStart = prompt("PM start (HH:MM 24h):", r.time?.afternoon?.start||"14:30") ?? (r.time?.afternoon?.start||"14:30");
+  const pmEnd   = prompt("PM end (HH:MM 24h):", r.time?.afternoon?.end||"15:30") ?? (r.time?.afternoon?.end||"15:30");
+
+  if(timeToMin(amStart)==null || timeToMin(amEnd)==null || timeToMin(pmStart)==null || timeToMin(pmEnd)==null){
+    alert("Invalid time format. Use HH:MM (24-hour).");
+    return;
+  }
+
+  r.name = name;
+  r.miles = Math.max(0, Math.round(Number(milesStr)||0));
+  r.pay = Math.max(0, Math.round(Number(payStr)||0));
+  r.wear = clamp(Number(wearStr)||1.0, 0.5, 3.0);
+  r.risk = clamp(Number(riskStr)||1.0, 0.5, 3.0);
+  r.school = (String(school||"other").toLowerCase());
+  r.time = { morning:{start:amStart,end:amEnd}, afternoon:{start:pmStart,end:pmEnd} };
+
+  logEvent("", `✏️ Edited route: ${r.name}`);
+  save(); renderAll();
+}
+
+function deleteRoute(routeId){
+  const r = routeById(routeId);
+  if(!r) return;
+  if(!confirm(`Delete route "${r.name}"? This cannot be undone.`)) return;
+
+  // remove assignments related to this route
+  delete state.routeAssignments[routeId];
+  delete state.routeDriverAssignments[routeId];
+  const k = dispatchKey();
+  if(state.dayCoverage && state.dayCoverage[k]) delete state.dayCoverage[k][routeId];
+
+  // remove from routes list
+  state.routes = (state.routes||[]).filter(x=>x.id!==routeId);
+
+  logEvent("", `🗑️ Deleted route: ${r.name}`);
+  save(); renderAll();
+}
+
 function routeWindow(route, shift){
   const t = route?.time?.[shift];
   const start = timeToMin(t?.start);
@@ -796,6 +848,7 @@ const state = load() || {
   drivers: [],
   logs: [],
   customRoutes: [],
+  routes: [],
   routeAssignments: {},
   routeDriverAssignments: {},
   driverBusAssignments: {},
@@ -811,7 +864,7 @@ const state = load() || {
   busDayFlags: {}
 };
 
-function allRoutes(){ return [...BASE_ROUTES, ...(state.customRoutes||[])]; }
+function allRoutes(){ return (state.routes && state.routes.length)? state.routes : [...BASE_ROUTES, ...(state.customRoutes||[])]; }
 function dailyRoutes(){ return allRoutes().filter(r=>!r.isAdhoc); }
 function adhocRoutes(){ return allRoutes().filter(r=>r.isAdhoc); }
 
@@ -831,6 +884,16 @@ function normalize(){
   if(!Array.isArray(state.drivers)) state.drivers=[];
   if(!Array.isArray(state.logs)) state.logs=[];
   if(!Array.isArray(state.customRoutes)) state.customRoutes=[];
+  if(!Array.isArray(state.routes)) state.routes=[];
+  // Migration: first run after update -> combine BASE + custom into editable routes
+  if(state.routes.length===0){ state.routes = [...BASE_ROUTES, ...(state.customRoutes||[])]; }
+  // Ensure route fields
+  state.routes.forEach(r=>{
+    if(!('school' in r)) r.school='other';
+    if(!r.time) r.time={ morning:{start:'07:00',end:'08:00'}, afternoon:{start:'14:30',end:'15:30'} };
+    if(!r.time.morning) r.time.morning={start:'07:00',end:'08:00'};
+    if(!r.time.afternoon) r.time.afternoon={start:'14:30',end:'15:30'};
+  });
   if(!state.routeAssignments) state.routeAssignments={};
   if(!state.routeDriverAssignments) state.routeDriverAssignments={};
   if(!state.driverBusAssignments) state.driverBusAssignments={};
@@ -1387,6 +1450,7 @@ function runAdhocRoute(){
    CUSTOM ROUTES
 ========================= */
 function addCustomRoute(){
+  if(!Array.isArray(state.routes)) state.routes=[];
   const name=document.getElementById("newRouteName").value.trim();
   const miles=Number(document.getElementById("newRouteMiles").value);
   const pay=Number(document.getElementById("newRoutePay").value);
@@ -1405,7 +1469,9 @@ function addCustomRoute(){
   if(!(miles>0) || !(wear>0) || !(risk>0)) return alert("Miles/Wear/Risk must be > 0.");
 
   const id="c_"+uid().slice(0,8);
-  state.customRoutes.push({ id, name, miles:Math.round(miles), pay:Math.round(pay), wear:+wear.toFixed(2), risk:+risk.toFixed(2), isAdhoc:(type==="adhoc"), school, time:{ morning:{start:amStart,end:amEnd}, afternoon:{start:pmStart,end:pmEnd} } });
+  const obj = { id, name, miles:Math.round(miles), pay:Math.round(pay), wear:+wear.toFixed(2), risk:+risk.toFixed(2), isAdhoc:(type==="adhoc"), school, time:{ morning:{start:amStart,end:amEnd}, afternoon:{start:pmStart,end:pmEnd} } };
+  state.routes.push(obj);
+  state.customRoutes.push(obj); // backward compat
   if(type==="daily") state.routeAssignments[id]=state.routeAssignments[id]||"";
   document.getElementById("newRouteName").value="";
   document.getElementById("newRouteAmStart").value="07:00";
@@ -1821,29 +1887,45 @@ function renderDispatchPanel(){
 }
 
 function renderCustomRoutes(){
-  const panel=document.getElementById("customRoutesPanel");
-  const list=state.customRoutes||[];
-  if(!list.length){ panel.innerHTML=`<div class="muted">No custom routes yet.</div>`; return; }
-  panel.innerHTML=`
+  const el=document.getElementById("customRoutesPanel");
+  const routes = allRoutes();
+  if(!routes.length){ el.innerHTML = `<div class="muted">No routes yet. Create one above.</div>`; return; }
+
+  const rows = routes
+    .slice()
+    .sort((a,b)=> (a.isAdhoc===b.isAdhoc)? (a.name||"").localeCompare(b.name||"") : (a.isAdhoc?1:-1))
+    .map(r=>{
+      return `
+        <tr>
+          <td>
+            <strong>${escapeHtml(r.name||"")}</strong>
+            <div class="small muted">
+              ${(r.isAdhoc? "AD-HOC":"DAILY")} • ${(r.school||"other").toUpperCase()} • 
+              AM ${r.time?.morning?.start||"--"}-${r.time?.morning?.end||"--"} • 
+              PM ${r.time?.afternoon?.start||"--"}-${r.time?.afternoon?.end||"--"} • 
+              ${r.miles} mi • +$${r.pay} • Wear x${r.wear} • Risk x${r.risk}
+            </div>
+          </td>
+          <td class="right">
+            <button onclick="editRoute('${r.id}')">Edit</button>
+            <button onclick="deleteRoute('${r.id}')">Delete</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+  el.innerHTML = `
     <table>
-      <thead><tr><th>Custom Route</th><th>Type</th><th class="right">Action</th></tr></thead>
-      <tbody>
-        ${list.map(r=>`
-          <tr>
-            <td>
-              <strong>${r.name}</strong>
-              <div class="small muted">${(r.school||"other").toUpperCase()} • AM ${r.time?.morning?.start||"--"}-${r.time?.morning?.end||"--"} • PM ${r.time?.afternoon?.start||"--"}-${r.time?.afternoon?.end||"--"} • ${r.miles} mi • +$${r.pay} • Wear x${r.wear} • Risk x${r.risk}</div>
-            </td>
-            <td>${r.isAdhoc ? "Ad-hoc" : "Daily"}</td>
-            <td class="right nowrap"><button class="danger" onclick="deleteCustomRoute('${r.id}')">Delete</button></td>
-          </tr>
-        `).join("")}
-      </tbody>
+      <thead><tr><th>Routes (All editable)</th><th class="right">Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
     </table>
+    <div class="small muted" style="margin-top:8px;">
+      Tip: Edit lets you change name, miles, pay, wear, risk, school tag, and AM/PM times.
+    </div>
   `;
 }
 
-function renderFleet(){
+function function renderFleet(){
   const panel=document.getElementById("fleetPanel");
   if(!state.buses.length){ panel.innerHTML=`<div class="muted">No buses yet. Add one or buy from the lot.</div>`; return; }
   panel.innerHTML=`
