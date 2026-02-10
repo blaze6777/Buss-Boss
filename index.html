@@ -34,7 +34,16 @@
     .right{text-align:right}.nowrap{white-space:nowrap}
     .tag{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);background:rgba(11,20,48,.5);margin-right:6px}
     .cols{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
-  </style>
+  
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
+  .modal{background:#10151d;border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:900px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6);padding:16px}
+  .modal h3{margin:0 0 10px 0}
+  .modal .grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px}
+  .modal .card{border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;background:rgba(255,255,255,.04)}
+  .modal .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .modal small{opacity:.8}
+  .danger{background:rgba(255,60,60,.15);border-color:rgba(255,60,60,.35)}
+</style>
 </head>
 <body>
 <header>
@@ -80,6 +89,7 @@
       <div class="row" style="margin-top:10px;">
         <button class="primary" onclick="startSchoolDay()">🌅 Start School Day</button>
         <span class="pill">📣 PR: <span id="prMeter" class="mono"></span>/100</span>
+        <span class="pill">🚨 Incidents: <span id="incToday" class="mono"></span></span>
         <button onclick="viewComplaints()">📨 Complaints</button>
         <button onclick="runSurpriseAudit()">🕵️ Surprise Audit</button>
       </div>
@@ -129,6 +139,32 @@
             <option value="daily">Daily (assigned bus)</option>
             <option value="adhoc">Ad-hoc (field trip style)</option>
           </select>
+        </div>
+
+        <div style="min-width:170px">
+          <label>School</label>
+          <select id="newRouteSchool">
+            <option value="elementary">Elementary</option>
+            <option value="middle">Middle</option>
+            <option value="high">High</option>
+            <option value="other" selected>Other</option>
+          </select>
+        </div>
+        <div style="min-width:140px">
+          <label>AM Start</label>
+          <input id="newRouteAmStart" placeholder="07:00" value="07:00"/>
+        </div>
+        <div style="min-width:140px">
+          <label>AM End</label>
+          <input id="newRouteAmEnd" placeholder="08:00" value="08:00"/>
+        </div>
+        <div style="min-width:140px">
+          <label>PM Start</label>
+          <input id="newRoutePmStart" placeholder="14:30" value="14:30"/>
+        </div>
+        <div style="min-width:140px">
+          <label>PM End</label>
+          <input id="newRoutePmEnd" placeholder="15:30" value="15:30"/>
         </div>
         <button class="primary" onclick="addCustomRoute()">Add Route</button>
       </div>
@@ -327,14 +363,41 @@ function syncAdhocBusToDriver(){
    ROUTES / TRAITS
 ========================= */
 const BASE_ROUTES = [
-  { id:"neighborhood", name:"Neighborhood Route", miles:18, pay:120, wear:1.0, risk:1.0, isAdhoc:false },
-  { id:"rural",        name:"Rural Route",        miles:42, pay:220, wear:1.4, risk:1.3, isAdhoc:false },
-  { id:"special",      name:"Special Ed Route",   miles:22, pay:180, wear:1.6, risk:1.4, isAdhoc:false },
-  { id:"midday_k",     name:"Midday Kindergarten Shuttle", miles:10, pay:80,  wear:0.9, risk:0.9, isAdhoc:false },
-  { id:"vo_tech",      name:"Vo-Tech / Career Center",     miles:34, pay:210, wear:1.3, risk:1.2, isAdhoc:false },
-  { id:"late_run",     name:"Late Bus (After-School)",     miles:26, pay:170, wear:1.2, risk:1.2, isAdhoc:false },
-  { id:"field",  name:"Field Trip",       miles:85, pay:420, wear:1.8, risk:1.6, isAdhoc:true },
-  { id:"sports", name:"Sports Away Game", miles:60, pay:320, wear:1.6, risk:1.5, isAdhoc:true }
+  // Elementary
+  { id:"elem_am_1", name:"Elementary AM – North", miles:16, pay:125, wear:1.0, risk:1.0, isAdhoc:false, school:"elementary",
+    time:{ morning:{start:"07:05", end:"08:05"}, afternoon:{start:"14:40", end:"15:40"} } },
+  { id:"elem_am_2", name:"Elementary AM – South", miles:18, pay:130, wear:1.0, risk:1.0, isAdhoc:false, school:"elementary",
+    time:{ morning:{start:"07:10", end:"08:10"}, afternoon:{start:"14:45", end:"15:45"} } },
+
+  // High School (earlier)
+  { id:"hs_am_1", name:"High School AM – East", miles:20, pay:140, wear:1.05, risk:1.05, isAdhoc:false, school:"high",
+    time:{ morning:{start:"06:30", end:"07:35"}, afternoon:{start:"15:05", end:"16:05"} } },
+  { id:"hs_am_2", name:"High School AM – West", miles:22, pay:145, wear:1.05, risk:1.05, isAdhoc:false, school:"high",
+    time:{ morning:{start:"06:35", end:"07:40"}, afternoon:{start:"15:10", end:"16:10"} } },
+
+  // Middle / Mixed
+  { id:"middle_1", name:"Middle School – Central", miles:19, pay:135, wear:1.05, risk:1.05, isAdhoc:false, school:"middle",
+    time:{ morning:{start:"07:35", end:"08:35"}, afternoon:{start:"15:30", end:"16:30"} } },
+
+  // Original style routes (tagged as other)
+  { id:"neighborhood", name:"Neighborhood Route", miles:18, pay:120, wear:1.0, risk:1.0, isAdhoc:false, school:"other",
+    time:{ morning:{start:"07:00", end:"08:00"}, afternoon:{start:"14:30", end:"15:30"} } },
+  { id:"rural",        name:"Rural Route",        miles:42, pay:220, wear:1.4, risk:1.3, isAdhoc:false, school:"other",
+    time:{ morning:{start:"06:50", end:"08:20"}, afternoon:{start:"14:20", end:"15:50"} } },
+  { id:"special",      name:"Special Ed Route",   miles:22, pay:180, wear:1.6, risk:1.4, isAdhoc:false, school:"other",
+    time:{ morning:{start:"07:15", end:"08:25"}, afternoon:{start:"14:35", end:"15:55"} } },
+  { id:"midday_k",     name:"Midday Kindergarten Shuttle", miles:10, pay:80,  wear:0.9, risk:0.9, isAdhoc:false, school:"elementary",
+    time:{ morning:{start:"10:15", end:"11:00"}, afternoon:{start:"12:30", end:"13:15"} } },
+  { id:"vo_tech",      name:"Vo-Tech / Career Center",     miles:34, pay:210, wear:1.3, risk:1.2, isAdhoc:false, school:"high",
+    time:{ morning:{start:"07:25", end:"08:45"}, afternoon:{start:"14:55", end:"16:05"} } },
+  { id:"late_run",     name:"Late Bus (After-School)",     miles:26, pay:170, wear:1.2, risk:1.2, isAdhoc:false, school:"other",
+    time:{ morning:{start:"16:20", end:"17:20"}, afternoon:{start:"16:20", end:"17:20"} } },
+
+  // Ad-hoc
+  { id:"field",  name:"Field Trip",       miles:85, pay:420, wear:1.8, risk:1.6, isAdhoc:true, school:"other",
+    time:{ morning:{start:"09:00", end:"13:00"}, afternoon:{start:"09:00", end:"13:00"} } },
+  { id:"sports", name:"Sports Away Game", miles:60, pay:320, wear:1.6, risk:1.5, isAdhoc:true, school:"high",
+    time:{ morning:{start:"16:30", end:"20:30"}, afternoon:{start:"16:30", end:"20:30"} } }
 ];
 
 const SHIFT_RULES = {
@@ -352,6 +415,396 @@ const TRAITS = [
 ];
 function traitById(id){ return TRAITS.find(t=>t.id===id) || TRAITS[3]; }
 
+
+const CERTS = [
+  { id:"snow", name:"Snow Certified", cost:220, moraleBoost:2, breakMult:0.92 },
+  { id:"sped", name:"Special Ed Certified", cost:260, moraleBoost:3, breakMult:0.95 },
+  { id:"mentor", name:"Mentor Driver", cost:180, moraleBoost:2, breakMult:0.97 }
+];
+function certById(id){ return CERTS.find(c=>c.id===id); }
+
+function addMorale(d, delta){ d.morale = clamp(Number(d.morale||70) + delta, 0, 100); }
+
+function driverBreakMult(driver){
+  const t = traitById(driver.traitId);
+  let mult = t.breakMult;
+  (driver.certs||[]).forEach(cid=>{
+    const c = certById(cid);
+    if(c && c.breakMult) mult *= c.breakMult;
+  });
+  if(Number(driver.morale||70) < 45) mult *= 1.07;
+  if(Number(driver.morale||70) > 85) mult *= 0.97;
+  return mult;
+}
+
+function trainDriver(driverId, certId){
+  const d = byId(state.drivers, driverId); if(!d || d.isRetired) return;
+  const c = certById(certId); if(!c) return;
+  if((d.certs||[]).includes(certId)) return alert("Driver already has this certification.");
+  if(state.wallet < c.cost) return alert("Not enough budget.");
+  state.wallet -= c.cost;
+  d.certs = [...(d.certs||[]), certId];
+  addMorale(d, c.moraleBoost);
+  logEvent("", `🎓 Training: ${d.name} earned ${c.name} (-$${c.cost})`);
+  save(); renderAll();
+}
+function praiseDriver(driverId){
+  const d = byId(state.drivers, driverId); if(!d || d.isRetired) return;
+  d.kudos = Number(d.kudos||0)+1;
+  addMorale(d, 4);
+  state.ops.prScore = clamp(Number(state.ops.prScore||70)+1, 0, 100);
+  logEvent("", `👏 Commendation: ${d.name} received praise (+morale, +PR)`);
+  save(); renderAll();
+}
+function writeUpDriver(driverId){
+  const d = byId(state.drivers, driverId); if(!d || d.isRetired) return;
+  d.strikes = Number(d.strikes||0)+1;
+  addMorale(d, -6);
+  logEvent("", `📝 Write-up: ${d.name} received a write-up (-morale)`);
+  save(); renderAll();
+}
+
+// ====== Time / Scheduling (route times + driver availability) ======
+function timeToMin(s){
+  // expects "HH:MM"
+  const m = /^\s*(\d{1,2}):(\d{2})\s*$/.exec(String(s||""));
+  if(!m) return null;
+  const hh = Number(m[1]), mm = Number(m[2]);
+  if(!(hh>=0&&hh<=23&&mm>=0&&mm<=59)) return null;
+  return hh*60+mm;
+}
+function routeWindow(route, shift){
+  const t = route?.time?.[shift];
+  const start = timeToMin(t?.start);
+  const end = timeToMin(t?.end);
+  if(start==null || end==null) return null;
+  return { start, end };
+}
+function ensureDaySchedule(){
+  const k = dispatchKey();
+  if(!state.daySchedule[k]) state.daySchedule[k]=[];
+  return state.daySchedule[k];
+}
+function overlaps(aStart,aEnd,bStart,bEnd){
+  return Math.max(aStart,bStart) < Math.min(aEnd,bEnd);
+}
+function driverBusy(driverId, shift, win){
+  const sched = ensureDaySchedule();
+  return sched.some(s => s.driverId===driverId && s.shift===shift && overlaps(win.start, win.end, s.start, s.end));
+}
+function addToSchedule(driverId, routeId, shift, win){
+  const sched = ensureDaySchedule();
+  sched.push({ driverId, routeId, shift, start:win.start, end:win.end });
+}
+
+// ====== Parent advocacy + board + budget (Phase 3) ======
+function currentMonthKey(){ return state.gameDate.slice(0,7); } // YYYY-MM
+
+function recomputeAdvocacy(){
+  const key = dispatchKey();
+  if(state.district.advocacy.lastUpdatedDate === key) return;
+  state.district.advocacy.lastUpdatedDate = key;
+
+  const dayComplaints = (state.ops.complaints[key]||[]).length;
+  const ages = state.buses.map(b=>busAge(b));
+  const avgAge = ages.length ? (ages.reduce((a,b)=>a+b,0)/ages.length) : 0;
+
+  let level = Number(state.district.advocacy.level||0);
+  level += dayComplaints*0.6;
+  if(avgAge>14) level += 1.5;
+  if(avgAge>18) level += 2.5;
+  if(Number(state.ops.prScore||70) < 55) level += 2;
+
+  level = clamp(level, 0, 100);
+  state.district.advocacy.level = level;
+
+  if(!state.district.advocacy.demand && level >= 35){
+    const demands = [
+      { id:"newbus", title:"Replace oldest bus", desc:"Parents want the oldest bus replaced immediately.", cost: 18000 },
+      { id:"ac", title:"AC upgrade program", desc:"Parents want comfort upgrades for hot days.", cost: 2500 },
+      { id:"shorten", title:"Shorten longest route", desc:"Parents want route mileage reduced (costs $$).", cost: 900 }
+    ];
+    const d = pick(demands);
+    state.district.advocacy.demand = d;
+    logEvent("", `📣 Parent advocacy demand: ${d.title}`);
+  }
+}
+function respondAdvocacy(accept){
+  const d = state.district.advocacy.demand;
+  if(!d) return;
+  if(accept){
+    if(state.wallet < d.cost) return alert("Not enough budget to approve this demand.");
+    state.wallet -= d.cost;
+    state.ops.prScore = clamp(Number(state.ops.prScore||70)+4, 0, 100);
+    state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0)-12, 0, 100);
+    logEvent("", `✅ Approved advocacy demand: ${d.title} (-$${d.cost.toLocaleString()})`);
+  } else {
+    state.ops.prScore = clamp(Number(state.ops.prScore||70)-5, 0, 100);
+    state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0)+8, 0, 100);
+    logEvent("", `❌ Declined advocacy demand: ${d.title} (-PR)`);
+  }
+  state.district.advocacy.demand = null;
+  save(); renderAll();
+}
+function showAdvocacy(){
+  const d = state.district.advocacy.demand;
+  if(!d) return alert(`No active parent demand right now.\nAdvocacy level: ${Math.round(state.district.advocacy.level||0)}/100`);
+  const ok = confirm(`📣 Parent Demand: ${d.title}\n\n${d.desc}\n\nCost: $${d.cost.toLocaleString()}\n\nOK = Approve\nCancel = Decline`);
+  respondAdvocacy(ok);
+}
+function holdBoardMeeting(){
+  const m = currentMonthKey();
+  if(state.district.board.lastMeetingMonth === m) return alert("Board meeting already held this month.");
+  const pr = Number(state.ops.prScore||70);
+  const audits = Object.values(state.ops.audits||{}).filter(a=>a && a.score!=null).slice(-10);
+  const avgAudit = audits.length ? Math.round(audits.reduce((s,a)=>s+Number(a.score||0),0)/audits.length) : 85;
+  const last30 = Object.entries(state.ops.complaints||{}).slice(-30).reduce((s,[k,v])=>s+(v||[]).length,0);
+  const avgAge = state.buses.length ? Math.round(state.buses.map(b=>busAge(b)).reduce((a,b)=>a+b,0)/state.buses.length) : 0;
+
+  let delta = 0;
+  let verdict = "Stable";
+  if(pr>=80 && avgAudit>=85 && last30<=6){ delta = +0.10; verdict="Strong"; }
+  else if(pr<55 || avgAudit<70 || last30>=14){ delta = -0.12; verdict="Concern"; }
+  else if(pr<65 || avgAudit<80 || last30>=10){ delta = -0.05; verdict="Watch"; }
+
+  if(avgAge>=18) delta += 0.06;
+  if(avgAge>=20) delta += 0.08;
+
+  state.district.budget.modifier = clamp(Number(state.district.budget.modifier||1.0)+delta, 0.6, 1.6);
+  state.district.board.lastMeetingMonth = m;
+
+  const minutes = { month:m, pr, avgAudit, complaints:last30, avgFleetAge:avgAge, verdict, budgetMod:state.district.budget.modifier, createdAt:Date.now() };
+  state.district.board.minutes.unshift(minutes);
+  state.district.board.minutes = state.district.board.minutes.slice(0, 36);
+
+  logEvent("", `🏛️ Board meeting held (${m}) • Verdict: ${verdict} • Budget modifier now x${state.district.budget.modifier.toFixed(2)}`);
+  alert(`🏛️ Board Meeting (${m})\n\nPR: ${pr}/100\nAvg Audit: ${avgAudit}/100\nComplaints (last ~30 days): ${last30}\nAvg Fleet Age: ${avgAge}\n\nVerdict: ${verdict}\nBudget modifier: x${state.district.budget.modifier.toFixed(2)}`);
+  save(); renderAll();
+}
+
+function dayKey(){ return dispatchKey(); }
+
+function getCoverageForRoute(routeId){
+  const k = dayKey();
+  return (state.dayCoverage && state.dayCoverage[k] && state.dayCoverage[k][routeId]) ? state.dayCoverage[k][routeId] : null;
+}
+function setCoverageForRoute(routeId, obj){
+  const k = dayKey();
+  if(!state.dayCoverage) state.dayCoverage={};
+  if(!state.dayCoverage[k]) state.dayCoverage[k]={};
+  state.dayCoverage[k][routeId]=obj;
+}
+
+function openCoverageModal(items){
+  const bd=document.getElementById("coverageBackdrop");
+  const list=document.getElementById("coverageList");
+  const k=dayKey();
+  document.getElementById("covDay").textContent = k;
+  document.getElementById("covShift").textContent = getShift().toUpperCase();
+  list.innerHTML = items.map(it=>{
+    const r = it.route;
+    const assigned = it.assignedDriver;
+    const reason = it.reason;
+    const available = state.drivers.filter(d=>!d.isRetired && !state.ops.absentDrivers.includes(d.id) && (d.status||"available")==="available");
+    const subOpts = available.map(d=>`<option value="${d.id}">${d.name} (${driverExperienceYears(d)}y • ${Math.round(d.morale||0)}/100)</option>`).join("");
+    const anyOpts = state.drivers.filter(d=>!d.isRetired && !state.ops.absentDrivers.includes(d.id)).map(d=>`<option value="${d.id}">${d.name} (${driverExperienceYears(d)}y • ${Math.round(d.morale||0)}/100)</option>`).join("");
+    return `
+      <div class="card">
+        <div><strong>${r.name}</strong></div>
+        <div class="small muted">${(r.school||"other").toUpperCase()} • AM ${r.time?.morning?.start||"--"}-${r.time?.morning?.end||"--"} • PM ${r.time?.afternoon?.start||"--"}-${r.time?.afternoon?.end||"--"}</div>
+        <div class="small muted">Assigned: ${assigned?assigned.name:"(none)"} • Issue: ${reason}</div>
+        <div class="row" style="margin-top:8px">
+          <label class="pill"><input type="radio" name="cov_${r.id}" value="sub" checked> Sub</label>
+          <select id="covSub_${r.id}"><option value="">Pick sub…</option>${subOpts}</select>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="pill"><input type="radio" name="cov_${r.id}" value="ot"> Overtime</label>
+          <select id="covOt_${r.id}"><option value="">Pick driver…</option>${anyOpts}</select>
+          <span class="small muted">Higher incident risk</span>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label class="pill"><input type="radio" name="cov_${r.id}" value="cancel"> Cancel</label>
+          <span class="small muted">PR hit, advocacy increases</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+  bd.style.display="flex";
+}
+
+function closeCoverageModal(render=true){
+  const bd=document.getElementById("coverageBackdrop");
+  bd.style.display="none";
+  if(render) renderAll();
+}
+
+function computeCoverageNeeds(){
+  const needs=[];
+  dailyRoutes().forEach(r=>{
+    const rid = r.id;
+    const cov = getCoverageForRoute(rid);
+    if(cov && cov.mode) return;
+    const assignedId = getRouteDriverId(rid);
+    if(!assignedId) return;
+    const d = byId(state.drivers, assignedId);
+    if(!d || d.isRetired) needs.push({route:r, assignedDriver:d, reason:"Assigned driver missing/retired"});
+    else if(state.ops.absentDrivers.includes(assignedId)) needs.push({route:r, assignedDriver:d, reason:"Driver called off"});
+    else if((d.status||"available")!=="available") needs.push({route:r, assignedDriver:d, reason:`Driver status: ${d.status}`});
+  });
+  return needs;
+}
+
+function applyCoverage(){
+  const items = computeCoverageNeeds();
+  if(!items.length){ closeCoverageModal(); return; }
+  for(const it of items){
+    const r=it.route;
+    const mode = document.querySelector(`input[name="cov_${r.id}"]:checked`)?.value || "sub";
+    if(mode==="cancel"){
+      setCoverageForRoute(r.id, { mode:"cancel" });
+      state.ops.prScore = clamp(Number(state.ops.prScore||70)-4, 0, 100);
+      state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0)+6, 0, 100);
+      addComplaint("Cancelled", `${r.name} was cancelled today (no coverage).`);
+      logEvent("", `🚫 Cancelled route: ${r.name} (-PR)`);
+      continue;
+    }
+    if(mode==="sub"){
+      const pickId = document.getElementById(`covSub_${r.id}`)?.value || "";
+      if(!pickId){ alert(`Pick a sub driver for ${r.name} (or choose cancel).`); return; }
+      setCoverageForRoute(r.id, { mode:"sub", driverId:pickId });
+      logEvent("", `🔁 Coverage: ${r.name} assigned sub driver ${byId(state.drivers,pickId)?.name||"?"}`);
+      continue;
+    }
+    if(mode==="ot"){
+      const pickId = document.getElementById(`covOt_${r.id}`)?.value || "";
+      if(!pickId){ alert(`Pick an overtime driver for ${r.name} (or choose cancel).`); return; }
+      setCoverageForRoute(r.id, { mode:"ot", driverId:pickId });
+      const d = byId(state.drivers, pickId);
+      if(d){ addMorale(d, -3); }
+      logEvent("", `⏱️ Overtime coverage: ${r.name} assigned ${d?d.name:"?"} (-morale, +risk)`);
+      continue;
+    }
+  }
+  save();
+  closeCoverageModal();
+}
+
+function resolveDriverForRouteToday(routeId){
+  const cov = getCoverageForRoute(routeId);
+  if(cov){
+    if(cov.mode==="cancel") return { cancelled:true, driverId:"", overtime:false };
+    if(cov.mode==="sub") return { cancelled:false, driverId:cov.driverId||"", overtime:false };
+    if(cov.mode==="ot") return { cancelled:false, driverId:cov.driverId||"", overtime:true };
+  }
+  return { cancelled:false, driverId:getRouteDriverId(routeId), overtime:false };
+}
+
+// ===== Incidents / Accidents =====
+function recordIncident(type, desc){
+  const k = dayKey();
+  if(!state.incidents) state.incidents={};
+  if(!state.incidents[k]) state.incidents[k]=[];
+  state.incidents[k].push({ type, desc, ts:Date.now() });
+}
+function maybeIncident(bus, route, driver, shift, overtime){
+  let p = 0.016;
+  const exp = driverExperienceYears(driver);
+  if(exp < 1) p *= 3.0;
+  else if(exp < 2) p *= 2.1;
+  else if(exp < 5) p *= 1.3;
+  if(overtime) p *= 1.8;
+  if(Number(driver.morale||70) < 45) p *= 1.35;
+  if((driver.certs||[]).includes("mentor")) p *= 0.92;
+  p *= (route.risk||1.0);
+  const cond = Number(bus.condition||100);
+  if(cond < 70) p *= 1.25;
+  if(cond < 50) p *= 1.45;
+
+  if(Math.random() > p) return;
+
+  let roll = Math.random();
+  if(exp < 2) roll = Math.min(1, roll*0.85);
+
+  if(roll < 0.75){
+    const loss = randInt(1,3);
+    bus.condition = clamp(cond - loss, 0, 100);
+    state.ops.prScore = clamp(Number(state.ops.prScore||70)-1, 0, 100);
+    addMorale(driver, -2);
+    const msg = `Minor incident: ${driver.name} (${exp}y) on ${route.name} — mirror/curb strike. (-PR)`;
+    logEvent(bus.id, `⚠️ ${msg}`);
+    recordIncident("minor", msg);
+    addComplaint("Incident", `Minor incident reported on ${route.name}.`);
+    return;
+  }
+  if(roll < 0.95){
+    bus.status = "down";
+    bus.maintenanceNote = "Accident inspection/repair";
+    state.ops.prScore = clamp(Number(state.ops.prScore||70)-3, 0, 100);
+    addMorale(driver, -8);
+    driver.strikes = Number(driver.strikes||0)+1;
+    const msg = `Preventable accident: ${driver.name} on ${route.name}. Bus OUT OF SERVICE. (Write-up auto)`;
+    logEvent(bus.id, `💥 ${msg}`);
+    recordIncident("preventable", msg);
+    addComplaint("Accident", `Preventable accident on ${route.name}. Bus down.`);
+    return;
+  }
+  bus.status = "down";
+  bus.maintenanceNote = "Serious incident – investigation";
+  state.ops.prScore = clamp(Number(state.ops.prScore||70)-7, 0, 100);
+  addMorale(driver, -12);
+  driver.strikes = Number(driver.strikes||0)+2;
+  const msg = `SERIOUS incident: ${driver.name} on ${route.name}. Media attention.`;
+  logEvent(bus.id, `🚨 ${msg}`);
+  recordIncident("serious", msg);
+  addComplaint("Serious Incident", `Serious incident on ${route.name}.`);
+}
+
+function budgetAllocation(){
+  return Math.round(Number(state.district.budget.baseAllocation||2500) * Number(state.district.budget.modifier||1.0));
+}
+
+// ====== Route bidding (Phase 2) ======
+function runRouteBidding(){
+  const routes = dailyRoutes();
+  const drivers = state.drivers.filter(d=>!d.isRetired);
+  if(!routes.length || !drivers.length) return alert("Need at least 1 daily route and 1 driver.");
+  if(!confirm("Run route bidding? This will reassign drivers to routes based on seniority (you can manually tweak after).")) return;
+
+  const sortedDrivers = [...drivers].sort((a,b)=>{
+    const ea = driverExperienceYears(a), eb = driverExperienceYears(b);
+    if(eb!==ea) return eb-ea;
+    return (Number(b.morale||70) - Number(a.morale||70));
+  });
+
+  const remainingRoutes = [...routes].sort((a,b)=>{
+    const sa = a.pay - (a.risk*25 + a.wear*20);
+    const sb = b.pay - (b.risk*25 + b.wear*20);
+    return sb-sa;
+  });
+
+  const assignments = {};
+  sortedDrivers.forEach(d=>{
+    if(!remainingRoutes.length) return;
+    let idx = 0;
+    const isSped = (d.certs||[]).includes("sped");
+    const isSnow = (d.certs||[]).includes("snow");
+    if(isSped){
+      const j = remainingRoutes.findIndex(r=>/special/i.test(r.name));
+      if(j>=0) idx=j;
+    } else if(isSnow){
+      const j = remainingRoutes.findIndex(r=>/rural/i.test(r.name));
+      if(j>=0) idx=j;
+    }
+    const route = remainingRoutes.splice(idx,1)[0];
+    assignments[route.id] = d.id;
+  });
+
+  routes.forEach(r=>{ state.routeDriverAssignments[r.id] = assignments[r.id] || ""; });
+  logEvent("", "🗳️ Route bidding completed (assigned drivers to routes).");
+  save(); renderAll();
+}
+
+
 /* =========================
    STATE
 ========================= */
@@ -367,6 +820,10 @@ const state = load() || {
   routeDriverAssignments: {},
   driverBusAssignments: {},
   dispatch: {},
+  daySchedule: {},
+  dayCoverage: {},
+  incidents: {},
+  district: { board: { lastMeetingMonth: null, minutes: [] }, budget: { baseAllocation: 2500, modifier: 1.0 }, advocacy: { level: 0, demand: null, lastUpdatedDate: null } },
   lotInventory: [],
   hiring: { pool: [] },
   schoolYear: { startMonth: 8, startDay: 1, lastStartedYear: null },
@@ -398,6 +855,17 @@ function normalize(){
   if(!state.routeDriverAssignments) state.routeDriverAssignments={};
   if(!state.driverBusAssignments) state.driverBusAssignments={};
   if(!state.dispatch) state.dispatch={};
+  if(!state.daySchedule) state.daySchedule={};
+  if(!state.dayCoverage) state.dayCoverage={};
+  if(!state.incidents) state.incidents={};
+  if(!state.district) state.district={ board:{ lastMeetingMonth:null, minutes:[] }, budget:{ baseAllocation:2500, modifier:1.0 }, advocacy:{ level:0, demand:null, lastUpdatedDate:null } };
+  if(!state.district.board) state.district.board={ lastMeetingMonth:null, minutes:[] };
+  if(!Array.isArray(state.district.board.minutes)) state.district.board.minutes=[];
+  if(!state.district.budget) state.district.budget={ baseAllocation:2500, modifier:1.0 };
+  if(typeof state.district.budget.baseAllocation!=="number") state.district.budget.baseAllocation=2500;
+  if(typeof state.district.budget.modifier!=="number") state.district.budget.modifier=1.0;
+  if(!state.district.advocacy) state.district.advocacy={ level:0, demand:null, lastUpdatedDate:null };
+  if(typeof state.district.advocacy.level!=="number") state.district.advocacy.level=0;
   if(!Array.isArray(state.lotInventory)) state.lotInventory=[];
   if(!state.hiring) state.hiring={pool:[]};
   if(!Array.isArray(state.hiring.pool)) state.hiring.pool=[];
@@ -432,6 +900,11 @@ function normalize(){
     if(!("status" in d)) d.status="available";
     if(!("hiredYear" in d)) d.hiredYear=state.gameYear;
     if(!("traitId" in d)) d.traitId=pick(TRAITS).id;
+    if(!("morale" in d)) d.morale=70;
+    if(!("certs" in d)) d.certs=[];
+    if(!Array.isArray(d.certs)) d.certs=[];
+    if(!("strikes" in d)) d.strikes=0;
+    if(!("kudos" in d)) d.kudos=0;
     if(!("isRetired" in d)) d.isRetired=false;
     if(!("retiredYear" in d)) d.retiredYear=null;
   });
@@ -476,6 +949,7 @@ function nextSchoolDay(){
   state.gameDate=d.toISOString().slice(0,10);
   ensureDispatchDay();
   state.ops.dayStartedKey=null;
+  recomputeAdvocacy();
   save(); renderAll();
   maybeAutoStartNewSchoolYear();
 }
@@ -511,11 +985,19 @@ function startSchoolDay(){
     }
   });
 
+  const needs = computeCoverageNeeds();
+  if(needs.length){
+    save(); renderAll();
+    openCoverageModal(needs);
+    return;
+  }
+
   state.ops.dayStartedKey=dayKey;
   if(Math.random()<0.12) autoAudit(dayKey,true);
   state.ops.prScore = clamp(state.ops.prScore + randInt(-2,2), 0, 100);
 
   logEvent("", `🌅 School day started • Call-offs: ${state.ops.absentDrivers.length} • Late: ${state.ops.lateDrivers.length}`);
+  recomputeAdvocacy();
   save(); renderAll();
 }
 function addComplaint(type,msg){
@@ -679,7 +1161,7 @@ function maybeAutoBreak(bus, route, driver, skippedPreTrip){
   chance *= (1.15 - (condition/100)*0.45);
   chance *= (1 - reliability);
   chance *= (1 - serviceBoost/100);
-  chance *= (driver ? traitById(driver.traitId).breakMult : 1.0);
+  chance *= (driver ? driverBreakMult(driver) : 1.0);
   if(bus.defect) chance *= (bus.defect.level==="major" ? 2.0 : 1.25);
   if(skippedPreTrip) chance *= 1.25;
   chance = Math.min(chance, 0.22);
@@ -753,11 +1235,18 @@ function runScheduledRoute(routeId){
   const route=dailyRoutes().find(r=>r.id===routeId);
   if(!route) return;
 
+  const resolved = resolveDriverForRouteToday(routeId);
+  if(resolved.cancelled){
+    addComplaint("Cancelled", `${route.name} was cancelled today.`);
+    save(); renderAll();
+    return alert(`🚫 Route cancelled: ${route.name}`);
+  }
+  const driverId = resolved.driverId;
+  const overtime = resolved.overtime;
+
   // Bus for this route: use route assignment first; if none, use driver's home bus (if set)
   let assignedBusId = state.routeAssignments[routeId] || "";
-
-
-  if(!assignedBusId){
+  if(!assignedBusId && driverId){
     assignedBusId = getDriverHomeBusId(driverId);
   }
   if(!assignedBusId){
@@ -791,6 +1280,24 @@ function runScheduledRoute(routeId){
 
   const shift=getShift();
   const rules=SHIFT_RULES[shift] || SHIFT_RULES.morning;
+
+  const win = routeWindow(route, shift);
+  if(win){
+    if(driverBusy(driver.id, shift, win)){
+      addComplaint("No-Show", `${driver.name} double-booked during this time window for ${route.name}.`);
+      save(); renderAll();
+      return alert(`⛔ Driver already assigned to another route during ${route.time?.[shift]?.start || ""}-${route.time?.[shift]?.end || ""}.`);
+    }
+  }
+
+  const win = routeWindow(route, shift);
+  if(win){
+    if(driverBusy(driver.id, shift, win)){
+      addComplaint("No-Show", `${driver.name} double-booked during this time window for ${route.name}.`);
+      save(); renderAll();
+      return alert(`⛔ Driver already assigned to another route during ${route.time?.[shift]?.start || ""}-${route.time?.[shift]?.end || ""}.\nChoose a different driver (Route Assignments) or change times.`);
+    }
+  }
 
   let busToUse=busAssigned;
   let usedSub=false;
@@ -826,9 +1333,12 @@ function runScheduledRoute(routeId){
   state.wallet += pay;
 
   logEvent(busToUse.id, `🚌 ${route.name} (${shift.toUpperCase()}) — ${busToUse.name}${usedSub?" (SUB)":""} • ${driver.name} • +$${pay}`, route.miles);
+  if(win) addToSchedule(driver.id, route.id, shift, win);
 
   maybeAutoBreak(busToUse, route, driver, skippedPreTrip);
   maybeComplaint(busToUse, driver, usedSub, skippedPreTrip);
+  maybeIncident(busToUse, route, driver, shift, overtime || false);
+  recomputeAdvocacy();
 
   save(); renderAll();
 }
@@ -870,9 +1380,11 @@ function runAdhocRoute(){
   state.wallet += pay;
 
   logEvent(bus.id, `🗺️ ${route.name} (AD-HOC ${shift.toUpperCase()}) — ${bus.name} • ${driver.name} • +$${pay}`, route.miles);
+  if(win) addToSchedule(driver.id, route.id, shift, win);
 
   maybeAutoBreak(bus, route, driver, skippedPreTrip);
   maybeComplaint(bus, driver, false, skippedPreTrip);
+  recomputeAdvocacy();
 
   save(); renderAll();
 }
@@ -887,13 +1399,25 @@ function addCustomRoute(){
   const wear=Number(document.getElementById("newRouteWear").value);
   const risk=Number(document.getElementById("newRouteRisk").value);
   const type=document.getElementById("newRouteType").value;
+  const school=document.getElementById("newRouteSchool").value || "other";
+  const amStart=document.getElementById("newRouteAmStart").value || "07:00";
+  const amEnd=document.getElementById("newRouteAmEnd").value || "08:00";
+  const pmStart=document.getElementById("newRoutePmStart").value || "14:30";
+  const pmEnd=document.getElementById("newRoutePmEnd").value || "15:30";
+  if(timeToMin(amStart)==null || timeToMin(amEnd)==null || timeToMin(pmStart)==null || timeToMin(pmEnd)==null){
+    return alert("Time format must be HH:MM (24-hour). Example: 07:10");
+  }
   if(!name) return alert("Enter a route name.");
   if(!(miles>0) || !(wear>0) || !(risk>0)) return alert("Miles/Wear/Risk must be > 0.");
 
   const id="c_"+uid().slice(0,8);
-  state.customRoutes.push({ id, name, miles:Math.round(miles), pay:Math.round(pay), wear:+wear.toFixed(2), risk:+risk.toFixed(2), isAdhoc:(type==="adhoc") });
+  state.customRoutes.push({ id, name, miles:Math.round(miles), pay:Math.round(pay), wear:+wear.toFixed(2), risk:+risk.toFixed(2), isAdhoc:(type==="adhoc"), school, time:{ morning:{start:amStart,end:amEnd}, afternoon:{start:pmStart,end:pmEnd} } });
   if(type==="daily") state.routeAssignments[id]=state.routeAssignments[id]||"";
   document.getElementById("newRouteName").value="";
+  document.getElementById("newRouteAmStart").value="07:00";
+  document.getElementById("newRouteAmEnd").value="08:00";
+  document.getElementById("newRoutePmStart").value="14:30";
+  document.getElementById("newRoutePmEnd").value="15:30";
   save(); renderAll();
 }
 function deleteCustomRoute(routeId){
@@ -1034,7 +1558,7 @@ function advanceYear(){
   state.gameYear += 1;
   generateLotForYear(state.gameYear);
   maybeRetireDrivers();
-  const allocation=2500;
+  const allocation=budgetAllocation();
   state.wallet += allocation;
   logEvent("", `📅 Advanced to ${state.gameYear}. Allocation +$${allocation}`);
   save(); renderAll();
@@ -1134,10 +1658,11 @@ function maybeAutoStartNewSchoolYear(){
 function startNewSchoolYear(startYear){
   state.gameYear=startYear;
   state.dispatch={};
-  const allocation=2500;
+  const allocation=budgetAllocation();
   state.wallet += allocation;
   generateLotForYear(state.gameYear);
   logEvent("", `🎒 New school year started: ${startYear}-${startYear+1} (+$${allocation})`);
+  runRouteBidding();
   save(); renderAll();
 }
 
@@ -1170,6 +1695,9 @@ function renderAll(){
   document.getElementById("gameYearTop").textContent = state.gameYear;
   document.getElementById("dispatchDate").textContent = dispatchKey();
   document.getElementById("prMeter").textContent = Math.round(state.ops.prScore||0);
+  const advEl=document.getElementById("advLevel"); if(advEl) advEl.textContent = Math.round(state.district.advocacy.level||0);
+  const budEl=document.getElementById("budgetMod"); if(budEl) budEl.textContent = Number(state.district.budget.modifier||1.0).toFixed(2);
+  const incEl=document.getElementById("incToday"); if(incEl) incEl.textContent = (state.incidents[dispatchKey()]||[]).length;
   document.getElementById("opsBanner").textContent = opsBannerText(dispatchKey());
   document.getElementById("lotYear").textContent = state.gameYear;
 
@@ -1227,7 +1755,7 @@ function renderRouteAssignments(){
             <tr>
               <td>
                 <strong>${r.name}</strong>
-                <div class="small muted">${r.miles} mi • +$${r.pay} • Wear x${r.wear} • Risk x${r.risk}</div>
+                <div class="small muted">${(r.school||"other").toUpperCase()} • AM ${r.time?.morning?.start||"--"}-${r.time?.morning?.end||"--"} • PM ${r.time?.afternoon?.start||"--"}-${r.time?.afternoon?.end||"--"} • ${r.miles} mi • +$${r.pay} • Wear x${r.wear} • Risk x${r.risk}</div>
               </td>
               <td style="min-width:280px">
                 <select onchange="setAssignedBus('${r.id}', this.value)">
@@ -1286,7 +1814,7 @@ function renderDispatchPanel(){
             <tr>
               <td>
                 <strong>${r.name}</strong>
-                <div class="small muted">${busSourceTag}${busTag}${preTripTag} ${r.miles} mi • +$${r.pay}</div>
+                <div class="small muted">${busSourceTag}${busTag}${preTripTag} ${r.time?.[shift]?.start||"--"}-${r.time?.[shift]?.end||"--"} • ${r.miles} mi • +$${r.pay}</div>
               </td>
               <td style="min-width:280px">${driverSelect(r.id, drvId)}</td>
               <td class="right nowrap"><button class="primary" onclick="runScheduledRoute('${r.id}')">Run</button></td>
@@ -1310,7 +1838,7 @@ function renderCustomRoutes(){
           <tr>
             <td>
               <strong>${r.name}</strong>
-              <div class="small muted">${r.miles} mi • +$${r.pay} • Wear x${r.wear} • Risk x${r.risk}</div>
+              <div class="small muted">${(r.school||"other").toUpperCase()} • AM ${r.time?.morning?.start||"--"}-${r.time?.morning?.end||"--"} • PM ${r.time?.afternoon?.start||"--"}-${r.time?.afternoon?.end||"--"} • ${r.miles} mi • +$${r.pay} • Wear x${r.wear} • Risk x${r.risk}</div>
             </td>
             <td>${r.isAdhoc ? "Ad-hoc" : "Daily"}</td>
             <td class="right nowrap"><button class="danger" onclick="deleteCustomRoute('${r.id}')">Delete</button></td>
@@ -1416,7 +1944,7 @@ function renderDrivers(){
   } else {
     panel.innerHTML=`
       <table>
-        <thead><tr><th>Driver</th><th>Home Bus</th><th>Status</th><th class="right">Actions</th></tr></thead>
+        <thead><tr><th>Driver</th><th>Home Bus</th><th>Morale / Certs</th><th>Status</th><th class="right">Actions</th></tr></thead>
         <tbody>
           ${state.drivers.map(d=>{
             const yrs=driverExperienceYears(d);
@@ -1438,6 +1966,13 @@ function renderDrivers(){
                     </select>
                   `}
 
+
+                <td style="min-width:220px">
+                  <div><span class="mono">${Math.round(d.morale||0)}</span>/100</div>
+                  <div class="small muted">${(d.certs||[]).length ? (d.certs.map(cid=>certById(cid)?.name||cid).join(", ")) : "No certs"}</div>
+                  <div class="small muted">Kudos: ${d.kudos||0} • Strikes: ${d.strikes||0}</div>
+                </td>
+
                 <td>
                   <span class="tag">${(d.status||"available").toUpperCase()}</span>
                   ${lateTag} ${calloffTag}
@@ -1448,6 +1983,12 @@ function renderDrivers(){
                       <option value="available" ${d.status==="available"?"selected":""}>available</option>
                       <option value="vacation" ${d.status==="vacation"?"selected":""}>vacation</option>
                       <option value="sick" ${d.status==="sick"?"selected":""}>sick</option>
+                    </select>
+                    <button onclick="praiseDriver('${d.id}')">Praise</button>
+                    <button onclick="writeUpDriver('${d.id}')">Write-up</button>
+                    <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value='';">
+                      <option value="">Train…</option>
+                      ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
                     </select>
                   `}
                 </td>
@@ -1511,7 +2052,28 @@ function renderLog(){
 ========================= */
 ensureDispatchDay();
 renderAll();
+recomputeAdvocacy();
 maybeAutoStartNewSchoolYear();
 </script>
+
+  <!-- Coverage Modal -->
+  <div id="coverageBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="split">
+        <h3>🚨 Coverage Required</h3>
+        <div class="row">
+          <span class="pill">Day: <span id="covDay" class="mono"></span></span>
+          <span class="pill">Shift: <span id="covShift" class="mono"></span></span>
+        </div>
+      </div>
+      <p class="muted">One or more routes lost their assigned driver. Choose a sub driver, force overtime, or cancel the route for today.</p>
+      <div id="coverageList" class="grid"></div>
+      <div class="row" style="justify-content:flex-end;margin-top:12px">
+        <button onclick="closeCoverageModal(false)">Cancel</button>
+        <button class="primary" onclick="applyCoverage()">Apply Coverage</button>
+      </div>
+      <small class="muted">Notes: Overtime increases incident risk and lowers morale. Cancelled routes hit PR and parent advocacy.</small>
+    </div>
+  </div>
 </body>
 </html>
