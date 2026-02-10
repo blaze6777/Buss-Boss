@@ -339,6 +339,7 @@
 const STORAGE_KEY = "busboss_final_v1";
 const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
 const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+const escapeHtml = (s)=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const todayISO = ()=>new Date().toISOString().slice(0,10);
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 const randInt = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
