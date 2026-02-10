@@ -145,7 +145,7 @@
         </div>
         <div style="flex:1;min-width:200px">
           <label>Driver</label>
-          <select id="routeDriver"></select>
+          <select id="routeDriver" onchange="syncAdhocBusToDriver()"></select>
         </div>
         <div style="flex:1;min-width:240px">
           <label>Ad-hoc Route</label>
@@ -313,6 +313,16 @@ function byId(arr,id){ return (arr||[]).find(x=>x.id===id); }
 function dispatchKey(){ return state.gameDate; }
 function getShift(){ return document.getElementById("dispatchShift")?.value || "morning"; }
 
+function syncAdhocBusToDriver(){
+  const driverId=document.getElementById('routeDriver')?.value;
+  const busId=getDriverHomeBusId(driverId);
+  if(busId){
+    const busSel=document.getElementById('routeBus');
+    if(busSel){ busSel.value = busId; }
+  }
+}
+
+
 /* =========================
    ROUTES / TRAITS
 ========================= */
@@ -354,6 +364,7 @@ const state = load() || {
   logs: [],
   customRoutes: [],
   routeAssignments: {},
+  driverBusAssignments: {},
   dispatch: {},
   lotInventory: [],
   hiring: { pool: [] },
@@ -383,6 +394,7 @@ function normalize(){
   if(!Array.isArray(state.logs)) state.logs=[];
   if(!Array.isArray(state.customRoutes)) state.customRoutes=[];
   if(!state.routeAssignments) state.routeAssignments={};
+  if(!state.driverBusAssignments) state.driverBusAssignments={};
   if(!state.dispatch) state.dispatch={};
   if(!Array.isArray(state.lotInventory)) state.lotInventory=[];
   if(!state.hiring) state.hiring={pool:[]};
@@ -689,6 +701,24 @@ function maybeAutoBreak(bus, route, driver, skippedPreTrip){
 /* =========================
    ASSIGNMENTS + SUB BUS
 ========================= */
+
+function getDriverHomeBusId(driverId){
+  return (state.driverBusAssignments && driverId) ? (state.driverBusAssignments[driverId]||"") : "";
+}
+function setDriverHomeBus(driverId, busId){
+  if(!driverId) return;
+  if(!state.driverBusAssignments) state.driverBusAssignments={};
+  state.driverBusAssignments[driverId] = busId || "";
+  save(); renderAll();
+}
+function plannedBusIdForRoute(routeId){
+  // If the route has an assigned bus, use it; otherwise use the assigned driver's home bus (if any).
+  const routeBusId = state.routeAssignments[routeId] || "";
+  if(routeBusId) return routeBusId;
+  const driverId = getDispatchDriver(routeId);
+  return getDriverHomeBusId(driverId);
+}
+
 function setAssignedBus(routeId,busId){
   state.routeAssignments[routeId]=busId||"";
   save(); renderAll();
@@ -710,11 +740,18 @@ function runScheduledRoute(routeId){
   const route=dailyRoutes().find(r=>r.id===routeId);
   if(!route) return;
 
-  const assignedBusId=state.routeAssignments[routeId]||"";
+  // Bus for this route: use route assignment first; if none, use driver's home bus (if set)
+  let assignedBusId = state.routeAssignments[routeId] || "";
+
+
   if(!assignedBusId){
-    addComplaint("No-Show", `${route.name} had no bus assigned.`);
-    return alert(`No bus assigned for ${route.name}. Set it in Route Assignments.`);
+    assignedBusId = getDriverHomeBusId(driverId);
   }
+  if(!assignedBusId){
+    addComplaint("No-Show", `${route.name} had no bus assigned (route or driver).`);
+    return alert(`No bus assigned for ${route.name}.\nAssign a route bus OR give ${driver.name} a home bus.`);
+  }
+
   const busAssigned=byId(state.buses,assignedBusId);
   if(!busAssigned){
     addComplaint("No-Show", `${route.name} assigned bus missing.`);
@@ -1219,16 +1256,17 @@ function renderDispatchPanel(){
       </thead>
       <tbody>
         ${dailyRoutes().map(r=>{
-          const assignedBusId=state.routeAssignments[r.id]||"";
-          const bus = assignedBusId ? byId(state.buses, assignedBusId) : null;
+          const drvId=getDispatchDriver(r.id);
+          const plannedBusId = plannedBusIdForRoute(r.id);
+          const bus = plannedBusId ? byId(state.buses, plannedBusId) : null;
+          const busSourceTag = (state.routeAssignments[r.id] ? `<span class="tag">ROUTE BUS</span>` : (plannedBusId ? `<span class="tag">DRIVER BUS</span>` : ""));
           const busTag = !bus ? `<span class="tag">NO BUS</span>` : bus.status==="down" ? `<span class="tag">BUS DOWN</span>` : `<span class="tag">OK</span>`;
           const preTripTag = bus ? (bus.lastPreTripDate===dayKey ? `<span class="tag">PRE ✅</span>` : `<span class="tag">PRE ❌</span>`) : "";
-          const drvId=getDispatchDriver(r.id);
           return `
             <tr>
               <td>
                 <strong>${r.name}</strong>
-                <div class="small muted">${busTag}${preTripTag} ${r.miles} mi • +$${r.pay}</div>
+                <div class="small muted">${busSourceTag}${busTag}${preTripTag} ${r.miles} mi • +$${r.pay}</div>
               </td>
               <td style="min-width:280px">${driverSelect(r.id, drvId)}</td>
               <td class="right nowrap"><button class="primary" onclick="runScheduledRoute('${r.id}')">Run</button></td>
@@ -1358,7 +1396,7 @@ function renderDrivers(){
   } else {
     panel.innerHTML=`
       <table>
-        <thead><tr><th>Driver</th><th>Status</th><th class="right">Actions</th></tr></thead>
+        <thead><tr><th>Driver</th><th>Home Bus</th><th>Status</th><th class="right">Actions</th></tr></thead>
         <tbody>
           ${state.drivers.map(d=>{
             const yrs=driverExperienceYears(d);
@@ -1370,7 +1408,16 @@ function renderDrivers(){
                 <td>
                   <strong>${d.name}</strong>
                   <div class="small muted">Experience: ${yrs}y • Trait: ${traitById(d.traitId).name} ${retiredTag}</div>
+                
                 </td>
+                <td style="min-width:220px">
+                  ${d.isRetired ? `<span class="muted small">—</span>` : `
+                    <select onchange="setDriverHomeBus('${d.id}', this.value)">
+                      <option value="">(unassigned)</option>
+                      ${state.buses.map(b=>`<option value="${b.id}" ${(state.driverBusAssignments&&state.driverBusAssignments[d.id]===b.id)?"selected":""}>${b.name} ${b.status==="down"?"(DOWN)":""}</option>`).join("")}
+                    </select>
+                  `}
+
                 <td>
                   <span class="tag">${(d.status||"available").toUpperCase()}</span>
                   ${lateTag} ${calloffTag}
