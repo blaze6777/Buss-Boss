@@ -47,9 +47,6 @@
     tr:last-child td{ border-bottom:none; }
     .hr{ height:1px; background:var(--line); margin:10px 0; }
     .cols{ display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-    .tag{ display:inline-block; padding:4px 8px; border:1px solid var(--line); border-radius:999px; background:rgba(26,37,80,.5); font-size:12px; }
-    .kpi{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .kpi .pill{ background:rgba(17,26,51,.35); }
     a{ color:#b8c5ff; }
   </style>
 </head>
@@ -61,7 +58,7 @@
         <h1>🚌 Bus Boss</h1>
         <div class="small muted">A fun school bus management sim (local-only, saves in your browser).</div>
       </div>
-      <div class="kpi">
+      <div class="row">
         <span class="pill">💰 Budget: <span id="walletTop" class="mono"></span></span>
         <span class="pill">📅 Game Year: <span id="gameYearTop" class="mono"></span></span>
         <button onclick="backupData()">⬇️ Backup</button>
@@ -106,8 +103,48 @@
 
       <div class="hr"></div>
 
+      <!-- CREATE ROUTE -->
+      <div class="card" style="margin-top:0;">
+        <h3 style="margin:0;">➕ Create a Route</h3>
+        <div class="row" style="margin-top:10px;">
+          <div style="flex:1;min-width:220px">
+            <label>Route Name</label>
+            <input id="newRouteName" placeholder="e.g., Midday Preschool Shuttle" />
+          </div>
+          <div style="min-width:140px">
+            <label>Miles</label>
+            <input id="newRouteMiles" type="number" min="1" value="20" />
+          </div>
+          <div style="min-width:140px">
+            <label>Pay ($)</label>
+            <input id="newRoutePay" type="number" min="0" value="150" />
+          </div>
+          <div style="min-width:140px">
+            <label>Wear</label>
+            <input id="newRouteWear" type="number" step="0.1" min="0.5" max="3" value="1.2" />
+          </div>
+          <div style="min-width:140px">
+            <label>Risk</label>
+            <input id="newRouteRisk" type="number" step="0.1" min="0.5" max="3" value="1.2" />
+          </div>
+          <div style="min-width:170px">
+            <label>Type</label>
+            <select id="newRouteType">
+              <option value="daily">Daily (assign bus)</option>
+              <option value="adhoc">Ad-hoc (like Field Trip)</option>
+            </select>
+          </div>
+          <button class="primary" onclick="addCustomRoute()">Add Route</button>
+        </div>
+
+        <div class="small muted">Daily routes show up in Route Assignments + Dispatch. Ad-hoc routes show up in the Ad-hoc runner.</div>
+        <div id="customRoutesPanel" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="hr"></div>
+
       <h3 style="margin:0;">🗺️ Ad-hoc Route Runner</h3>
-      <div class="small muted" style="margin:6px 0 10px;">Field Trips are ad-hoc (pick bus + driver each time).</div>
+      <div class="small muted" style="margin:6px 0 10px;">Field Trips + ad-hoc custom routes (pick bus + driver each time).</div>
       <div class="row">
         <div style="flex:1;min-width:180px">
           <label>Bus</label>
@@ -325,10 +362,19 @@ function todayISO(){ return new Date().toISOString().slice(0,10); }
    GAME CONSTANTS
 ========================= */
 const ROUTES = [
-  { id:"neighborhood", name:"Neighborhood Route", miles:18, pay:120, wear:1.0, risk:1.0 },
-  { id:"rural",        name:"Rural Route",        miles:42, pay:220, wear:1.4, risk:1.3 },
-  { id:"special",      name:"Special Ed Route",   miles:22, pay:180, wear:1.6, risk:1.4 },
-  { id:"field",        name:"Field Trip",         miles:85, pay:420, wear:1.8, risk:1.6 }
+  // Daily routes
+  { id:"neighborhood", name:"Neighborhood Route",           miles:18, pay:120, wear:1.0, risk:1.0 },
+  { id:"rural",        name:"Rural Route",                  miles:42, pay:220, wear:1.4, risk:1.3 },
+  { id:"special",      name:"Special Ed Route",             miles:22, pay:180, wear:1.6, risk:1.4 },
+
+  // A few extra built-ins (daily)
+  { id:"midday_k",     name:"Midday Kindergarten Shuttle",  miles:10, pay:80,  wear:0.9, risk:0.9 },
+  { id:"vo_tech",      name:"Vo-Tech / Career Center",      miles:34, pay:210, wear:1.3, risk:1.2 },
+  { id:"late_run",     name:"Late Bus (After-School)",      miles:26, pay:170, wear:1.2, risk:1.2 },
+
+  // Ad-hoc routes
+  { id:"field",        name:"Field Trip",                   miles:85, pay:420, wear:1.8, risk:1.6, isAdhoc:true },
+  { id:"sports",       name:"Sports Away Game",             miles:60, pay:320, wear:1.6, risk:1.5, isAdhoc:true }
 ];
 
 const SHIFT_RULES = {
@@ -349,9 +395,10 @@ const state = load() || {
   buses: [],
   drivers: [],
   logs: [],
-  routeAssignments: {}, // { neighborhood: busId, rural: busId, special: busId }
+  routeAssignments: {}, // { routeId: busId }
   dispatch: {},         // { "YYYY-MM-DD": { morning:{routeId:{driverId}}, afternoon:{...} } }
   hiring: { pool: [] },
+  customRoutes: [],     // user-created routes
   board: {
     lastMeetingKey: null,
     maintenanceMultiplier: 1.0,
@@ -399,6 +446,7 @@ function normalizeState(){
   if(!Array.isArray(state.drivers)) state.drivers = [];
   if(!Array.isArray(state.logs)) state.logs = [];
   if(!Array.isArray(state.lotInventory)) state.lotInventory = [];
+  if(!Array.isArray(state.customRoutes)) state.customRoutes = [];
 
   if(!state.routeAssignments) state.routeAssignments = {};
   if(!state.dispatch) state.dispatch = {};
@@ -449,27 +497,126 @@ function normalizeState(){
   });
 
   state.drivers.forEach(d => {
-    if(!("status" in d)) d.status = "available"; // available | sick | vacation | sub
+    if(!("status" in d)) d.status = "available";
     if(!("hiredYear" in d)) d.hiredYear = state.gameYear;
     if(!("trait" in d)) d.trait = randomDriverTrait();
-    if(!("training" in d)) d.training = null; // {startYear, stage, graduateTo}
+    if(!("training" in d)) d.training = null;
     if(!("mentorDriverId" in d)) d.mentorDriverId = null;
-
     if(!("badges" in d)) d.badges = [];
     if(!("isRetired" in d)) d.isRetired = false;
     if(!("retiredYear" in d)) d.retiredYear = null;
   });
 
-  // Seed lot if empty
   if(!state.lotInventory.length) generateLotForYear(state.gameYear);
 
-  // Seed route assignments keys (optional)
-  ["neighborhood","rural","special"].forEach(k=>{
-    if(!(k in state.routeAssignments)) state.routeAssignments[k] = "";
+  // Ensure assignment keys exist for built-in daily routes and any custom daily routes
+  dailyRoutes().forEach(r=>{
+    if(!(r.id in state.routeAssignments)) state.routeAssignments[r.id] = "";
   });
 }
 normalizeState();
 save();
+
+/* =========================
+   ROUTE COLLECTIONS (BUILT-IN + CUSTOM)
+========================= */
+function allRoutes(){
+  return [...ROUTES, ...(state.customRoutes || [])];
+}
+function dailyRoutes(){
+  return allRoutes().filter(r => !r.isAdhoc && r.id !== "field");
+}
+function adHocRoutes(){
+  return allRoutes().filter(r => r.id === "field" || r.isAdhoc);
+}
+
+/* =========================
+   CUSTOM ROUTES (ADD/DELETE/RENDER)
+========================= */
+function addCustomRoute(){
+  const name = document.getElementById("newRouteName").value.trim();
+  const miles = Number(document.getElementById("newRouteMiles").value);
+  const pay = Number(document.getElementById("newRoutePay").value);
+  const wear = Number(document.getElementById("newRouteWear").value);
+  const risk = Number(document.getElementById("newRouteRisk").value);
+  const type = document.getElementById("newRouteType").value;
+
+  if(!name) return alert("Enter a route name.");
+  if(!(miles > 0) || !(wear > 0) || !(risk > 0)) return alert("Miles/Wear/Risk must be > 0.");
+
+  const id = "c_" + uid().slice(0,8);
+
+  state.customRoutes.push({
+    id,
+    name,
+    miles: Math.round(miles),
+    pay: Math.round(pay),
+    wear: Number(wear.toFixed(2)),
+    risk: Number(risk.toFixed(2)),
+    isAdhoc: (type === "adhoc")
+  });
+
+  if(type === "daily"){
+    if(!state.routeAssignments) state.routeAssignments = {};
+    state.routeAssignments[id] = state.routeAssignments[id] || "";
+  }
+
+  document.getElementById("newRouteName").value = "";
+  save();
+  renderAll();
+}
+
+function deleteCustomRoute(routeId){
+  if(!confirm("Delete this route?")) return;
+
+  state.customRoutes = (state.customRoutes || []).filter(r => r.id !== routeId);
+
+  if(state.routeAssignments && routeId in state.routeAssignments){
+    delete state.routeAssignments[routeId];
+  }
+
+  if(state.dispatch){
+    Object.keys(state.dispatch).forEach(day => {
+      ["morning","afternoon"].forEach(shift => {
+        if(state.dispatch[day]?.[shift]?.[routeId]) delete state.dispatch[day][shift][routeId];
+      });
+    });
+  }
+
+  save();
+  renderAll();
+}
+
+function renderCustomRoutes(){
+  const panel = document.getElementById("customRoutesPanel");
+  if(!panel) return;
+
+  const list = state.customRoutes || [];
+  if(!list.length){
+    panel.innerHTML = `<div class="muted">No custom routes yet.</div>`;
+    return;
+  }
+
+  panel.innerHTML = `
+    <table>
+      <thead><tr><th>Route</th><th>Type</th><th class="right">Action</th></tr></thead>
+      <tbody>
+        ${list.map(r => `
+          <tr>
+            <td>
+              <strong>${escapeHtml(r.name)}</strong>
+              <div class="small muted">${r.miles} mi • +$${r.pay} • Wear x${r.wear} • Risk x${r.risk}</div>
+            </td>
+            <td>${r.isAdhoc ? "Ad-hoc" : "Daily"}</td>
+            <td class="right nowrap">
+              <button class="danger" onclick="deleteCustomRoute('${r.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
 
 /* =========================
    SCHOOL YEAR (Option B)
@@ -495,7 +642,6 @@ function maybeAutoStartNewSchoolYear(){
 
   if(pastStart && lastStartedYear !== y){
     const ok = confirm(`📅 New School Year Time!\nStart the ${y}-${y+1} school year now?`);
-    // prevent nagging either way
     state.schoolYear.lastStartedYear = y;
     save();
     if(ok) startNewSchoolYear(y);
@@ -504,16 +650,12 @@ function maybeAutoStartNewSchoolYear(){
 
 function startNewSchoolYear(startYear){
   state.gameYear = startYear;
-
-  // clear daily dispatch selections from last year
   state.dispatch = {};
 
-  // yearly allocation (respect board mod)
   const mod = state.board?.nextYearAllocationMod || 1.0;
   const allocation = Math.round(2500 * mod);
   state.wallet = Math.round((state.wallet || 0) + allocation);
 
-  // refresh lot
   generateLotForYear(state.gameYear);
 
   save();
@@ -811,10 +953,7 @@ function doRepair(busId){
   bus.maintenanceNote = "";
   bus.subBusId = null;
 
-  // Repair improves condition
   bus.condition = Math.min(100, Number(bus.condition || 70) + 20);
-
-  // Clear defect on repair
   bus.defect = null;
 
   state.logs.push({ id: uid(), busId: bus.id, date: todayISO(), miles: 0, note:`🔧 Repair: -$${cost}`, createdAt: Date.now() });
@@ -870,8 +1009,6 @@ function serviceItem(busId, item){
   bus.maintenance[item + "At"] = Number(bus.odometer || 0);
 
   bus.condition = Math.min(100, Number(bus.condition || 70) + (item === "oil" ? 2 : item === "tires" ? 4 : 3));
-
-  // Clear defect when servicing (simplified)
   bus.defect = null;
 
   state.logs.push({
@@ -894,7 +1031,6 @@ function doRetireBus(busId){
   state.buses = state.buses.filter(b => b.id !== busId);
   state.logs = state.logs.filter(l => l.busId !== busId);
 
-  // Clear route assignment if used
   Object.keys(state.routeAssignments).forEach(k=>{
     if(state.routeAssignments[k] === busId) state.routeAssignments[k] = "";
   });
@@ -914,8 +1050,6 @@ function inspectBus(busId){
 
   let roll = Math.random() * 100;
   const strict = state.board?.inspectionStrictness || 1.0;
-
-  // stricter board => easier to fail
   roll *= (1/strict);
 
   let result = "pass";
@@ -951,46 +1085,29 @@ function maybeAutoBreakWithRoute(bus, route, skippedPreTrip){
   const reliabilityMod = Math.max(0, Math.min(0.25, Number(bus.reliabilityMod || 0)));
   const serviceBoost = Math.max(0, Math.min(30, Number(bus.serviceBoost || 0)));
 
-  // Base chance + age + mileage
   let chance = 0.02 + (age * 0.009) + (odo / 50000) * 0.03;
-
-  // route risk
   chance *= (route?.risk || 1.0);
-
-  // condition reduces chance
   chance *= (1.15 - (condition / 100) * 0.45);
 
-  // servicing + upgrades reduce
   chance *= (1 - reliabilityMod);
   chance *= (1 - serviceBoost / 100);
-
-  // board policy mod
   chance *= (state.board?.breakdownMod || 1.0);
 
-  // maintenance overdue increases risk
-  const maintMult = maintenanceRiskMultiplier(bus);
-  chance *= maintMult;
+  chance *= maintenanceRiskMultiplier(bus);
 
-  // defects increase risk
   if(bus.defect){
     chance *= bus.defect.level === "major" ? 2.0 : 1.25;
   }
-
-  // skipping pre-trip increases risk
   if(skippedPreTrip) chance *= 1.25;
 
   chance = Math.min(chance, 0.22);
 
-  // wear-off
   bus.serviceBoost = Math.max(0, serviceBoost - 2);
-
-  // condition slowly wears with use (board can reduce wear)
   const wearMod = state.board?.conditionWearMod || 1.0;
   bus.condition = Math.max(0, condition - (0.6 * wearMod));
 
   if(Math.random() > chance) return;
 
-  // needs a sub bus available to make it interesting; otherwise just a warning
   const activeBuses = state.buses.filter(b => b.status === "active");
   if(activeBuses.length < 2){
     state.logs.push({ id: uid(), busId: bus.id, date: todayISO(), miles: 0, note:`⚠️ Near-breakdown avoided (no sub available)`, createdAt: Date.now() });
@@ -1235,7 +1352,6 @@ function retireDriverById(driverId, reason="Manual retirement"){
   d.retiredYear = state.gameYear;
   d.status = "vacation";
 
-  // Unassign from buses
   state.buses.forEach(b => {
     if(b.assignedDriverId === d.id) b.assignedDriverId = null;
   });
@@ -1292,10 +1408,10 @@ function runRoute(){
 
   const bus = byId(state.buses, busId);
   const driver = byId(state.drivers, driverId);
-  const route = ROUTES.find(r => r.id === routeId);
+  const route = allRoutes().find(r => r.id === routeId);
 
   if(!bus || !driver || !route) return alert("Select bus, driver, and route.");
-  if(bus.status === "down") return alert("Bus is down. Use a sub bus (or repair it).");
+  if(bus.status === "down") return alert("Bus is down. Use a different bus (or repair it).");
   if(driver.isRetired) return alert("Driver is retired.");
   if(driver.status !== "available") return alert(`${driver.name} is unavailable.`);
 
@@ -1305,11 +1421,9 @@ function runRoute(){
     if(!confirm(`⚠️ Pre-Trip not completed for ${bus.name} today.\nRun anyway? (Higher risk)`)) return;
   }
 
-  // Shift rules apply to ad-hoc too (uses dispatch shift selector)
   const shift = getDispatchShift();
   const rules = SHIFT_RULES[shift] || SHIFT_RULES.morning;
 
-  // Log mileage
   state.logs.push({
     id: uid(),
     busId,
@@ -1321,32 +1435,18 @@ function runRoute(){
 
   bus.odometer = Number(bus.odometer || 0) + route.miles;
 
-  // Wear
   let wear = route.wear * 1.2 * rules.wearMult;
-
-  // maintenance overdue increases wear
-  const maintMult = maintenanceRiskMultiplier(bus);
-  wear *= (1 + (maintMult - 1) * 0.6);
-
-  // skipping checks increases wear
+  wear *= (1 + (maintenanceRiskMultiplier(bus) - 1) * 0.6);
   if(skippedPreTrip) wear *= 1.15;
-
-  // defect increases wear
   if(bus.defect) wear *= bus.defect.level === "major" ? 1.25 : 1.10;
-
-  // board wear mod
   wear *= (state.board?.conditionWearMod || 1.0);
 
   bus.condition = Math.max(0, Number(bus.condition || 70) - wear);
 
-  // Pay
   let pay = Math.round(route.pay * rules.payMult);
   state.wallet = Number(state.wallet || 0) + pay;
 
-  // Training incidents
   applyTrainingIncidentIfAny(bus, driver, route);
-
-  // Breakdown chance
   maybeAutoBreakWithRoute(bus, route, skippedPreTrip);
 
   save();
@@ -1358,10 +1458,6 @@ function runRoute(){
 /* =========================
    ROUTE ASSIGNMENTS + DISPATCH
 ========================= */
-function dailyRoutes(){
-  return ROUTES.filter(r => r.id !== "field");
-}
-
 function setAssignedBus(routeId, busId){
   if(!state.routeAssignments) state.routeAssignments = {};
   state.routeAssignments[routeId] = busId || "";
@@ -1416,7 +1512,7 @@ function driverDisplay(d){
 }
 
 function runScheduledRouteWithDriver(routeId, driverId){
-  const route = ROUTES.find(r => r.id === routeId);
+  const route = allRoutes().find(r => r.id === routeId);
   if(!route) return alert("Route not found.");
 
   const assignedBusId = state.routeAssignments?.[routeId] || "";
@@ -1450,7 +1546,6 @@ function runScheduledRouteWithDriver(routeId, driverId){
   const shift = getDispatchShift();
   const rules = SHIFT_RULES[shift] || SHIFT_RULES.morning;
 
-  // Log
   state.logs.push({
     id: uid(),
     busId: busToUse.id,
@@ -1462,27 +1557,19 @@ function runScheduledRouteWithDriver(routeId, driverId){
     createdAt: Date.now()
   });
 
-  // Mileage
   busToUse.odometer = Number(busToUse.odometer || 0) + route.miles;
 
-  // Wear
   let wear = route.wear * 1.2 * rules.wearMult;
-
-  const maintMult = maintenanceRiskMultiplier(busToUse);
-  wear *= (1 + (maintMult - 1) * 0.6);
-
+  wear *= (1 + (maintenanceRiskMultiplier(busToUse) - 1) * 0.6);
   if(skippedPreTrip) wear *= 1.15;
   if(busToUse.defect) wear *= busToUse.defect.level === "major" ? 1.25 : 1.10;
-
   wear *= (state.board?.conditionWearMod || 1.0);
 
   busToUse.condition = Math.max(0, Number(busToUse.condition || 70) - wear);
 
-  // Pay + sub penalty + possible strict sub cost policy
   let pay = Math.round(route.pay * rules.payMult);
   if(usedSub) pay = Math.max(0, pay - SUB_LATE_PENALTY);
 
-  // Strict driver policy: subs cost money per route (if you want to treat usedSub as “sub operation cost” too)
   if(state.board?.driverPolicy === "strict" && usedSub){
     const extra = Number(state.board.subCostPerRoute || 0);
     state.wallet = Math.max(0, Number(state.wallet || 0) - extra);
@@ -1490,10 +1577,7 @@ function runScheduledRouteWithDriver(routeId, driverId){
 
   state.wallet = Number(state.wallet || 0) + pay;
 
-  // Training incidents
   applyTrainingIncidentIfAny(busToUse, driver, route);
-
-  // Breakdown chance
   maybeAutoBreakWithRoute(busToUse, route, skippedPreTrip);
 
   save();
@@ -1520,7 +1604,6 @@ function runAllScheduled(){
     }
   }
 
-  // Run in order
   for(const r of routes){
     runScheduledRouteWithDriver(r.id, getDispatchDriver(r.id));
   }
@@ -1610,14 +1693,13 @@ function generateBoardProposals(){
           });
           state.wallet += 1500;
         } else {
-          state.wallet += 300; // consolation
+          state.wallet += 300;
         }
       },
       applyNo(){}
     }
   ];
 
-  // choose 2-3 proposals randomly
   const count = randInt(2,3);
   const pool = [...base];
   for(let i=0;i<count;i++){
@@ -1649,18 +1731,12 @@ function voteProposal(idx, yes){
 function advanceYear(){
   state.gameYear += 1;
 
-  // budget allocation
   const mod = state.board?.nextYearAllocationMod || 1.0;
   const allocation = Math.round(2500 * mod);
   state.wallet = Math.round((state.wallet || 0) + allocation);
 
-  // new lot
   generateLotForYear(state.gameYear);
-
-  // training graduates before retirements
   processTrainingGraduations();
-
-  // retirements
   processDriverRetirements();
 
   save();
@@ -1707,7 +1783,7 @@ function restoreData(){
 }
 
 function resetAll(){
-  if(!confirm("Reset everything? This clears all buses/drivers/logs.")) return;
+  if(!confirm("Reset everything? This clears all buses/drivers/routes/logs.")) return;
   localStorage.removeItem("busboss_v1");
   location.reload();
 }
@@ -2021,7 +2097,7 @@ function renderRouteAssignments(){
       <thead><tr><th>Daily Route</th><th>Assigned Bus</th><th>Status</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="small muted" style="margin-top:8px;">Field Trips remain ad-hoc.</div>
+    <div class="small muted" style="margin-top:8px;">Ad-hoc routes are run from the Ad-hoc runner.</div>
   `;
 }
 
@@ -2100,7 +2176,7 @@ function renderDispatch(){
       <tbody>${rows}</tbody>
     </table>
     <div class="small muted" style="margin-top:8px;">
-      Field Trips stay ad-hoc: use the Ad-hoc Route Runner.
+      Field Trips & ad-hoc custom routes stay in the Ad-hoc Route Runner.
     </div>
   `;
 }
@@ -2173,7 +2249,6 @@ function renderSchoolYearSettings(){
 function renderAll(){
   renderTop();
 
-  // Build shared dropdown options
   const busOptions =
     `<option value="">— Select bus —</option>` +
     state.buses.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(b=>{
@@ -2200,11 +2275,11 @@ function renderAll(){
 
   const routeType = document.getElementById("routeType");
   if(routeType){
-    routeType.innerHTML = ROUTES.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
-    // Default to Field Trip in ad-hoc runner for convenience
+    routeType.innerHTML = adHocRoutes().map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join("");
     routeType.value = "field";
   }
 
+  renderCustomRoutes();
   renderFleet();
   renderGarage();
   renderBusLot();
@@ -2217,7 +2292,6 @@ function renderAll(){
   renderLog();
   renderSchoolYearSettings();
 
-  // Auto school year prompt (Option B)
   maybeAutoStartNewSchoolYear();
 }
 
