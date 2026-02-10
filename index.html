@@ -364,6 +364,7 @@ const state = load() || {
   logs: [],
   customRoutes: [],
   routeAssignments: {},
+  routeDriverAssignments: {},
   driverBusAssignments: {},
   dispatch: {},
   lotInventory: [],
@@ -394,6 +395,7 @@ function normalize(){
   if(!Array.isArray(state.logs)) state.logs=[];
   if(!Array.isArray(state.customRoutes)) state.customRoutes=[];
   if(!state.routeAssignments) state.routeAssignments={};
+  if(!state.routeDriverAssignments) state.routeDriverAssignments={};
   if(!state.driverBusAssignments) state.driverBusAssignments={};
   if(!state.dispatch) state.dispatch={};
   if(!Array.isArray(state.lotInventory)) state.lotInventory=[];
@@ -436,6 +438,7 @@ function normalize(){
 
   dailyRoutes().forEach(r=>{
     if(!(r.id in state.routeAssignments)) state.routeAssignments[r.id]="";
+    if(!(r.id in state.routeDriverAssignments)) state.routeDriverAssignments[r.id]="";
   });
 
   if(!state.lotInventory.length) generateLotForYear(state.gameYear);
@@ -715,8 +718,18 @@ function plannedBusIdForRoute(routeId){
   // If the route has an assigned bus, use it; otherwise use the assigned driver's home bus (if any).
   const routeBusId = state.routeAssignments[routeId] || "";
   if(routeBusId) return routeBusId;
-  const driverId = getDispatchDriver(routeId);
+  const driverId = getRouteDriverId(routeId);
   return getDriverHomeBusId(driverId);
+}
+
+function getRouteDriverId(routeId){
+  return (state.routeDriverAssignments && routeId) ? (state.routeDriverAssignments[routeId]||"") : "";
+}
+function setRouteDriver(routeId, driverId){
+  if(!routeId) return;
+  if(!state.routeDriverAssignments) state.routeDriverAssignments={};
+  state.routeDriverAssignments[routeId] = driverId || "";
+  save(); renderAll();
 }
 
 function setAssignedBus(routeId,busId){
@@ -758,9 +771,9 @@ function runScheduledRoute(routeId){
     return alert(`Assigned bus missing for ${route.name}. Re-assign it.`);
   }
 
-  const driverId=getDispatchDriver(routeId);
+  const driverId=getRouteDriverId(routeId);
   if(!driverId){
-    addComplaint("No-Show", `${route.name} had no driver assigned for this shift.`);
+    addComplaint("No-Show", `${route.name} had no driver assigned.`);
     save(); renderAll();
     return alert(`🚫 NO DRIVER ASSIGNED\n${route.name}\nComplaint added.`);
   }
@@ -1206,7 +1219,7 @@ function renderRouteAssignments(){
   };
   panel.innerHTML = `
     <table>
-      <thead><tr><th>Route</th><th>Assigned Bus</th></tr></thead>
+      <thead><tr><th>Route</th><th>Assigned Bus</th><th>Assigned Driver</th></tr></thead>
       <tbody>
         ${dailyRoutes().map(r=>{
           const assigned=state.routeAssignments[r.id]||"";
@@ -1219,6 +1232,13 @@ function renderRouteAssignments(){
               <td style="min-width:280px">
                 <select onchange="setAssignedBus('${r.id}', this.value)">
                   ${busOptions(assigned)}
+                </select>
+              </td>
+            
+              <td style="min-width:280px">
+                <select onchange="setRouteDriver('${r.id}', this.value)">
+                  <option value="">(unassigned)</option>
+                  ${state.drivers.filter(d=>!d.isRetired).map(d=>`<option value="${d.id}" ${(getRouteDriverId(r.id)===d.id)?"selected":""}>${d.name} (${driverExperienceYears(d)}y • ${traitById(d.traitId).name}) [${d.status}]</option>`).join("")}
                 </select>
               </td>
             </tr>
@@ -1242,7 +1262,7 @@ function renderDispatchPanel(){
         return `<option value="${d.id}" ${d.id===selectedId?"selected":""}>${d.name} (${yrs}y • ${traitById(d.traitId).name}${late}) [${d.status}]</option>`;
       })
     ].join("");
-    return `<select onchange="setDispatchDriver('${routeId}', this.value)">${opts}</select>`;
+    return `<select onchange="setRouteDriver('${routeId}', this.value)">${opts}</select>`;
   };
 
   panel.innerHTML = `
@@ -1256,7 +1276,7 @@ function renderDispatchPanel(){
       </thead>
       <tbody>
         ${dailyRoutes().map(r=>{
-          const drvId=getDispatchDriver(r.id);
+          const drvId=getRouteDriverId(r.id);
           const plannedBusId = plannedBusIdForRoute(r.id);
           const bus = plannedBusId ? byId(state.buses, plannedBusId) : null;
           const busSourceTag = (state.routeAssignments[r.id] ? `<span class="tag">ROUTE BUS</span>` : (plannedBusId ? `<span class="tag">DRIVER BUS</span>` : ""));
