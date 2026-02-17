@@ -1048,7 +1048,13 @@ function normalize(){
     if(!("kudos" in d)) d.kudos=0;
     if(!("isRetired" in d)) d.isRetired=false;
     if(!("retiredYear" in d)) d.retiredYear=null;
-  });
+  
+    if(typeof d.salary!=="number"){
+      // Annual salary (game flavor). Existing saves get a reasonable default.
+      const base = 38000 + randInt(0, 12000);
+      d.salary = Math.round(base/100)*100;
+    }
+});
 
   dailyRoutes().forEach(r=>{
     if(!(r.id in state.routeAssignments)) state.routeAssignments[r.id]="";
@@ -1760,7 +1766,7 @@ function hireCandidate(candId){
   if(!c) return;
   if(state.wallet<c.cost) return alert("Not enough budget.");
   state.wallet -= c.cost;
-  state.drivers.push({ id:uid(), name:c.name, hiredYear:c.hiredYear, traitId:c.traitId, status:"available", isRetired:false, retiredYear:null });
+  state.drivers.push({ id:uid(), name:c.name, hiredYear:c.hiredYear, traitId:c.traitId, status:"available", isRetired:false, retiredYear:null, salary: Math.round((38000 + randInt(0,12000))/100)*100, certs:[] });
   state.hiring.pool=[];
   logEvent("", `👩‍✈️ Hired: ${c.name} (-$${c.cost})`);
   save(); renderAll();
@@ -1818,6 +1824,31 @@ function startNewSchoolYear(startYear){
   state.dispatch={};
   const allocation=budgetAllocation();
   state.wallet += allocation;
+  // Annual progression: experience ticks automatically via hiredYear; apply annual raises
+  (state.drivers||[]).forEach(d=>{
+    if(d.isRetired) return;
+    if(typeof d.salary!=="number") d.salary = Math.round((38000 + randInt(0,12000))/100)*100;
+    const exp = driverExperienceYears(d);
+    const certBonus = Math.min(0.02, (d.certs||[]).length * 0.004);
+    const raisePct = clamp(0.02 + Math.min(0.03, exp*0.005) + certBonus, 0.02, 0.08);
+    const old = d.salary;
+    d.salary = Math.round((old * (1+raisePct))/100)*100;
+    if(d.salary !== old){ logEvent("", `💵 Raise: ${d.name} +${Math.round(raisePct*100)}% ($${old}→$${d.salary})`); }
+  });
+
+  // Annual payroll hits budget (wallet) once per school year
+  const payroll = (state.drivers||[])
+    .filter(d=>!d.isRetired)
+    .reduce((sum,d)=> sum + Number(d.salary||0), 0);
+  state.wallet -= payroll;
+  logEvent("", `💳 Annual payroll paid: -$${payroll.toLocaleString()} (wallet now $${Math.round(state.wallet).toLocaleString()})`);
+  if(state.wallet < 0){
+    // soft penalty if you're in the red
+    state.ops.prScore = clamp(Number(state.ops.prScore||70)-2, 0, 100);
+    state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0)+3, 0, 100);
+    addComplaint("Budget", "District finances are strained after payroll. Board/parents are watching closely.");
+  }
+
   generateLotForYear(state.gameYear);
   logEvent("", `🎒 New school year started: ${startYear}-${startYear+1} (+$${allocation})`);
   runRouteBidding();
