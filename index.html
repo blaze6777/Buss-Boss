@@ -43,6 +43,8 @@
   .modal .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .modal small{opacity:.8}
   .danger{background:rgba(255,60,60,.15);border-color:rgba(255,60,60,.35)}
+
+  .tiny{padding:4px 8px;font-size:12px;opacity:.95}
 </style>
 </head>
 <body>
@@ -2072,7 +2074,7 @@ function renderFleet(){
           return `
             <tr>
               <td>
-                <strong>${b.name}</strong>
+                <strong>${b.name}</strong> <button class="tiny" onclick="editBusName('${b.id}')">✏️ Rename</button>
                 <div class="small muted">In service: ${b.inServiceYear} (Age ${age}) • Notes: ${b.notes||"—"}</div>
                 <div class="small muted">Defect: ${defect}</div>
               </td>
@@ -2165,7 +2167,7 @@ function renderDrivers(){
               <tr>
                 <td>
                   <strong>${d.name}</strong>
-                  <div class="small muted">Experience: ${yrs}y • Trait: ${traitById(d.traitId).name} ${retiredTag}</div>
+                  <div class="small muted">Experience: ${yrs}y • Salary: $${Number(d.salary||0).toLocaleString()}/yr • Trait: ${traitById(d.traitId).name} ${retiredTag}</div>
                 
                 </td>
                 <td style="min-width:220px">
