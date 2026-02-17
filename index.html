@@ -842,6 +842,52 @@ function viewSchoolYearAssignments(){
   alert(`📚 ${latest.label} — Assignment Snapshot\n\nROUTES\n${routeDetails}\n\nDRIVERS\n${driverDetails}`);
 }
 
+
+function editBusName(busId){
+  const b = byId(state.buses, busId);
+  if(!b) return;
+  const name = prompt("New bus name:", b.name||"");
+  if(name==null) return;
+  const trimmed = String(name).trim();
+  if(!trimmed) return alert("Bus name cannot be blank.");
+  b.name = trimmed;
+  logEvent(busId, `✏️ Bus renamed to "${trimmed}"`);
+  save(); renderAll();
+}
+
+function fireDriver(driverId){
+  const d = byId(state.drivers, driverId);
+  if(!d) return;
+  if(!confirm(`Fire ${d.name}?\n\nThis will remove them from the roster and clear any route assignments.`)) return;
+
+  // Clear route-driver assignments
+  Object.keys(state.routeDriverAssignments||{}).forEach(rid=>{
+    if(state.routeDriverAssignments[rid]===driverId) state.routeDriverAssignments[rid] = "";
+  });
+
+  // Clear day coverage choices involving this driver (today only)
+  const k = dispatchKey();
+  if(state.dayCoverage && state.dayCoverage[k]){
+    Object.keys(state.dayCoverage[k]).forEach(rid=>{
+      const cov = state.dayCoverage[k][rid];
+      if(cov && cov.driverId===driverId) delete state.dayCoverage[k][rid];
+    });
+  }
+
+  // Clear home bus assignment
+  if(state.driverBusAssignments) delete state.driverBusAssignments[driverId];
+
+  // Remove from absent/late lists
+  state.ops.absentDrivers = (state.ops.absentDrivers||[]).filter(id=>id!==driverId);
+  state.ops.lateDrivers = (state.ops.lateDrivers||[]).filter(id=>id!==driverId);
+
+  // Remove driver from roster
+  state.drivers = (state.drivers||[]).filter(x=>x.id!==driverId);
+
+  logEvent("", `🧾 Driver terminated: ${d.name}`);
+  save(); renderAll();
+}
+
 function budgetAllocation(){
   return Math.round(Number(state.district.budget.baseAllocation||2500) * Number(state.district.budget.modifier||1.0));
 }
@@ -2115,6 +2161,7 @@ function renderDrivers(){
                     </select>
                     <button onclick="praiseDriver('${d.id}')">Praise</button>
                     <button onclick="writeUpDriver('${d.id}')">Write-up</button>
+                    <button class="danger" onclick="fireDriver('${d.id}')">Fire</button>
                     <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value='';">
                       <option value="">Train…</option>
                       ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
