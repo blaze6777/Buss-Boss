@@ -88,9 +88,11 @@
 
       <div class="row" style="margin-top:10px;">
         <button class="primary" onclick="startSchoolDay()">🌅 Start School Day</button>
+        <button onclick="doAllPreTrips()">✅ Pre-Trip ALL</button>
         <span class="pill">📣 PR: <span id="prMeter" class="mono"></span>/100</span>
         <span class="pill">🚨 Incidents: <span id="incToday" class="mono"></span></span>
         <button onclick="viewComplaints()">📨 Complaints</button>
+        <button onclick="viewSchoolYearAssignments()">📚 Assignment Log</button>
         <button onclick="runSurpriseAudit()">🕵️ Surprise Audit</button>
       </div>
       <div id="opsBanner" class="small muted" style="margin-top:8px;"></div>
@@ -736,6 +738,7 @@ function resolveDriverForRouteToday(routeId){
 function recordIncident(type, desc){
   const k = dayKey();
   if(!state.incidents) state.incidents={};
+  if(!Array.isArray(state.schoolYearAssignments)) state.schoolYearAssignments=[];
   if(!state.incidents[k]) state.incidents[k]=[];
   state.incidents[k].push({ type, desc, ts:Date.now() });
 }
@@ -790,6 +793,53 @@ function maybeIncident(bus, route, driver, shift, overtime){
   logEvent(bus.id, `🚨 ${msg}`);
   recordIncident("serious", msg);
   addComplaint("Serious Incident", `Serious incident on ${route.name}.`);
+}
+
+
+function snapshotSchoolYearAssignments(label){
+  const routes = allRoutes().filter(r=>!r.isAdhoc);
+  const routeLines = routes.map(r=>{
+    const busId = state.routeAssignments[r.id] || "";
+    const drvId = state.routeDriverAssignments[r.id] || "";
+    const bus = busId ? byId(state.buses, busId) : null;
+    const drv = drvId ? byId(state.drivers, drvId) : null;
+    return { routeId:r.id, routeName:r.name, busId, busName:bus?bus.name:"", driverId:drvId, driverName:drv?drv.name:"" };
+  });
+
+  const driverLines = state.drivers.map(d=>{
+    const hb = getDriverHomeBusId(d.id) || "";
+    const bus = hb ? byId(state.buses, hb) : null;
+    return { driverId:d.id, driverName:d.name, homeBusId:hb, homeBusName:bus?bus.name:"" };
+  });
+
+  state.schoolYearAssignments.unshift({ label, year: state.gameYear, savedAt: Date.now(), routes: routeLines, drivers: driverLines });
+  state.schoolYearAssignments = state.schoolYearAssignments.slice(0, 30);
+}
+
+function viewSchoolYearAssignments(){
+  const logs = state.schoolYearAssignments || [];
+  if(!logs.length) return alert("No school-year assignment history yet. Start a new school year to create the first snapshot.");
+  const blocks = logs.slice(0,6).map(l=>{
+    const dt = new Date(l.savedAt||Date.now());
+    const when = dt.toLocaleDateString();
+    return `📚 ${l.label} (Game Year ${l.year}) — saved ${when}`;
+  }).join("\n\n");
+  const ok = confirm(blocks + "\n\nOK = View latest details\nCancel = Close");
+  if(!ok) return;
+
+  const latest = logs[0];
+  const routeDetails = (latest.routes||[]).map(x=>{
+    const b = x.busName ? x.busName : "(no bus)";
+    const d = x.driverName ? x.driverName : "(no driver)";
+    return `• ${x.routeName}: ${b} — ${d}`;
+  }).join("\n");
+
+  const driverDetails = (latest.drivers||[]).map(x=>{
+    const b = x.homeBusName ? x.homeBusName : "(none)";
+    return `• ${x.driverName}: Home Bus = ${b}`;
+  }).join("\n");
+
+  alert(`📚 ${latest.label} — Assignment Snapshot\n\nROUTES\n${routeDetails}\n\nDRIVERS\n${driverDetails}`);
 }
 
 function budgetAllocation(){
@@ -857,6 +907,7 @@ const state = load() || {
   daySchedule: {},
   dayCoverage: {},
   incidents: {},
+  schoolYearAssignments: [],
   district: { board: { lastMeetingMonth: null, minutes: [] }, budget: { baseAllocation: 2500, modifier: 1.0 }, advocacy: { level: 0, demand: null, lastUpdatedDate: null } },
   lotInventory: [],
   hiring: { pool: [] },
@@ -1724,6 +1775,7 @@ function startNewSchoolYear(startYear){
   generateLotForYear(state.gameYear);
   logEvent("", `🎒 New school year started: ${startYear}-${startYear+1} (+$${allocation})`);
   runRouteBidding();
+  snapshotSchoolYearAssignments(`${startYear}-${startYear+1}`);
   save(); renderAll();
 }
 
