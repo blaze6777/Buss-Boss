@@ -55,6 +55,7 @@
       </div>
       <div class="row">
         <span class="pill">💰 Budget: <span id="walletTop" class="mono"></span></span>
+        <span class="pill">🧩 Build: <span id="appVer" class="mono"></span></span>
         <span class="pill">🗓️ Day: <span id="gameDateTop" class="mono"></span></span>
         <span class="pill">📅 Year: <span id="gameYearTop" class="mono"></span></span>
         <button class="primary" onclick="nextSchoolDay()">➡️ Next School Day</button>
@@ -335,6 +336,8 @@
 </div>
 
 <script>
+const APP_VERSION = "v2.4 (PreTrip top + Year Log + Rename/Fire + Paid Training + Raises + Payroll)";
+
 /* =========================
    STORAGE / HELPERS
 ========================= */
@@ -1880,6 +1883,7 @@ function renderAll(){
   ensureDispatchDay();
 
   document.getElementById("walletTop").textContent = `$${Math.round(state.wallet).toLocaleString()}`;
+  const verEl=document.getElementById("appVer"); if(verEl) verEl.textContent = APP_VERSION;
   document.getElementById("walletGarage").textContent = `$${Math.round(state.wallet).toLocaleString()}`;
   document.getElementById("gameDateTop").textContent = state.gameDate;
   document.getElementById("gameYearTop").textContent = state.gameYear;
