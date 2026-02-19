@@ -84,10 +84,6 @@ table { width: 100%; min-width: 900px; }
       </div>
       <div class="row">
         <span class="pill">💰 Budget: <span id="walletTop" class="mono"></span></span>
-        <span class="pill">⛽ Fuel: $<span id="fuelPrice" class="mono"></span>/gal</span>
-        <span class="pill">🟢 JS: <span id="jsStatus" class="mono">...</span></span>
-        <span class="pill">🧾 DOT: <span id="dotStatus" class="mono"></span></span>
-        <span class="pill">🛑 Strike: <span id="strikeDays" class="mono"></span>d</span>
         <span class="pill">🧩 Build: <span id="appVer" class="mono"></span></span>
         <span class="pill">🗓️ Day: <span id="gameDateTop" class="mono"></span></span>
         <span class="pill">📅 Year: <span id="gameYearTop" class="mono"></span></span>
@@ -126,9 +122,6 @@ table { width: 100%; min-width: 900px; }
         <span class="pill">📣 PR: <span id="prMeter" class="mono"></span>/100</span>
         <span class="pill">🚨 Incidents: <span id="incToday" class="mono"></span></span>
         <button onclick="viewComplaints()">📨 Complaints</button>
-        <button onclick="runDOTInspection(true)">🧾 DOT</button>
-        <button onclick="runUnionNegotiation()">🧑‍⚖️ Union</button>
-        <button onclick="openReports()">📊 Reports</button>
         <button onclick="viewSchoolYearAssignments()">📚 Assignment Log</button>
         <button onclick="runSurpriseAudit()">🕵️ Surprise Audit</button>
       </div>
@@ -372,11 +365,6 @@ table { width: 100%; min-width: 900px; }
 </div>
 
 <script>
-function setJsStatus(v){ const el=document.getElementById('jsStatus'); if(el) el.textContent=v; }
-document.addEventListener('DOMContentLoaded', ()=>setJsStatus('DOM'));
-setTimeout(()=>setJsStatus(document.readyState==='complete'?'READY':'SCRIPT'), 0);
-
-
 const APP_VERSION = "v2.6 (Year fix + Paid Training + Raises + Payroll + Rename/Fire + Year Log)";
 
 /* =========================
@@ -783,26 +771,6 @@ function recordIncident(type, desc){
   const k = dayKey();
   if(!state.incidents) state.incidents={};
   if(!Array.isArray(state.schoolYearAssignments)) state.schoolYearAssignments=[];
-  // === MIGRATION_SAFE_REALISM ===
-  if(!state.fuel) state.fuel={ pricePerGallon:3.25, mpgDefault:7.0, idleGph:0.8, spentThisYear:0, spentToday:0, idleMinutesToday:0 };
-  if(typeof state.fuel.pricePerGallon!=="number") state.fuel.pricePerGallon=3.25;
-  if(typeof state.fuel.mpgDefault!=="number") state.fuel.mpgDefault=7.0;
-  if(typeof state.fuel.idleGph!=="number") state.fuel.idleGph=0.8;
-  if(typeof state.fuel.spentThisYear!=="number") state.fuel.spentThisYear=0;
-  if(typeof state.fuel.spentToday!=="number") state.fuel.spentToday=0;
-  if(typeof state.fuel.idleMinutesToday!=="number") state.fuel.idleMinutesToday=0;
-  if(!state.dot) state.dot={ compliance:85, lastResult:null };
-  if(typeof state.dot.compliance!=="number") state.dot.compliance=85;
-  if(!state.union) state.union={ contract:{ raiseBase:0.02, benefitsPct:0.06 }, nextNegotiationYear:null, strikeDaysLeft:0 };
-  if(!state.union.contract) state.union.contract={ raiseBase:0.02, benefitsPct:0.06 };
-  if(typeof state.union.contract.raiseBase!=="number") state.union.contract.raiseBase=0.02;
-  if(typeof state.union.contract.benefitsPct!=="number") state.union.contract.benefitsPct=0.06;
-  if(typeof state.union.nextNegotiationYear!=="number" && state.union.nextNegotiationYear!==null) state.union.nextNegotiationYear=null;
-  if(typeof state.union.strikeDaysLeft!=="number") state.union.strikeDaysLeft=0;
-  if(!state.reports) state.reports={ fuelRuns:[], payrollHistory:[] };
-  if(!Array.isArray(state.reports.fuelRuns)) state.reports.fuelRuns=[];
-  if(!Array.isArray(state.reports.payrollHistory)) state.reports.payrollHistory=[];
-  // === END MIGRATION_SAFE_REALISM ===
   if(!state.incidents[k]) state.incidents[k]=[];
   state.incidents[k].push({ type, desc, ts:Date.now() });
 }
@@ -952,252 +920,6 @@ function fireDriver(driverId){
   save(); renderAll();
 }
 
-
-// =========================
-// REALISM: Fuel, DOT, Union, Reports
-// =========================
-function estimateBusMPG(bus){
-  const base = Number(state.fuel.mpgDefault||7.0);
-  const year = Number(bus.year||2010);
-  const age = Math.max(0, state.gameYear - year);
-  const cond = Number(bus.condition||100);
-  let mpg = base - Math.min(2.2, age*0.08) + Math.min(0.8, (cond-80)*0.02);
-  return clamp(mpg, 4.5, 10.5);
-}
-function chargeFuel(bus, miles, idleMinutes){
-  const mpg = estimateBusMPG(bus);
-  const gallons = miles / mpg;
-  const idleGallons = (Number(state.fuel.idleGph||0.8)/60) * idleMinutes;
-  const totalGallons = gallons + idleGallons;
-  const price = Number(state.fuel.pricePerGallon||3.25);
-  const cost = totalGallons * price;
-  state.wallet -= cost;
-  state.fuel.spentToday += cost;
-  state.fuel.spentThisYear += cost;
-  state.fuel.idleMinutesToday += idleMinutes;
-
-  // report log
-  state.reports.fuelRuns.push({
-    gameYear: state.gameYear,
-    dayKey: dispatchKey(),
-    busId: bus.id,
-    miles: Number(miles||0),
-    idleMin: Number(idleMinutes||0),
-    price,
-    cost
-  });
-  if(state.reports.fuelRuns.length>5000) state.reports.fuelRuns = state.reports.fuelRuns.slice(-4500);
-
-  return { mpg, gallons: totalGallons, cost, price };
-}
-function maybeFuelPriceSwing(){
-  let p = Number(state.fuel.pricePerGallon||3.25);
-  const shock = (Math.random()<0.12) ? (Math.random()<0.5 ? -0.55 : 0.75) : 0;
-  p += (Math.random()*0.22 - 0.11) + shock;
-  p = clamp(p, 2.10, 5.80);
-  state.fuel.pricePerGallon = Math.round(p*100)/100;
-  logEvent("", shock!==0 ? `⛽ Fuel market shock: $${state.fuel.pricePerGallon.toFixed(2)}/gal` : `⛽ Fuel price: $${state.fuel.pricePerGallon.toFixed(2)}/gal`);
-}
-function dotChecklistIssues(){
-  const issues=[];
-  const down = state.buses.filter(b=>(b.status||"ready")==="down").length;
-  if(down >= Math.max(2, Math.floor(state.buses.length*0.35))) issues.push("Maintenance backlog (many buses DOWN)");
-  // pre-trip: if you have a pretrip system, count missing
-  const k = dispatchKey();
-  const sched = (state.daySchedule && state.daySchedule[k]) ? state.daySchedule[k] : {};
-  const anySkipped = Object.values(sched).some(x=>x && x.skippedPreTrip);
-  if(anySkipped) issues.push("Pre-trip documentation missing for at least one run today");
-  // cert: SPED route needs SPED
-  const routes = allRoutes().filter(r=>!r.isAdhoc);
-  routes.forEach(r=>{
-    const drvId = state.routeDriverAssignments[r.id] || "";
-    if(!drvId) return;
-    const d = byId(state.drivers, drvId);
-    if(!d) return;
-    const needs = (String(r.name||"").toLowerCase().includes("special")) ? "SPED" : null;
-    if(needs && !(d.certs||[]).includes(needs)) issues.push(`Cert gap: ${d.name} on ${r.name} without ${needs}`);
-  });
-  if(Number(state.union.strikeDaysLeft||0)>0) issues.push("Labor disruption (strike) impacts service");
-  return issues;
-}
-function runDOTInspection(force=false){
-  // pass chance based on compliance + issues
-  const issues = dotChecklistIssues();
-  let passProb = clamp(Number(state.dot.compliance||85)/100, 0.15, 0.98);
-  passProb -= Math.min(0.25, issues.length*0.06);
-  const passed = Math.random() < passProb;
-
-  if(passed){
-    state.dot.lastResult="PASS";
-    state.dot.compliance = clamp(Number(state.dot.compliance||85)+3, 0, 100);
-    state.ops.prScore = clamp(Number(state.ops.prScore||70)+2, 0, 100);
-    logEvent("", "🧾 DOT Inspection PASS (+PR)");
-    if(force) alert("🧾 DOT inspection PASSED.");
-  } else {
-    state.dot.lastResult="FAIL";
-    state.dot.compliance = clamp(Number(state.dot.compliance||85)-7, 0, 100);
-    const fine = 2500 + randInt(0, 3500) + issues.length*400;
-    state.wallet -= fine;
-    state.ops.prScore = clamp(Number(state.ops.prScore||70)-5, 0, 100);
-    state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0)+6, 0, 100);
-    addComplaint("DOT", `DOT audit found issues. Fine: $${fine.toLocaleString()}.`);
-    logEvent("", `🧾 DOT Inspection FAIL (-$${fine.toLocaleString()}, -PR)`);
-    // pull a random ready bus
-    const candidates = state.buses.filter(b=>(b.status||"ready")==="ready");
-    if(candidates.length){
-      const b = candidates[randInt(0, candidates.length-1)];
-      b.status="down"; b.maintenanceNote="DOT hold / re-inspection";
-      logEvent(b.id, "🔒 DOT hold: pulled for inspection.");
-    }
-    alert(`🧾 DOT INSPECTION FAILED\n\nIssues:\n- ${issues.slice(0,6).join("\n- ") || "General compliance"}\n\nFine: $${fine.toLocaleString()}`);
-  }
-  if(issues.length){
-    logEvent("", `🧾 DOT notes: ${issues.slice(0,3).join("; ")}${issues.length>3?"…":""}`);
-  }
-  save(); renderAll();
-}
-function runUnionNegotiation(){
-  const yr = Number(state.gameYear||2026);
-  if(state.union.nextNegotiationYear==null) state.union.nextNegotiationYear = yr;
-  if(yr < state.union.nextNegotiationYear) return;
-
-  const demandRaise = clamp(0.03 + Math.random()*0.05, 0.03, 0.08);
-  const demandBenefits = clamp(0.06 + Math.random()*0.06, 0.06, 0.12);
-
-  const accept = confirm(
-`🧑‍⚖️ UNION NEGOTIATION (${yr}-${yr+1})
-Union demands:
-• Base annual raise: ${(demandRaise*100).toFixed(0)}%
-• Benefits burden: ${(demandBenefits*100).toFixed(0)}%
-
-OK = Accept
-Cancel = Negotiate`
-  );
-  if(accept){
-    state.union.contract.raiseBase = demandRaise;
-    state.union.contract.benefitsPct = demandBenefits;
-    logEvent("", `🧑‍⚖️ Contract ACCEPTED: base ${(demandRaise*100).toFixed(0)}%, benefits ${(demandBenefits*100).toFixed(0)}%`);
-    state.union.nextNegotiationYear = yr + 1;
-    save(); renderAll();
-    return;
-  }
-
-  const leverage = (Number(state.ops.prScore||70) + Number(state.dot.compliance||85))/200;
-  const success = Math.random() < clamp(0.35 + leverage*0.4, 0.25, 0.75);
-  if(success){
-    const agreedRaise = clamp(demandRaise - 0.01, 0.02, demandRaise);
-    const agreedBenefits = clamp(demandBenefits - 0.02, 0.05, demandBenefits);
-    state.union.contract.raiseBase = agreedRaise;
-    state.union.contract.benefitsPct = agreedBenefits;
-    logEvent("", `🧑‍⚖️ Contract NEGOTIATED: base ${(agreedRaise*100).toFixed(0)}%, benefits ${(agreedBenefits*100).toFixed(0)}%`);
-  } else {
-    const days = randInt(1,3);
-    state.union.strikeDaysLeft = days;
-    logEvent("", `🛑 Negotiations FAILED: strike ${days} day(s).`);
-    addComplaint("Union", "Union action disrupts transportation service.");
-    state.ops.prScore = clamp(Number(state.ops.prScore||70)-4, 0, 100);
-    state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0)+4, 0, 100);
-    alert(`🛑 STRIKE\n\nNegotiations failed. Expect ${days} day(s) of shortages.`);
-  }
-  state.union.nextNegotiationYear = yr + 1;
-  save(); renderAll();
-}
-
-// ===== Reports Modal =====
-let reportTab="summary";
-function openReports(){ setReportTab(reportTab); document.getElementById("reportsBackdrop").style.display="flex"; }
-function closeReports(){ document.getElementById("reportsBackdrop").style.display="none"; }
-function setReportTab(tab){ reportTab=tab; renderReports(); }
-function yearLabel(){ const y=Number(state.gameYear||2026); return `${y}-${y+1}`; }
-function fuelRunsThisYear(){ const y=Number(state.gameYear||2026); return (state.reports.fuelRuns||[]).filter(x=>Number(x.gameYear||y)===y); }
-function latestPayroll(){ const y=Number(state.gameYear||2026); const rec=(state.reports.payrollHistory||[]).find(x=>Number(x.gameYear||0)===y); return rec||null; }
-
-function renderReports(){
-  const y=Number(state.gameYear||2026);
-  const fuel=fuelRunsThisYear();
-  const fuelYtd=fuel.reduce((s,x)=>s+Number(x.cost||0),0);
-  const pay=latestPayroll();
-  const payTotal=pay ? (Number(pay.payroll||0)+Number(pay.benefits||0)) : 0;
-
-  document.getElementById("repYear").textContent = yearLabel();
-  document.getElementById("repFuelYtd").textContent = Math.round(fuelYtd).toLocaleString();
-  document.getElementById("repPayroll").textContent = Math.round(payTotal).toLocaleString();
-
-  const body=document.getElementById("reportsBody");
-  document.getElementById("repTabSummary").className = reportTab==="summary" ? "primary" : "";
-  document.getElementById("repTabFuel").className = reportTab==="fuel" ? "primary" : "";
-  document.getElementById("repTabPayroll").className = reportTab==="payroll" ? "primary" : "";
-
-  if(reportTab==="summary"){
-    const idle=fuel.reduce((s,x)=>s+Number(x.idleMin||0),0);
-    const miles=fuel.reduce((s,x)=>s+Number(x.miles||0),0);
-    const avgP=fuel.length ? (fuel.reduce((s,x)=>s+Number(x.price||0),0)/fuel.length) : Number(state.fuel.pricePerGallon||0);
-    body.innerHTML = `
-      <div class="grid">
-        <div class="card">
-          <strong>Fuel Summary</strong>
-          <div class="small muted">YTD fuel spend: <strong>$${Math.round(fuelYtd).toLocaleString()}</strong></div>
-          <div class="small muted">Miles logged: <strong>${Math.round(miles).toLocaleString()}</strong></div>
-          <div class="small muted">Idle minutes: <strong>${Math.round(idle).toLocaleString()}</strong></div>
-          <div class="small muted">Avg price paid: <strong>$${avgP.toFixed(2)}/gal</strong></div>
-        </div>
-        <div class="card">
-          <strong>Payroll Summary</strong>
-          ${pay ? `
-            <div class="small muted">Payroll: <strong>$${Math.round(pay.payroll).toLocaleString()}</strong></div>
-            <div class="small muted">Benefits: <strong>$${Math.round(pay.benefits).toLocaleString()}</strong> (${Math.round((pay.benefitsPct||0)*100)}%)</div>
-            <div class="small muted">Contract base raise: <strong>${Math.round((pay.raiseBase||0)*100)}%</strong></div>
-          ` : `<div class="muted small">No payroll record yet for this year. Start a new school year to generate it.</div>`}
-        </div>
-        <div class="card">
-          <strong>DOT / Labor</strong>
-          <div class="small muted">DOT compliance: <strong>${Math.round(Number(state.dot.compliance||0))}/100</strong></div>
-          <div class="small muted">Last DOT: <strong>${state.dot.lastResult||"—"}</strong></div>
-          <div class="small muted">Strike days: <strong>${Math.max(0,Number(state.union.strikeDaysLeft||0))}</strong></div>
-        </div>
-      </div>
-    `;
-    return;
-  }
-  if(reportTab==="fuel"){
-    if(!fuel.length){ body.innerHTML = `<div class="muted">No fuel runs logged yet. Run routes to generate data.</div>`; return; }
-    const rows = fuel.slice().reverse().slice(0,120).map(x=>{
-      const b=byId(state.buses,x.busId);
-      return `<tr><td class="mono">${x.dayKey||""}</td><td>${escapeHtml(b?b.name:x.busId)}</td><td class="right">${Math.round(x.miles||0)}</td><td class="right">${Math.round(x.idleMin||0)}</td><td class="right">$${Number(x.price||0).toFixed(2)}</td><td class="right">$${Math.round(x.cost||0).toLocaleString()}</td></tr>`;
-    }).join("");
-    body.innerHTML = `<div class="card"><strong>Fuel Runs (latest 120)</strong><table><thead><tr><th>Day</th><th>Bus</th><th class="right">Miles</th><th class="right">Idle</th><th class="right">$/gal</th><th class="right">Cost</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-    return;
-  }
-  if(reportTab==="payroll"){
-    const recs=(state.reports.payrollHistory||[]).slice().sort((a,b)=>Number(b.gameYear||0)-Number(a.gameYear||0)).slice(0,12);
-    if(!recs.length){ body.innerHTML = `<div class="muted">No payroll history yet. Start a new school year.</div>`; return; }
-    const rows=recs.map(r=>{
-      const label=`${r.gameYear}-${Number(r.gameYear)+1}`;
-      const total=Number(r.payroll||0)+Number(r.benefits||0);
-      return `<tr><td>${label}</td><td class="right">$${Math.round(r.payroll||0).toLocaleString()}</td><td class="right">$${Math.round(r.benefits||0).toLocaleString()}</td><td class="right">$${Math.round(total).toLocaleString()}</td><td class="right">${Math.round((r.raiseBase||0)*100)}%</td><td class="right">${Math.round((r.benefitsPct||0)*100)}%</td></tr>`;
-    }).join("");
-    body.innerHTML = `<div class="card"><strong>Payroll History</strong><table><thead><tr><th>Year</th><th class="right">Payroll</th><th class="right">Benefits</th><th class="right">Total</th><th class="right">Base Raise</th><th class="right">Benefits%</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-    return;
-  }
-}
-function exportReportsCSV(){
-  const fuel=(state.reports.fuelRuns||[]);
-  const pay=(state.reports.payrollHistory||[]);
-  const fuelCsv=["gameYear,dayKey,busId,miles,idleMin,price,cost"].concat(fuel.map(x=>[x.gameYear,x.dayKey,x.busId,Number(x.miles||0),Number(x.idleMin||0),Number(x.price||0),Number(x.cost||0)].join(","))).join("\n");
-  const payCsv=["gameYear,payroll,benefits,raiseBase,benefitsPct"].concat(pay.map(x=>[x.gameYear,Number(x.payroll||0),Number(x.benefits||0),Number(x.raiseBase||0),Number(x.benefitsPct||0)].join(","))).join("\n");
-  downloadText("FuelRuns.csv", fuelCsv);
-  downloadText("PayrollHistory.csv", payCsv);
-}
-function downloadText(filename, text){
-  const blob=new Blob([text], {type:"text/csv;charset=utf-8"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url; a.download=filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },0);
-}
-
 function budgetAllocation(){
   return Math.round(Number(state.district.budget.baseAllocation||2500) * Number(state.district.budget.modifier||1.0));
 }
@@ -1254,10 +976,6 @@ const state = load() || {
   buses: [],
   drivers: [],
   logs: [],
-  fuel: { pricePerGallon: 3.25, mpgDefault: 7.0, idleGph: 0.8, spentThisYear: 0, spentToday: 0, idleMinutesToday: 0 },
-  dot: { compliance: 85, lastResult: null },
-  union: { contract: { raiseBase: 0.02, benefitsPct: 0.06 }, nextNegotiationYear: null, strikeDaysLeft: 0 },
-  reports: { fuelRuns: [], payrollHistory: [] },
   customRoutes: [],
   routes: [],
   routeAssignments: {},
@@ -1427,16 +1145,6 @@ function opsBannerText(dayKey){
   return `${started} • Call-offs: ${state.ops.absentDrivers.length} • Late: ${state.ops.lateDrivers.length}`;
 }
 function startSchoolDay(){
-  state.fuel.spentToday=0;
-  state.fuel.idleMinutesToday=0;
-  if(Number(state.union.strikeDaysLeft||0)>0){
-    const active=state.drivers.filter(d=>!d.isRetired);
-    const n=Math.max(1, Math.round(active.length*(0.25+Math.random()*0.25)));
-    shuffle(active);
-    const strikers=active.slice(0,n).map(d=>d.id);
-    state.ops.absentDrivers = Array.from(new Set([...(state.ops.absentDrivers||[]), ...strikers]));
-    logEvent("", `🛑 Strike day: ${n} drivers unavailable.`);
-  }
   const dayKey=dispatchKey();
   ensureOpsForDay(dayKey);
   if(state.ops.dayStartedKey===dayKey) return alert("School day already started.");
@@ -2152,8 +1860,6 @@ function maybeAutoStartNewSchoolYear(){
 }
 function startNewSchoolYear(startYear){
   state.gameYear=startYear;
-  runUnionNegotiation();
-  maybeFuelPriceSwing();
   state.dispatch={};
   const allocation=budgetAllocation();
   state.wallet += allocation;
@@ -2163,8 +1869,7 @@ function startNewSchoolYear(startYear){
     if(typeof d.salary!=="number") d.salary = Math.round((38000 + randInt(0,12000))/100)*100;
     const exp = driverExperienceYears(d);
     const certBonus = Math.min(0.02, (d.certs||[]).length * 0.004);
-    const base = Number(state.union.contract.raiseBase||0.02);
-    const raisePct = clamp(base + Math.min(0.03, exp*0.005) + certBonus, base, 0.10);
+    const raisePct = clamp(0.02 + Math.min(0.03, exp*0.005) + certBonus, 0.02, 0.08);
     const old = d.salary;
     d.salary = Math.round((old * (1+raisePct))/100)*100;
     if(d.salary !== old){ logEvent("", `💵 Raise: ${d.name} +${Math.round(raisePct*100)}% ($${old}→$${d.salary})`); }
@@ -2175,13 +1880,6 @@ function startNewSchoolYear(startYear){
     .filter(d=>!d.isRetired)
     .reduce((sum,d)=> sum + Number(d.salary||0), 0);
   state.wallet -= payroll;
-  const benefits = payroll * Number(state.union.contract.benefitsPct||0.06);
-  state.wallet -= benefits;
-  logEvent("", `🧾 Benefits cost: -$${Math.round(benefits).toLocaleString()} (${Math.round((state.union.contract.benefitsPct||0)*100)}% of payroll)`);
-  if(state.reports && Array.isArray(state.reports.payrollHistory)){
-    state.reports.payrollHistory.unshift({ gameYear: state.gameYear, payroll, benefits, raiseBase: state.union.contract.raiseBase, benefitsPct: state.union.contract.benefitsPct, ts: Date.now() });
-    state.reports.payrollHistory = state.reports.payrollHistory.slice(0,25);
-  }
   logEvent("", `💳 Annual payroll paid: -$${payroll.toLocaleString()} (wallet now $${Math.round(state.wallet).toLocaleString()})`);
   if(state.wallet < 0){
     // soft penalty if you're in the red
@@ -2221,9 +1919,6 @@ function renderAll(){
   ensureDispatchDay();
 
   document.getElementById("walletTop").textContent = `$${Math.round(state.wallet).toLocaleString()}`;
-  const fp=document.getElementById("fuelPrice"); if(fp) fp.textContent = Number(state.fuel?.pricePerGallon ?? 3.25).toFixed(2);
-  const ds=document.getElementById("dotStatus"); if(ds) ds.textContent = state.dot?.lastResult ? state.dot.lastResult : "OK";
-  const sd=document.getElementById("strikeDays"); if(sd) sd.textContent = String(Math.max(0, Number(state.union?.strikeDaysLeft||0)));
   const verEl=document.getElementById("appVer"); if(verEl) verEl.textContent = APP_VERSION;
   document.getElementById("walletGarage").textContent = `$${Math.round(state.wallet).toLocaleString()}`;
   document.getElementById("gameDateTop").textContent = state.gameDate;
@@ -2626,31 +2321,13 @@ function renderLog(){
   `;
 }
 
-
-
 /* =========================
    INIT
 ========================= */
-function safeStart(){
-  try{
-    ensureDispatchDay();
-    renderAll();
-    recomputeAdvocacy();
-    maybeAutoStartNewSchoolYear();
-    setJsStatus('OK');
-  }catch(e){
-    setJsStatus('ERROR');
-    const msg=(e&&e.message)?e.message:String(e);
-    const banner=document.createElement('div');
-    banner.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#b91c1c;color:#fff;padding:12px 14px;border-radius:12px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35)';
-    banner.textContent='Bus Boss startup error: '+msg;
-    document.body.appendChild(banner);
-    alert("Bus Boss hit an error during startup:\n\n" + (e && e.message ? e.message : String(e)));
-    console.error(e);
-  }
-}
-window.addEventListener("DOMContentLoaded", safeStart);
-
+ensureDispatchDay();
+renderAll();
+recomputeAdvocacy();
+maybeAutoStartNewSchoolYear();
 </script>
 
   <!-- Coverage Modal -->
@@ -2670,31 +2347,6 @@ window.addEventListener("DOMContentLoaded", safeStart);
         <button class="primary" onclick="applyCoverage()">Apply Coverage</button>
       </div>
       <small class="muted">Notes: Overtime increases incident risk and lowers morale. Cancelled routes hit PR and parent advocacy.</small>
-    </div>
-  </div>
-
-  <!-- Reports Modal -->
-  <div id="reportsBackdrop" class="modal-backdrop" style="display:none">
-    <div class="modal">
-      <div class="split">
-        <h3>📊 Reports</h3>
-        <div class="row">
-          <span class="pill">Year: <span id="repYear" class="mono"></span></span>
-          <span class="pill">Fuel YTD: $<span id="repFuelYtd" class="mono"></span></span>
-          <span class="pill">Payroll+Benefits: $<span id="repPayroll" class="mono"></span></span>
-        </div>
-      </div>
-      <div class="row" style="margin:10px 0 8px 0">
-        <button onclick="setReportTab('summary')" id="repTabSummary">Summary</button>
-        <button onclick="setReportTab('fuel')" id="repTabFuel">Fuel</button>
-        <button onclick="setReportTab('payroll')" id="repTabPayroll">Payroll</button>
-        <button onclick="exportReportsCSV()">⬇️ Export CSV</button>
-      </div>
-      <div id="reportsBody"></div>
-      <div class="row" style="justify-content:flex-end;margin-top:12px">
-        <button class="primary" onclick="closeReports()">Close</button>
-      </div>
-      <small class="muted">Reports are based on your in-game history.</small>
     </div>
   </div>
 </body>
