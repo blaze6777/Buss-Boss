@@ -371,6 +371,12 @@ table { width: 100%; min-width: 900px; }
 </div>
 
 <script>
+window.onerror = function(msg, src, line, col, err){
+  try{
+    alert('Bus Boss JS Error:\n' + msg + '\n' + (src||'') + ':' + line + ':' + col);
+  }catch(e){}
+};
+
 const APP_VERSION = "v3.2.1 (Reports + DOT/Fuel/Union + Driver UI + Fix)";
 
 /* =========================
@@ -2733,7 +2739,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
     maybeAutoStartNewSchoolYear();
   }catch(err){
     console.error("Init error:", err);
-    alert("Bus Boss hit an error during startup. Open DevTools Console for details.");
+    alert("Bus Boss hit an error during startup:\n\n" + (err && err.message ? err.message : err) + "\n\n(If you can, open DevTools > Console for the full stack.)");
   }
 });
 </script>
