@@ -371,7 +371,7 @@ table { width: 100%; min-width: 900px; }
 </div>
 
 <script>
-const APP_VERSION = "v2.6 (Year fix + Paid Training + Raises + Payroll + Rename/Fire + Year Log)";
+const APP_VERSION = "v3.2.1 (Reports + DOT/Fuel/Union + Driver UI + Fix)";
 
 /* =========================
    STORAGE / HELPERS
@@ -401,9 +401,6 @@ function syncAdhocBusToDriver(){
 
 
 
-function escapeHtml(s){
-  return String(s??"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
 
 /* =========================
    ROUTES / TRAITS
