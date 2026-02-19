@@ -2328,6 +2328,26 @@ ensureDispatchDay();
 renderAll();
 recomputeAdvocacy();
 maybeAutoStartNewSchoolYear();
+
+// ===== AUTO START =====
+(function(){
+  function start(){
+    try{
+      if(typeof normalize === "function") normalize();
+      if(typeof ensureDispatchDay === "function") ensureDispatchDay();
+      if(typeof renderAll === "function") renderAll();
+    }catch(e){
+      alert("Bus Boss startup error:\n\n" + (e && e.message ? e.message : String(e)));
+      console.error(e);
+    }
+  }
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();
+
 </script>
 
   <!-- Coverage Modal -->
