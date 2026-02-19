@@ -67,6 +67,11 @@ table { width: 100%; min-width: 900px; }
 body{overflow-x:hidden;}
 .hscroll{ width:100%; max-width:100%; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
 .hscroll table{ min-width: 1400px; width: max-content; }
+
+/* Force wide table inside hscroll (override global table width:100%) */
+.hscroll{ overflow-x: scroll; }
+.hscroll table{ width: max-content !important; min-width: 1400px !important; }
+
 </style>
 </head>
 <body>
@@ -361,7 +366,7 @@ body{overflow-x:hidden;}
 </div>
 
 <script>
-const APP_VERSION = "v2.7.5 (Training Center + Driver table scroll fix)";
+const APP_VERSION = "v2.7.6 (Driver scroll actually works)";
 
 /* =========================
    STORAGE / HELPERS
