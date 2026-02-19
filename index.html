@@ -2763,6 +2763,16 @@ function boot(){
 }
 window.addEventListener("DOMContentLoaded", boot);
 
+// === AUTOBOOT_PATCH ===
+(function(){
+  function setStatus(v){ const el=document.getElementById('jsStatus'); if(el) el.textContent=v; }
+  setStatus('SCRIPT');
+  window.addEventListener('load', ()=>{ setStatus('LOADED'); try{ boot(); }catch(e){ console.error(e); } });
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && document.readyState==='complete'){ try{ boot(); }catch(e){} } });
+  if(document.readyState==='complete'){ try{ boot(); }catch(e){ console.error(e); } }
+})();
+// === END AUTOBOOT_PATCH ===
+
 </script>
 
   <!-- Coverage Modal -->
