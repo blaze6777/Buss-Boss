@@ -74,7 +74,7 @@ table { width: 100%; min-width: 900px; }
 }
 </style>
 </head>
-<body>
+<body onload=\"boot()\">
 <header>
   <div class="wrap">
     <div class="topbar">
@@ -88,6 +88,7 @@ table { width: 100%; min-width: 900px; }
         <span class="pill">🛑 Strike: <span id="strikeDays" class="mono"></span>d</span>
         <span class="pill">🧾 DOT: <span id="dotStatus" class="mono"></span></span>
         <span class="pill">🧩 Build: <span id="appVer" class="mono"></span></span>
+        <span class="pill">🟢 JS: <span id="jsStatus" class="mono">...</span></span>
         <span class="pill">🗓️ Day: <span id="gameDateTop" class="mono"></span></span>
         <span class="pill">📅 Year: <span id="gameYearTop" class="mono"></span></span>
         <button class="primary" onclick="nextSchoolDay()">➡️ Next School Day</button>
@@ -468,6 +469,8 @@ function trainDriver(driverId, certId){
   addMorale(d, c.moraleBoost);
   logEvent("", `🎓 Training: ${d.name} earned ${c.name} (-$${c.cost})`);
   save(); renderAll();
+    const jsEl2=document.getElementById('jsStatus'); if(jsEl2) jsEl2.textContent='OK';
+    console.log('Bus Boss boot OK');
 }
 function praiseDriver(driverId){
   const d = byId(state.drivers, driverId); if(!d || d.isRetired) return;
@@ -1924,7 +1927,8 @@ Run anyway? (Higher risk)`)) return;
 
   save(); renderAll();
 }
-function runAllScheduled(){ dailyRoutes().forEach(r=>{ try{ runScheduledRoute(r.id); }catch(e){console.error(e);} }); }
+function runAllScheduled(){ dailyRoutes().forEach(r=>{ try{ runScheduledRoute(r.id); }catch(e){const jsEl3=document.getElementById('jsStatus'); if(jsEl3) jsEl3.textContent='ERROR';
+    console.error(e);} }); }
 
 function runAdhocRoute(){
   const busId=document.getElementById("routeBus").value;
@@ -2741,6 +2745,8 @@ maybeAutoStartNewSchoolYear();
 
 // ===== BOOT =====
 function boot(){
+  const jsEl=document.getElementById('jsStatus'); if(jsEl) jsEl.textContent='BOOTING';
+  console.log('Bus Boss boot starting');
   try{
     if(!state.fuel) state.fuel = { pricePerGallon:3.25, mpgDefault:7.0, idleGph:0.8, spentThisYear:0, spentToday:0, idleMinutesToday:0 };
     if(!state.dot) state.dot = { compliance:85, nextCheckDay:null, lastResult:null };
