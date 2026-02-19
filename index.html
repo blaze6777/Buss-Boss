@@ -366,7 +366,7 @@ body{}
 </div>
 
 <script>
-const APP_VERSION = "v2.7.9 (Full Page Horizontal Scroll Enabled)";
+const APP_VERSION = "v2.8.1 (Fire from Training Center)";
 
 /* =========================
    STORAGE / HELPERS
@@ -961,6 +961,7 @@ function renderTrainingCenter(){
             </select>
             <button onclick="praiseDriver('${d.id}'); renderTrainingCenter();">Praise</button>
             <button onclick="writeUpDriver('${d.id}'); renderTrainingCenter();">Write-up</button>
+            <button class="danger" onclick="if(confirm(\'Fire this driver? This will remove them and clear assignments.\')){ fireDriver(\'${d.id}\'); } renderTrainingCenter();">🔥 Fire</button>
           </div>
         </td>
       </tr>
@@ -988,6 +989,71 @@ function bulkTrainPrompt(){
   if(!confirm(`Train ${active.length} drivers with ${cert.name}?\nCost: $${totalCost.toLocaleString()}`)) return;
   active.forEach(d=>{ if(!(d.certs||[]).includes(certId)) trainDriver(d.id, certId); });
   renderTrainingCenter();
+}
+
+
+// ===== Board Budget Requests =====
+function daysBetweenISO(aISO, bISO){
+  try{
+    const a=new Date(aISO), b=new Date(bISO);
+    const ms = b.getTime()-a.getTime();
+    return Math.floor(ms/(1000*60*60*24));
+  }catch(e){ return 9999; }
+}
+function requestBoardBudget(){
+  // cooldown: once every 20 school days (based on gameDate)
+  const todayISO = (state.gameDate ? new Date(state.gameDate).toISOString().slice(0,10) : new Date().toISOString().slice(0,10));
+  if(state.board && state.board.lastRequestISO){
+    const d = daysBetweenISO(state.board.lastRequestISO, todayISO);
+    if(d < 20){
+      alert(`🏛️ Board request is on cooldown.\n\nTry again in ${20-d} day(s).`);
+      return;
+    }
+  }
+
+  const cur = Math.round(Number(state.wallet||0));
+  const pr = Number(state.ops?.prScore ?? 70);
+  const adv = Number(state.district?.advocacy?.level ?? 0);
+  const negBoost = cur < 0 ? 0.15 : 0; // board more likely when you're in the red
+  const baseChance = clamp(0.25 + pr/200 + adv/250 + negBoost, 0.10, 0.85);
+
+  const amountStr = prompt(
+`🏛️ Request Board Funds\n\nCurrent budget: $${cur.toLocaleString()}\nPR: ${Math.round(pr)}/100\nAdvocacy: ${Math.round(adv)}/100\n\nApproval chance (est.): ${Math.round(baseChance*100)}%\n\nEnter amount to request (example: 25000):`,
+"25000"
+  );
+  if(!amountStr) return;
+  const req = Math.max(0, Math.round(Number(amountStr.replace(/[^0-9.-]/g,''))||0));
+  if(req <= 0) return alert("Enter a positive amount.");
+
+  // decision
+  const roll = Math.random();
+  let approved = 0;
+  let note = "";
+  if(roll < baseChance){
+    // approve full or partial
+    const partial = Math.random() < 0.35;
+    approved = partial ? Math.round(req * clamp(0.4 + Math.random()*0.4, 0.4, 0.8)) : req;
+    state.wallet += approved;
+    state.ops.prScore = clamp(Number(state.ops.prScore||70) + (approved>=req?2:1), 0, 100);
+    note = partial ? "PARTIAL APPROVAL" : "APPROVED";
+    logEvent("", `🏛️ Board ${note}: +$${approved.toLocaleString()} (requested $${req.toLocaleString()})`);
+    addComplaint("Board", `Board ${note.toLowerCase()} for additional funding. (+$${approved.toLocaleString()})`);
+  } else {
+    // denied; advocacy increases (pressure), PR may dip if budget is negative
+    state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0) + 6, 0, 100);
+    if(cur < 0) state.ops.prScore = clamp(Number(state.ops.prScore||70) - 2, 0, 100);
+    note = "DENIED";
+    logEvent("", `🏛️ Board DENIED request for $${req.toLocaleString()}. (Try improving PR/Advocacy)`);
+    addComplaint("Board", `Board denied additional funding request. Consider improving PR/Advocacy.`);
+  }
+
+  // record
+  if(!state.board) state.board={ lastRequestISO:null, requestsThisYear:0 };
+  state.board.lastRequestISO = todayISO;
+  state.board.requestsThisYear = Number(state.board.requestsThisYear||0) + 1;
+
+  save(); renderAll();
+  alert(`🏛️ Board Result: ${note}\n\nRequested: $${req.toLocaleString()}\n${note!=="DENIED" ? `Approved: $${approved.toLocaleString()}` : ""}`);
 }
 
 function budgetAllocation(){
@@ -1079,6 +1145,7 @@ function busAge(bus){ return Math.max(0, state.gameYear - Number(bus.inServiceYe
 function driverExperienceYears(d){ return Math.max(0, state.gameYear - Number(d.hiredYear || state.gameYear)); }
 
 function normalize(){
+  if(!state.board) state.board={ lastRequestISO:null, requestsThisYear:0 };
   if(!state.gameDate) state.gameDate=todayISO();
   if(!Array.isArray(state.buses)) state.buses=[];
   if(!Array.isArray(state.drivers)) state.drivers=[];
@@ -1929,6 +1996,8 @@ function maybeAutoStartNewSchoolYear(){
   }
 }
 function startNewSchoolYear(startYear){
+  if(!state.board) state.board={ lastRequestISO:null, requestsThisYear:0 };
+  state.board.requestsThisYear = 0;
   state.gameYear=startYear;
   state.dispatch={};
   const allocation=budgetAllocation();
