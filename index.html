@@ -85,6 +85,7 @@ table { width: 100%; min-width: 900px; }
       <div class="row">
         <span class="pill">💰 Budget: <span id="walletTop" class="mono"></span></span>
         <span class="pill">⛽ Fuel: $<span id="fuelPrice" class="mono"></span>/gal</span>
+        <span class="pill">🟢 JS: <span id="jsStatus" class="mono">...</span></span>
         <span class="pill">🧾 DOT: <span id="dotStatus" class="mono"></span></span>
         <span class="pill">🛑 Strike: <span id="strikeDays" class="mono"></span>d</span>
         <span class="pill">🧩 Build: <span id="appVer" class="mono"></span></span>
@@ -371,6 +372,10 @@ table { width: 100%; min-width: 900px; }
 </div>
 
 <script>
+function setJsStatus(v){ const el=document.getElementById('jsStatus'); if(el) el.textContent=v; }
+document.addEventListener('DOMContentLoaded', ()=>setJsStatus('DOM'));
+setTimeout(()=>setJsStatus(document.readyState==='complete'?'READY':'SCRIPT'), 0);
+
 
 const APP_VERSION = "v2.6 (Year fix + Paid Training + Raises + Payroll + Rename/Fire + Year Log)";
 
@@ -2632,7 +2637,14 @@ function safeStart(){
     renderAll();
     recomputeAdvocacy();
     maybeAutoStartNewSchoolYear();
+    setJsStatus('OK');
   }catch(e){
+    setJsStatus('ERROR');
+    const msg=(e&&e.message)?e.message:String(e);
+    const banner=document.createElement('div');
+    banner.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#b91c1c;color:#fff;padding:12px 14px;border-radius:12px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35)';
+    banner.textContent='Bus Boss startup error: '+msg;
+    document.body.appendChild(banner);
     alert("Bus Boss hit an error during startup:\n\n" + (e && e.message ? e.message : String(e)));
     console.error(e);
   }
