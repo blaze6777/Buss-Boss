@@ -64,7 +64,7 @@ table { width: 100%; min-width: 900px; }
 }
 
 /* Drivers horizontal scroll wrapper */
-body{overflow-x:hidden;}
+body{}
 .hscroll{ width:100%; max-width:100%; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
 .hscroll table{ min-width: 1400px; width: max-content; }
 
@@ -72,9 +72,6 @@ body{overflow-x:hidden;}
 .hscroll{ overflow-x: scroll; }
 .hscroll table{ width: max-content !important; min-width: 1400px !important; }
 
-
-/* Status select */
-#driversPanel select{max-width: 180px;}
 </style>
 </head>
 <body>
@@ -369,7 +366,7 @@ body{overflow-x:hidden;}
 </div>
 
 <script>
-const APP_VERSION = "v2.7.7 (Status dropdown always visible)";
+const APP_VERSION = "v2.7.9 (Full Page Horizontal Scroll Enabled)";
 
 /* =========================
    STORAGE / HELPERS
@@ -2297,7 +2294,7 @@ function renderDrivers(){
                 </td>
 
                 <td>
-                  <select onchange="setDriverStatus('${d.id}', this.value)" style="min-width:140px"><option value="available" ${d.status==='available'?'selected':''}>AVAILABLE</option><option value="sick" ${d.status==='sick'?'selected':''}>SICK</option><option value="vacation" ${d.status==='vacation'?'selected':''}>VACATION</option><option value="training" ${d.status==='training'?'selected':''}>TRAINING</option><option value="suspended" ${d.status==='suspended'?'selected':''}>SUSPENDED</option></select>
+                  <span class="tag">${(d.status||"available").toUpperCase()}</span>
                   ${lateTag} ${calloffTag}
                 </td>
                 <td class="right nowrap">
