@@ -52,6 +52,16 @@ table { width: 100%; min-width: 900px; }
 .actions-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
 .actions-wrap button, .actions-wrap select { flex: 0 0 auto; }
 
+
+/* Training Center */
+.train-table{width:100%;min-width:780px}
+.train-table td,.train-table th{vertical-align:top}
+.train-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.train-actions select{min-width:170px}
+@media (max-width: 560px){
+  .train-actions{justify-content:stretch}
+  .train-actions button,.train-actions select{width:100%}
+}
 </style>
 </head>
 <body>
@@ -898,6 +908,75 @@ function fireDriver(driverId){
 
   logEvent("", `🧾 Driver terminated: ${d.name}`);
   save(); renderAll();
+}
+
+
+// ===== Training Center (UI helper) =====
+function openTrainingCenter(){
+  renderTrainingCenter();
+  document.getElementById("trainingBackdrop").style.display="flex";
+}
+function closeTrainingCenter(){
+  document.getElementById("trainingBackdrop").style.display="none";
+}
+function renderTrainingCenter(){
+  const budEl=document.getElementById("trainBudget");
+  if(budEl) budEl.textContent = Math.round(Number(state.wallet||0)).toLocaleString();
+
+  const body=document.getElementById("trainingBody");
+  const list = (state.drivers||[]).slice().filter(d=>!d.isRetired).sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+
+  if(!list.length){
+    body.innerHTML = `<div class="muted">No active drivers to train.</div>`;
+    return;
+  }
+
+  const rows = list.map(d=>{
+    const certText = (d.certs||[]).length ? (d.certs.map(cid=>certById(cid)?.name||cid).join(", ")) : "No certs";
+    return `
+      <tr>
+        <td style="min-width:220px">
+          <strong>${escapeHtml(d.name||"")}</strong>
+          <div class="small muted">Exp: ${driverExperienceYears(d)}y • Salary: $${Number(d.salary||0).toLocaleString()}/yr</div>
+        </td>
+        <td style="min-width:280px">
+          <div class="small muted">${escapeHtml(certText)}</div>
+        </td>
+        <td class="right">
+          <div class="train-actions">
+            <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value=''; renderTrainingCenter();">
+              <option value="">Train…</option>
+              ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
+            </select>
+            <button onclick="praiseDriver('${d.id}'); renderTrainingCenter();">Praise</button>
+            <button onclick="writeUpDriver('${d.id}'); renderTrainingCenter();">Write-up</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  body.innerHTML = `
+    <div class="card">
+      <table class="train-table">
+        <thead><tr><th>Driver</th><th>Current Certs</th><th class="right">Actions</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function bulkTrainPrompt(){
+  const certList = CERTS.map(c=>`${c.id} = ${c.name} ($${c.cost})`).join("\n");
+  const certId = prompt("Bulk train ALL active drivers with which cert?\n\n" + certList + "\n\nType the cert id (example: snow)","snow");
+  if(!certId) return;
+  const cert = certById(certId);
+  if(!cert) return alert("Unknown cert id.");
+  const active = (state.drivers||[]).filter(d=>!d.isRetired);
+  const totalCost = active.reduce((sum,d)=> sum + ((d.certs||[]).includes(certId)?0:cert.cost), 0);
+  if(!confirm(`Train ${active.length} drivers with ${cert.name}?\nCost: $${totalCost.toLocaleString()}`)) return;
+  active.forEach(d=>{ if(!(d.certs||[]).includes(certId)) trainDriver(d.id, certId); });
+  renderTrainingCenter();
 }
 
 function budgetAllocation(){
@@ -2169,6 +2248,10 @@ function renderDrivers(){
     panel.innerHTML=`<div class="muted">No drivers yet. Add one or hire from the pool.</div>`;
   } else {
     panel.innerHTML=`
+      <div class="row" style="justify-content:space-between;align-items:center;margin:6px 0 10px 0">
+        <div class="muted small">Tip: Use the Training Center if the actions column is hard to reach.</div>
+        <div class="row"><button onclick="openTrainingCenter()">🎓 Training Center</button></div>
+      </div>
       <table>
         <thead><tr><th>Driver</th><th>Home Bus</th><th>Morale / Certs</th><th>Status</th><th class="right">Actions</th></tr></thead>
         <tbody>
@@ -2205,6 +2288,10 @@ function renderDrivers(){
                 </td>
                 <td class="right nowrap">
                   ${d.isRetired ? `<span class="muted small">—</span>` : `
+                    <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value='';" style="min-width:170px">
+                      <option value="">🎓 Train…</option>
+                      ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
+                    </select>
                     <select onchange="setDriverStatus('${d.id}', this.value)">
                       <option value="available" ${d.status==="available"?"selected":""}>available</option>
                       <option value="vacation" ${d.status==="vacation"?"selected":""}>vacation</option>
@@ -2213,11 +2300,7 @@ function renderDrivers(){
                     <button onclick="praiseDriver('${d.id}')">Praise</button>
                     <button onclick="writeUpDriver('${d.id}')">Write-up</button>
                     <button class="danger" onclick="fireDriver('${d.id}')">Fire</button>
-                    <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value='';">
-                      <option value="">Train…</option>
-                      ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
-                    </select>
-                  `}
+`}
                 </td>
               </tr>
             `;
@@ -2300,6 +2383,24 @@ maybeAutoStartNewSchoolYear();
         <button class="primary" onclick="applyCoverage()">Apply Coverage</button>
       </div>
       <small class="muted">Notes: Overtime increases incident risk and lowers morale. Cancelled routes hit PR and parent advocacy.</small>
+    </div>
+  </div>
+
+  <!-- Training Center Modal -->
+  <div id="trainingBackdrop" class="modal-backdrop" style="display:none">
+    <div class="modal">
+      <div class="split">
+        <h3>🎓 Training Center</h3>
+        <div class="row">
+          <span class="pill">Budget: $<span id="trainBudget" class="mono"></span></span>
+          <button onclick="bulkTrainPrompt()">✅ Bulk Train</button>
+        </div>
+      </div>
+      <div class="muted small" style="margin-top:6px">Train drivers here without hunting the far-right actions column. Training costs budget and adds certificates.</div>
+      <div id="trainingBody" style="margin-top:10px"></div>
+      <div class="row" style="justify-content:flex-end;margin-top:12px">
+        <button class="primary" onclick="closeTrainingCenter()">Close</button>
+      </div>
     </div>
   </div>
 </body>
