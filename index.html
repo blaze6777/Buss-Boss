@@ -52,6 +52,26 @@ table { width: 100%; min-width: 900px; }
 .actions-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
 .actions-wrap button, .actions-wrap select { flex: 0 0 auto; }
 
+
+/* Driver UI refresh */
+.driver-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:8px 0 12px 0}
+.driver-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:12px}
+.driver-card{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;background:rgba(255,255,255,.04)}
+.driver-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.driver-name{font-weight:800}
+.driver-sub{font-size:12px;opacity:.85;margin-top:2px}
+.driver-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.driver-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.driver-actions select{min-width:140px}
+.kpi-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.kpi{font-size:12px;opacity:.9;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 10px;background:rgba(255,255,255,.03)}
+.bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;min-width:140px}
+.bar > div{height:100%}
+@media (max-width: 560px){
+  .driver-actions{flex-direction:column;align-items:stretch}
+  .driver-actions button,.driver-actions select{width:100%}
+  .bar{width:100%}
+}
 </style>
 </head>
 <body>
@@ -64,6 +84,9 @@ table { width: 100%; min-width: 900px; }
       </div>
       <div class="row">
         <span class="pill">💰 Budget: <span id="walletTop" class="mono"></span></span>
+        <span class="pill">⛽ Fuel: $<span id="fuelPrice" class="mono"></span>/gal</span>
+        <span class="pill">🛑 Strike: <span id="strikeDays" class="mono"></span>d</span>
+        <span class="pill">🧾 DOT: <span id="dotStatus" class="mono"></span></span>
         <span class="pill">🧩 Build: <span id="appVer" class="mono"></span></span>
         <span class="pill">🗓️ Day: <span id="gameDateTop" class="mono"></span></span>
         <span class="pill">📅 Year: <span id="gameYearTop" class="mono"></span></span>
@@ -102,6 +125,9 @@ table { width: 100%; min-width: 900px; }
         <span class="pill">📣 PR: <span id="prMeter" class="mono"></span>/100</span>
         <span class="pill">🚨 Incidents: <span id="incToday" class="mono"></span></span>
         <button onclick="viewComplaints()">📨 Complaints</button>
+        <button onclick="openReports()">📊 Reports</button>
+        <button onclick="runDOTInspection(true)">🧾 Run DOT Inspection</button>
+        <button onclick="runUnionNegotiation()">🧑‍⚖️ Union Meeting</button>
         <button onclick="viewSchoolYearAssignments()">📚 Assignment Log</button>
         <button onclick="runSurpriseAudit()">🕵️ Surprise Audit</button>
       </div>
@@ -751,6 +777,23 @@ function recordIncident(type, desc){
   const k = dayKey();
   if(!state.incidents) state.incidents={};
   if(!Array.isArray(state.schoolYearAssignments)) state.schoolYearAssignments=[];
+  if(!state.fuel) state.fuel={ pricePerGallon:3.25, mpgDefault:7.0, idleGph:0.8, spentThisYear:0, spentToday:0, idleMinutesToday:0 };
+  if(!state.dot) state.dot={ compliance:85, nextCheckDay:null, lastResult:null };
+  if(!state.union) state.union={ contract:{ raiseBase:0.02, benefitsPct:0.06 }, nextNegotiationYear:null, strikeDaysLeft:0 };
+  if(!state.reports) state.reports={ fuelRuns: [], payrollHistory: [] };
+  if(!Array.isArray(state.reports.fuelRuns)) state.reports.fuelRuns=[];
+  if(!Array.isArray(state.reports.payrollHistory)) state.reports.payrollHistory=[];
+  if(typeof state.fuel.pricePerGallon!=='number') state.fuel.pricePerGallon=3.25;
+  if(typeof state.fuel.mpgDefault!=='number') state.fuel.mpgDefault=7.0;
+  if(typeof state.fuel.idleGph!=='number') state.fuel.idleGph=0.8;
+  if(typeof state.fuel.spentThisYear!=='number') state.fuel.spentThisYear=0;
+  if(typeof state.fuel.spentToday!=='number') state.fuel.spentToday=0;
+  if(typeof state.fuel.idleMinutesToday!=='number') state.fuel.idleMinutesToday=0;
+  if(typeof state.dot.compliance!=='number') state.dot.compliance=85;
+  if(!state.union.contract) state.union.contract={ raiseBase:0.02, benefitsPct:0.06 };
+  if(typeof state.union.contract.raiseBase!=='number') state.union.contract.raiseBase=0.02;
+  if(typeof state.union.contract.benefitsPct!=='number') state.union.contract.benefitsPct=0.06;
+  if(typeof state.union.strikeDaysLeft!=='number') state.union.strikeDaysLeft=0;
   if(!state.incidents[k]) state.incidents[k]=[];
   state.incidents[k].push({ type, desc, ts:Date.now() });
 }
@@ -900,6 +943,358 @@ function fireDriver(driverId){
   save(); renderAll();
 }
 
+
+// ===== Fuel + Idling =====
+function estimateBusMPG(bus){
+  // Older/poor condition buses get worse mpg
+  const base = Number(state.fuel.mpgDefault||7.0);
+  const year = Number(bus.year||2010);
+  const age = Math.max(0, state.gameYear - year);
+  const cond = Number(bus.condition||100);
+  let mpg = base - Math.min(2.0, age*0.08) + Math.min(0.8, (cond-80)*0.02);
+  mpg = clamp(mpg, 4.5, 10.5);
+  return mpg;
+}
+function chargeFuel(bus, miles, idleMinutes){
+  const mpg = estimateBusMPG(bus);
+  const gallons = miles / mpg;
+  const idleGallons = (Number(state.fuel.idleGph||0.8) / 60) * idleMinutes;
+  const totalGallons = gallons + idleGallons;
+  const cost = totalGallons * Number(state.fuel.pricePerGallon||0);
+  state.wallet -= cost;
+  state.fuel.spentToday += cost;
+  state.fuel.spentThisYear += cost;
+  state.fuel.idleMinutesToday += idleMinutes;
+  // Record for reports
+  if(state.reports && Array.isArray(state.reports.fuelRuns)){
+    state.reports.fuelRuns.push({ gameYear: state.gameYear, dayKey: dispatchKey(), busId: bus.id, miles, idleMin: idleMinutes, price: state.fuel.pricePerGallon, cost });
+    if(state.reports.fuelRuns.length > 5000) state.reports.fuelRuns = state.reports.fuelRuns.slice(-4500);
+  }
+  return { mpg, gallons: totalGallons, cost };
+}
+function maybeFuelPriceSwing(){
+  // Random walk with occasional shock
+  let p = Number(state.fuel.pricePerGallon||3.25);
+  const shock = (Math.random()<0.12) ? (Math.random()<0.5 ? -0.55 : 0.75) : 0;
+  p += (Math.random()*0.22 - 0.11) + shock;
+  p = clamp(p, 2.10, 5.80);
+  state.fuel.pricePerGallon = Math.round(p*100)/100;
+  if(shock!==0){
+    logEvent("", `⛽ Fuel market shock: now $${state.fuel.pricePerGallon.toFixed(2)}/gal`);
+  } else {
+    logEvent("", `⛽ Fuel price update: $${state.fuel.pricePerGallon.toFixed(2)}/gal`);
+  }
+}
+
+// ===== DOT Inspections =====
+function dotChecklistIssues(){
+  const issues=[];
+  // Maintenance: buses with open defects or down status but still assigned/running is handled elsewhere; here we scan defect log if exists
+  const down = state.buses.filter(b=>(b.status||"ready")==="down").length;
+  if(down >= Math.max(2, Math.floor(state.buses.length*0.35))) issues.push("High % of fleet marked DOWN (maintenance backlog)");
+
+  // Pre-trip compliance: if any drivers skipped pre-trip today
+  const k = dispatchKey();
+  const sched = (state.daySchedule && state.daySchedule[k]) ? state.daySchedule[k] : {};
+  const anySkipped = Object.values(sched).some(x=>x && x.skippedPreTrip);
+  if(anySkipped) issues.push("Pre-trip documentation missing for at least one run today");
+
+  // Cert compliance: Special Ed route should have SPED cert if driver assigned
+  const routes = allRoutes().filter(r=>!r.isAdhoc);
+  routes.forEach(r=>{
+    const rid=r.id;
+    const drvId = state.routeDriverAssignments[rid] || "";
+    if(!drvId) return;
+    const d = byId(state.drivers, drvId);
+    if(!d) return;
+    const requires = (String(r.name||"").toLowerCase().includes("special") || String(r.school||"").toLowerCase()==="special") ? "SPED" : null;
+    if(requires && !(d.certs||[]).includes(requires)){
+      issues.push(`Cert gap: ${d.name} assigned to ${r.name} without ${requires} cert`);
+    }
+  });
+
+  // Strike / staffing
+  if(Number(state.union.strikeDaysLeft||0) > 0) issues.push("Labor disruption in progress (strike) affecting service");
+  return issues;
+}
+
+function runDOTInspection(force=false){
+  // Run at most once per day unless forced
+  if(!force && state.dot.nextCheckDay && state.dot.nextCheckDay === dispatchKey()) return;
+  state.dot.nextCheckDay = dispatchKey();
+
+  const issues = dotChecklistIssues();
+  // pass chance based on compliance score and issues
+  let passProb = clamp(Number(state.dot.compliance||85)/100, 0.15, 0.98);
+  passProb -= Math.min(0.25, issues.length*0.06);
+  const passed = Math.random() < passProb;
+
+  if(passed){
+    state.dot.lastResult = "PASS";
+    state.dot.compliance = clamp(Number(state.dot.compliance||85) + 3, 0, 100);
+    state.ops.prScore = clamp(Number(state.ops.prScore||70) + 2, 0, 100);
+    logEvent("", `🧾 DOT Inspection PASS (+PR).`);
+  } else {
+    state.dot.lastResult = "FAIL";
+    state.dot.compliance = clamp(Number(state.dot.compliance||85) - 7, 0, 100);
+    const fine = 2500 + randInt(0, 3500) + issues.length*400;
+    state.wallet -= fine;
+    state.ops.prScore = clamp(Number(state.ops.prScore||70) - 5, 0, 100);
+    state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0) + 6, 0, 100);
+    addComplaint("DOT", `DOT audit found issues. Fine assessed: $${fine.toLocaleString()}.`);
+    logEvent("", `🧾 DOT Inspection FAIL (-PR, -$${fine.toLocaleString()})`);
+    // Put one random bus down for re-inspection
+    const candidates = state.buses.filter(b=>(b.status||"ready")==="ready");
+    if(candidates.length){
+      const b = candidates[randInt(0, candidates.length-1)];
+      b.status="down"; b.maintenanceNote="DOT hold / re-inspection";
+      logEvent(b.id, `🔒 DOT hold: Bus pulled from service for inspection.`);
+    }
+  }
+  if(issues.length){
+    // Log a short list
+    const short = issues.slice(0,3).join("; ") + (issues.length>3 ? "…" : "");
+    logEvent("", `🧾 DOT notes: ${short}`);
+  }
+  save(); renderAll();
+  if(!passed){
+    alert(`🧾 DOT INSPECTION FAILED\n\nIssues:\n- ${issues.slice(0,6).join("\n- ") || "General compliance"}\n\nFine: $${(2500).toLocaleString()}+\nA bus was placed on DOT hold.`);
+  } else if(force){
+    alert("🧾 DOT INSPECTION PASSED. Nice work.");
+  }
+}
+
+// ===== Union Contract =====
+function runUnionNegotiation(){
+  const yr = Number(state.gameYear||2026);
+  if(state.union.nextNegotiationYear == null) state.union.nextNegotiationYear = yr;
+  if(yr < state.union.nextNegotiationYear) return;
+
+  const demandRaise = clamp(0.03 + Math.random()*0.05, 0.03, 0.08);
+  const demandBenefits = clamp(0.06 + Math.random()*0.06, 0.06, 0.12);
+
+  const msg =
+`🧑‍⚖️ UNION NEGOTIATION (${yr}-${yr+1})
+Union demands:
+• Base annual raise: ${(demandRaise*100).toFixed(0)}%
+• Benefits burden: ${(demandBenefits*100).toFixed(0)}% of payroll
+
+Choose:
+OK = Accept
+Cancel = Negotiate`;
+
+  const accept = confirm(msg);
+  if(accept){
+    state.union.contract.raiseBase = demandRaise;
+    state.union.contract.benefitsPct = demandBenefits;
+    logEvent("", `🧑‍⚖️ Contract ACCEPTED: base raise ${(demandRaise*100).toFixed(0)}%, benefits ${(demandBenefits*100).toFixed(0)}%`);
+    state.union.nextNegotiationYear = yr + 1;
+    save(); renderAll();
+    return;
+  }
+
+  // Negotiate: chance based on PR + DOT compliance
+  const leverage = (Number(state.ops.prScore||70) + Number(state.dot.compliance||85))/200;
+  const success = Math.random() < clamp(0.35 + leverage*0.4, 0.25, 0.75);
+  if(success){
+    const agreedRaise = clamp(demandRaise - 0.01, 0.02, demandRaise);
+    const agreedBenefits = clamp(demandBenefits - 0.02, 0.05, demandBenefits);
+    state.union.contract.raiseBase = agreedRaise;
+    state.union.contract.benefitsPct = agreedBenefits;
+    logEvent("", `🧑‍⚖️ Contract NEGOTIATED: base raise ${(agreedRaise*100).toFixed(0)}%, benefits ${(agreedBenefits*100).toFixed(0)}%`);
+    state.union.nextNegotiationYear = yr + 1;
+  } else {
+    // Strike risk: 1-3 days
+    const days = randInt(1,3);
+    state.union.strikeDaysLeft = days;
+    logEvent("", `🛑 Negotiations FAILED: strike for ${days} day(s).`);
+    addComplaint("Union", "Union action disrupts transportation service.");
+    state.ops.prScore = clamp(Number(state.ops.prScore||70) - 4, 0, 100);
+    state.district.advocacy.level = clamp(Number(state.district.advocacy.level||0) + 4, 0, 100);
+    state.union.nextNegotiationYear = yr + 1;
+    alert(`🛑 STRIKE\n\nUnion negotiations failed.\nExpect ${days} day(s) of staffing shortages.`);
+  }
+  save(); renderAll();
+}
+
+
+// ===== Reports =====
+let reportTab = "summary";
+function openReports(){
+  renderReports();
+  document.getElementById("reportsBackdrop").style.display="flex";
+}
+function closeReports(){
+  document.getElementById("reportsBackdrop").style.display="none";
+}
+function setReportTab(tab){
+  reportTab = tab;
+  renderReports();
+}
+function yearLabel(){
+  const y = Number(state.gameYear||2026);
+  return `${y}-${y+1}`;
+}
+function fuelRunsThisYear(){
+  const y = Number(state.gameYear||2026);
+  return (state.reports.fuelRuns||[]).filter(x=>Number(x.gameYear||y)===y);
+}
+function latestPayrollRecord(){
+  const y = Number(state.gameYear||2026);
+  const recs = (state.reports.payrollHistory||[]).filter(x=>Number(x.gameYear||y)===y);
+  return recs.length ? recs[0] : null;
+}
+function renderReports(){
+  const y = Number(state.gameYear||2026);
+  const yr = yearLabel();
+  const fuel = fuelRunsThisYear();
+  const fuelYtd = fuel.reduce((s,x)=>s+Number(x.cost||0),0);
+  const pay = latestPayrollRecord();
+  const payrollTotal = pay ? (Number(pay.payroll||0)+Number(pay.benefits||0)) : 0;
+
+  const ry=document.getElementById("repYear"); if(ry) ry.textContent = yr;
+  const fy=document.getElementById("repFuelYtd"); if(fy) fy.textContent = Math.round(fuelYtd).toLocaleString();
+  const pr=document.getElementById("repPayroll"); if(pr) pr.textContent = Math.round(payrollTotal).toLocaleString();
+
+  const body=document.getElementById("reportsBody");
+  const tabs=[["summary","repTabSummary"],["fuel","repTabFuel"],["payroll","repTabPayroll"]];
+  tabs.forEach(([t,id])=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.className = (t===reportTab) ? "primary" : "";
+  });
+
+  if(reportTab==="summary"){
+    const idle = fuel.reduce((s,x)=>s+Number(x.idleMin||0),0);
+    const miles = fuel.reduce((s,x)=>s+Number(x.miles||0),0);
+    const avgP = fuel.length ? (fuel.reduce((s,x)=>s+Number(x.price||0),0)/fuel.length) : Number(state.fuel.pricePerGallon||0);
+    body.innerHTML = `
+      <div class="grid">
+        <div class="card">
+          <strong>Fuel Summary</strong>
+          <div class="small muted">YTD fuel spend: <strong>$${Math.round(fuelYtd).toLocaleString()}</strong></div>
+          <div class="small muted">Miles logged (runs): <strong>${Math.round(miles).toLocaleString()}</strong></div>
+          <div class="small muted">Idle minutes (runs): <strong>${Math.round(idle).toLocaleString()}</strong></div>
+          <div class="small muted">Avg price paid: <strong>$${avgP.toFixed(2)}/gal</strong></div>
+        </div>
+        <div class="card">
+          <strong>Payroll Summary</strong>
+          ${pay ? `
+            <div class="small muted">Payroll: <strong>$${Math.round(pay.payroll).toLocaleString()}</strong></div>
+            <div class="small muted">Benefits: <strong>$${Math.round(pay.benefits).toLocaleString()}</strong> (${Math.round((pay.benefitsPct||0)*100)}%)</div>
+            <div class="small muted">Contract base raise: <strong>${Math.round((pay.raiseBase||0)*100)}%</strong></div>
+          ` : `<div class="muted small">No payroll record yet for this year. Start a new school year to generate it.</div>`}
+        </div>
+        <div class="card">
+          <strong>DOT / Risk</strong>
+          <div class="small muted">DOT compliance: <strong>${Math.round(Number(state.dot.compliance||0))}/100</strong></div>
+          <div class="small muted">Last DOT result: <strong>${state.dot.lastResult||"—"}</strong></div>
+          <div class="small muted">Strike days remaining: <strong>${Math.max(0,Number(state.union.strikeDaysLeft||0))}</strong></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <strong>Top Cost Drivers (Fuel)</strong>
+        ${(()=>{
+          const byBus = {};
+          fuel.forEach(x=>{ byBus[x.busId]= (byBus[x.busId]||0)+Number(x.cost||0); });
+          const top = Object.entries(byBus).sort((a,b)=>b[1]-a[1]).slice(0,5);
+          if(!top.length) return `<div class="muted small">No fuel runs logged yet.</div>`;
+          const rows = top.map(([busId,c])=>{
+            const b = byId(state.buses,busId);
+            return `<tr><td>${escapeHtml(b?b.name:busId)}</td><td class="right">$${Math.round(c).toLocaleString()}</td></tr>`;
+          }).join("");
+          return `<table><thead><tr><th>Bus</th><th class="right">Fuel Cost</th></tr></thead><tbody>${rows}</tbody></table>`;
+        })()}
+      </div>
+    `;
+    return;
+  }
+
+  if(reportTab==="fuel"){
+    if(!fuel.length){
+      body.innerHTML = `<div class="muted">No fuel runs logged yet. Run a route to generate data.</div>`;
+      return;
+    }
+    const rows = fuel.slice().reverse().slice(0,120).map(x=>{
+      const b = byId(state.buses, x.busId);
+      const day = x.dayKey||"";
+      return `<tr>
+        <td class="mono">${day}</td>
+        <td>${escapeHtml(b?b.name:x.busId)}</td>
+        <td class="right">${Math.round(x.miles||0)}</td>
+        <td class="right">${Math.round(x.idleMin||0)}</td>
+        <td class="right">$${Number(x.price||0).toFixed(2)}</td>
+        <td class="right">$${Math.round(x.cost||0).toLocaleString()}</td>
+      </tr>`;
+    }).join("");
+    body.innerHTML = `
+      <div class="card">
+        <strong>Fuel Runs (latest 120)</strong>
+        <table>
+          <thead><tr><th>Day</th><th>Bus</th><th class="right">Miles</th><th class="right">Idle (min)</th><th class="right">$/gal</th><th class="right">Cost</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+    return;
+  }
+
+  if(reportTab==="payroll"){
+    const recs = (state.reports.payrollHistory||[]).slice().sort((a,b)=>Number(b.gameYear||0)-Number(a.gameYear||0)).slice(0,12);
+    if(!recs.length){
+      body.innerHTML = `<div class="muted">No payroll history yet. Start a new school year to generate it.</div>`;
+      return;
+    }
+    const rows = recs.map(r=>{
+      const label = `${r.gameYear}-${Number(r.gameYear)+1}`;
+      const total = Number(r.payroll||0)+Number(r.benefits||0);
+      return `<tr>
+        <td>${label}</td>
+        <td class="right">$${Math.round(r.payroll||0).toLocaleString()}</td>
+        <td class="right">$${Math.round(r.benefits||0).toLocaleString()}</td>
+        <td class="right">$${Math.round(total).toLocaleString()}</td>
+        <td class="right">${Math.round((r.raiseBase||0)*100)}%</td>
+        <td class="right">${Math.round((r.benefitsPct||0)*100)}%</td>
+      </tr>`;
+    }).join("");
+    body.innerHTML = `
+      <div class="card">
+        <strong>Payroll History</strong>
+        <table>
+          <thead><tr><th>Year</th><th class="right">Payroll</th><th class="right">Benefits</th><th class="right">Total</th><th class="right">Base Raise</th><th class="right">Benefits %</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+    return;
+  }
+}
+
+function exportReportsCSV(){
+  const y = Number(state.gameYear||2026);
+  const fuel = (state.reports.fuelRuns||[]);
+  const pay = (state.reports.payrollHistory||[]);
+  const fuelCsv = ["gameYear,dayKey,busId,miles,idleMin,price,cost"].concat(
+    fuel.map(x=>[x.gameYear,x.dayKey,x.busId,Number(x.miles||0),Number(x.idleMin||0),Number(x.price||0),Number(x.cost||0)].join(","))
+  ).join("\n");
+  const payCsv = ["gameYear,payroll,benefits,raiseBase,benefitsPct"].concat(
+    pay.map(x=>[x.gameYear,Number(x.payroll||0),Number(x.benefits||0),Number(x.raiseBase||0),Number(x.benefitsPct||0)].join(","))
+  ).join("\n");
+  downloadText(`FuelRuns.csv`, fuelCsv);
+  downloadText(`PayrollHistory.csv`, payCsv);
+}
+
+function downloadText(filename, text){
+  const blob = new Blob([text], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+}
+
 function budgetAllocation(){
   return Math.round(Number(state.district.budget.baseAllocation||2500) * Number(state.district.budget.modifier||1.0));
 }
@@ -966,6 +1361,10 @@ const state = load() || {
   dayCoverage: {},
   incidents: {},
   schoolYearAssignments: [],
+  fuel: { pricePerGallon: 3.25, mpgDefault: 7.0, idleGph: 0.8, spentThisYear: 0, spentToday: 0, idleMinutesToday: 0 },
+  dot: { compliance: 85, nextCheckDay: null, lastResult: null },
+  union: { contract: { raiseBase: 0.02, benefitsPct: 0.06 }, nextNegotiationYear: null, strikeDaysLeft: 0 },
+  reports: { fuelRuns: [], payrollHistory: [] },
   district: { board: { lastMeetingMonth: null, minutes: [] }, budget: { baseAllocation: 2500, modifier: 1.0 }, advocacy: { level: 0, demand: null, lastUpdatedDate: null } },
   lotInventory: [],
   hiring: { pool: [] },
@@ -1125,6 +1524,17 @@ function opsBannerText(dayKey){
   return `${started} • Call-offs: ${state.ops.absentDrivers.length} • Late: ${state.ops.lateDrivers.length}`;
 }
 function startSchoolDay(){
+  state.fuel.spentToday = 0;
+  state.fuel.idleMinutesToday = 0;
+  // Strike: random portion of drivers unavailable
+  if(Number(state.union.strikeDaysLeft||0) > 0){
+    const active = state.drivers.filter(d=>!d.isRetired);
+    const n = Math.max(1, Math.round(active.length * (0.25 + Math.random()*0.25)));
+    shuffle(active);
+    const strikers = active.slice(0,n).map(d=>d.id);
+    state.ops.absentDrivers = Array.from(new Set([...(state.ops.absentDrivers||[]), ...strikers]));
+    logEvent("", `🛑 Strike day: ${n} drivers unavailable.`);
+  }
   const dayKey=dispatchKey();
   ensureOpsForDay(dayKey);
   if(state.ops.dayStartedKey===dayKey) return alert("School day already started.");
@@ -1849,7 +2259,8 @@ function startNewSchoolYear(startYear){
     if(typeof d.salary!=="number") d.salary = Math.round((38000 + randInt(0,12000))/100)*100;
     const exp = driverExperienceYears(d);
     const certBonus = Math.min(0.02, (d.certs||[]).length * 0.004);
-    const raisePct = clamp(0.02 + Math.min(0.03, exp*0.005) + certBonus, 0.02, 0.08);
+    const base = Number(state.union.contract.raiseBase||0.02);
+    const raisePct = clamp(base + Math.min(0.03, exp*0.005) + certBonus, base, 0.10);
     const old = d.salary;
     d.salary = Math.round((old * (1+raisePct))/100)*100;
     if(d.salary !== old){ logEvent("", `💵 Raise: ${d.name} +${Math.round(raisePct*100)}% ($${old}→$${d.salary})`); }
@@ -1860,6 +2271,13 @@ function startNewSchoolYear(startYear){
     .filter(d=>!d.isRetired)
     .reduce((sum,d)=> sum + Number(d.salary||0), 0);
   state.wallet -= payroll;
+  const benefits = payroll * Number(state.union.contract.benefitsPct||0.06);
+  state.wallet -= benefits;
+  logEvent("", `🧾 Benefits cost: -$${Math.round(benefits).toLocaleString()} (${Math.round((state.union.contract.benefitsPct||0)*100)}% of payroll)`);
+  if(state.reports && Array.isArray(state.reports.payrollHistory)){
+    state.reports.payrollHistory.unshift({ gameYear: state.gameYear, payroll, benefits, raiseBase: state.union.contract.raiseBase, benefitsPct: state.union.contract.benefitsPct, ts: Date.now() });
+    state.reports.payrollHistory = state.reports.payrollHistory.slice(0, 25);
+  }
   logEvent("", `💳 Annual payroll paid: -$${payroll.toLocaleString()} (wallet now $${Math.round(state.wallet).toLocaleString()})`);
   if(state.wallet < 0){
     // soft penalty if you're in the red
@@ -1899,6 +2317,9 @@ function renderAll(){
   ensureDispatchDay();
 
   document.getElementById("walletTop").textContent = `$${Math.round(state.wallet).toLocaleString()}`;
+  const fp=document.getElementById("fuelPrice"); if(fp) fp.textContent = Number(state.fuel.pricePerGallon||0).toFixed(2);
+  const sd=document.getElementById("strikeDays"); if(sd) sd.textContent = String(Math.max(0, Number(state.union.strikeDaysLeft||0)));
+  const ds=document.getElementById("dotStatus"); if(ds) ds.textContent = state.dot.lastResult ? state.dot.lastResult : "OK";
   const verEl=document.getElementById("appVer"); if(verEl) verEl.textContent = APP_VERSION;
   document.getElementById("walletGarage").textContent = `$${Math.round(state.wallet).toLocaleString()}`;
   document.getElementById("gameDateTop").textContent = state.gameDate;
@@ -2163,62 +2584,115 @@ function renderLot(){
   `;
 }
 
+
 function renderDrivers(){
   const panel=document.getElementById("driversPanel");
   if(!state.drivers.length){
     panel.innerHTML=`<div class="muted">No drivers yet. Add one or hire from the pool.</div>`;
   } else {
-    panel.innerHTML=`
+    // sort: active first, then retired
+    const list = state.drivers.slice().sort((a,b)=> (a.isRetired===b.isRetired)? (a.name||"").localeCompare(b.name||"") : (a.isRetired?1:-1));
+
+    panel.innerHTML = `
+      <div class="driver-toolbar">
+        <div class="muted small">Tip: Training costs money and adds certs. Fire removes driver and clears assignments.</div>
+        <div class="row">
+          <button onclick="openHiringPool()">👥 Open Hiring Pool</button>
+        </div>
+      </div>
+      <div class="driver-grid">
+        ${list.map(d=>{
+          const yrs = driverExperienceYears(d);
+          const morale = clamp(Number(d.morale||70), 0, 100);
+          const salary = Number(d.salary||0);
+          const hbId = getDriverHomeBusId(d.id) || "";
+          const hb = hbId ? byId(state.buses, hbId) : null;
+
+          const retiredTag = d.isRetired ? `<span class="tag">RETIRED</span>` : "";
+          const lateTag = state.ops.lateDrivers.includes(d.id) ? `<span class="tag">LATE</span>` : "";
+          const calloffTag = state.ops.absentDrivers.includes(d.id) ? `<span class="tag">CALLED OFF</span>` : "";
+          const status = (d.status||"available").toUpperCase();
+          const certs = (d.certs||[]);
+          const certTags = certs.length ? certs.map(c=>`<span class="tag">${escapeHtml(c)}</span>`).join("") : `<span class="muted small">No certs yet</span>`;
+
+          return `
+            <div class="driver-card">
+              <div class="driver-head">
+                <div>
+                  <div class="driver-name">${escapeHtml(d.name||"")}</div>
+                  <div class="driver-sub">${yrs}y experience • $${salary.toLocaleString()}/yr • Status: ${status}</div>
+                  <div class="driver-tags">
+                    ${retiredTag} ${lateTag} ${calloffTag}
+                  </div>
+                </div>
+                <div class="right">
+                  <span class="kpi">Home: ${hb? escapeHtml(hb.name):"—"}</span>
+                </div>
+              </div>
+
+              <div class="kpi-row">
+                <span class="kpi">Morale ${Math.round(morale)}/100</span>
+                <div class="bar" title="Morale">
+                  <div style="width:${morale}%; background:rgba(70,200,120,.9)"></div>
+                </div>
+              </div>
+
+              <div class="kpi-row">
+                <span class="kpi">Certs</span>
+                <div class="driver-tags">${certTags}</div>
+              </div>
+
+              <div class="driver-actions">
+                ${d.isRetired ? `
+                  <button onclick="unretireDriver('${d.id}')">Unretire</button>
+                  <button class="danger" onclick="fireDriver('${d.id}')">Fire</button>
+                ` : `
+                  <button onclick="assignHomeBus('${d.id}')">🏠 Set Home Bus</button>
+                  <button onclick="praiseDriver('${d.id}')">👍 Praise</button>
+                  <button onclick="writeUpDriver('${d.id}')">⚠️ Write-up</button>
+                  <button class="danger" onclick="fireDriver('${d.id}')">🔥 Fire</button>
+                  <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value='';">
+                    <option value="">🎓 Train…</option>
+                    ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
+                  </select>
+                `}
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  // Hiring panel (kept as-is)
+  const hiring=document.getElementById("hiringPanel");
+  const pool=state.hiring.pool||[];
+  if(!pool.length){
+    hiring.innerHTML = `<div class="muted small">Open Hiring Pool to choose 1 of 3 candidates.</div>`;
+  } else {
+    hiring.innerHTML = `
+      <div class="split">
+        <div>
+          <strong>Hiring Pool</strong>
+          <div class="muted small">Pick one candidate to hire. Hiring adds payroll pressure.</div>
+        </div>
+        <div class="row">
+          <button onclick="refreshHiringPool()">🔄 Refresh</button>
+          <button class="danger" onclick="closeHiringPool()">Close</button>
+        </div>
+      </div>
       <table>
-        <thead><tr><th>Driver</th><th>Home Bus</th><th>Morale / Certs</th><th>Status</th><th class="right">Actions</th></tr></thead>
+        <thead><tr><th>Candidate</th><th>Trait</th><th>Expected Salary</th><th class="right">Action</th></tr></thead>
         <tbody>
-          ${state.drivers.map(d=>{
-            const yrs=driverExperienceYears(d);
-            const retiredTag = d.isRetired ? `<span class="tag">RETIRED</span>` : "";
-            const lateTag = state.ops.lateDrivers.includes(d.id) ? `<span class="tag">LATE</span>` : "";
-            const calloffTag = state.ops.absentDrivers.includes(d.id) ? `<span class="tag">CALLED OFF</span>` : "";
+          ${pool.map(c=>{
+            const trait = TRAITS.find(t=>t.id===c.traitId);
+            const sal = Math.round((38000 + (trait?.salaryMod||0) + randInt(0,12000))/100)*100;
             return `
               <tr>
-                <td>
-                  <strong>${d.name}</strong>
-                  <div class="small muted">Experience: ${yrs}y • Salary: $${Number(d.salary||0).toLocaleString()}/yr • Trait: ${traitById(d.traitId).name} ${retiredTag}</div>
-                
-                </td>
-                <td style="min-width:220px">
-                  ${d.isRetired ? `<span class="muted small">—</span>` : `
-                    <select onchange="setDriverHomeBus('${d.id}', this.value)">
-                      <option value="">(unassigned)</option>
-                      ${state.buses.map(b=>`<option value="${b.id}" ${(state.driverBusAssignments&&state.driverBusAssignments[d.id]===b.id)?"selected":""}>${b.name} ${b.status==="down"?"(DOWN)":""}</option>`).join("")}
-                    </select>
-                  `}
-
-
-                <td style="min-width:220px">
-                  <div><span class="mono">${Math.round(d.morale||0)}</span>/100</div>
-                  <div class="small muted">${(d.certs||[]).length ? (d.certs.map(cid=>certById(cid)?.name||cid).join(", ")) : "No certs"}</div>
-                  <div class="small muted">Kudos: ${d.kudos||0} • Strikes: ${d.strikes||0}</div>
-                </td>
-
-                <td>
-                  <span class="tag">${(d.status||"available").toUpperCase()}</span>
-                  ${lateTag} ${calloffTag}
-                </td>
-                <td class="right nowrap">
-                  ${d.isRetired ? `<span class="muted small">—</span>` : `
-                    <select onchange="setDriverStatus('${d.id}', this.value)">
-                      <option value="available" ${d.status==="available"?"selected":""}>available</option>
-                      <option value="vacation" ${d.status==="vacation"?"selected":""}>vacation</option>
-                      <option value="sick" ${d.status==="sick"?"selected":""}>sick</option>
-                    </select>
-                    <button onclick="praiseDriver('${d.id}')">Praise</button>
-                    <button onclick="writeUpDriver('${d.id}')">Write-up</button>
-                    <button class="danger" onclick="fireDriver('${d.id}')">Fire</button>
-                    <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value='';">
-                      <option value="">Train…</option>
-                      ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
-                    </select>
-                  `}
-                </td>
+                <td><strong>${escapeHtml(c.name)}</strong><div class="muted small">Exp: ${c.years}y</div></td>
+                <td>${escapeHtml(trait?.name||"")}</td>
+                <td>$${sal.toLocaleString()}/yr</td>
+                <td class="right"><button class="primary" onclick="hireCandidate('${c.id}')">Hire</button></td>
               </tr>
             `;
           }).join("")}
@@ -2226,34 +2700,8 @@ function renderDrivers(){
       </table>
     `;
   }
+}
 
-  const hiring=document.getElementById("hiringPanel");
-  const pool=state.hiring.pool||[];
-  if(!pool.length){ hiring.innerHTML = `<div class="muted small">Open Hiring Pool to choose 1 of 3 candidates.</div>`; return; }
-  hiring.innerHTML = `
-    <div class="card" style="margin-top:10px;">
-      <div class="split">
-        <strong>🎤 Hiring Pool (Pick 1)</strong>
-        <button class="danger" onclick="state.hiring.pool=[]; save(); renderAll()">Close</button>
-      </div>
-      <div class="hr"></div>
-      <table>
-        <thead><tr><th>Candidate</th><th class="right">Cost</th><th class="right">Hire</th></tr></thead>
-        <tbody>
-          ${pool.map(c=>`
-            <tr>
-              <td>
-                <strong>${c.name}</strong>
-                <div class="small muted">Trait: ${traitById(c.traitId).name} • Start Year: ${c.hiredYear} • Experience: ${Math.max(0,state.gameYear-c.hiredYear)}y</div>
-              </td>
-              <td class="right"><span class="mono">$${c.cost.toLocaleString()}</span></td>
-              <td class="right"><button class="primary" onclick="hireCandidate('${c.candId}')">Hire</button></td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
 }
 
 function renderLog(){
@@ -2300,6 +2748,31 @@ maybeAutoStartNewSchoolYear();
         <button class="primary" onclick="applyCoverage()">Apply Coverage</button>
       </div>
       <small class="muted">Notes: Overtime increases incident risk and lowers morale. Cancelled routes hit PR and parent advocacy.</small>
+    </div>
+  </div>
+
+  <!-- Reports Modal -->
+  <div id="reportsBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="split">
+        <h3>📊 Reports</h3>
+        <div class="row">
+          <span class="pill">Year: <span id="repYear" class="mono"></span></span>
+          <span class="pill">Fuel YTD: $<span id="repFuelYtd" class="mono"></span></span>
+          <span class="pill">Payroll+Benefits: $<span id="repPayroll" class="mono"></span></span>
+        </div>
+      </div>
+      <div class="row" style="margin:10px 0 8px 0">
+        <button onclick="setReportTab('summary')" id="repTabSummary">Summary</button>
+        <button onclick="setReportTab('fuel')" id="repTabFuel">Fuel</button>
+        <button onclick="setReportTab('payroll')" id="repTabPayroll">Payroll</button>
+        <button onclick="exportReportsCSV()">⬇️ Export CSV</button>
+      </div>
+      <div id="reportsBody"></div>
+      <div class="row" style="justify-content:flex-end;margin-top:12px">
+        <button class="primary" onclick="closeReports()">Close</button>
+      </div>
+      <small class="muted">Reports use your game’s stored run history. Export creates 2 CSVs (FuelRuns + PayrollHistory).</small>
     </div>
   </div>
 </body>
