@@ -63,9 +63,11 @@ table { width: 100%; min-width: 900px; }
   .train-actions button,.train-actions select{width:100%}
 }
 
-/* Drivers table horizontal scroll fix */
-#driversPanel{ overflow-x:auto; }
-#driversPanel table{ min-width: 980px; }
+
+/* Extra horizontal scroll safety */
+.section{ overflow-x:auto; }
+#driversPanel{ display:block; overflow-x:auto; -webkit-overflow-scrolling: touch; }
+#driversPanel table{ min-width: 1100px; }
 
 </style>
 </head>
