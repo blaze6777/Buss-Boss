@@ -400,6 +400,11 @@ function syncAdhocBusToDriver(){
 }
 
 
+
+function escapeHtml(s){
+  return String(s??"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 /* =========================
    ROUTES / TRAITS
 ========================= */
@@ -2723,10 +2728,17 @@ function renderLog(){
 /* =========================
    INIT
 ========================= */
-ensureDispatchDay();
-renderAll();
-recomputeAdvocacy();
-maybeAutoStartNewSchoolYear();
+window.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    ensureDispatchDay();
+    renderAll();
+    recomputeAdvocacy();
+    maybeAutoStartNewSchoolYear();
+  }catch(err){
+    console.error("Init error:", err);
+    alert("Bus Boss hit an error during startup. Open DevTools Console for details.");
+  }
+});
 </script>
 
   <!-- Coverage Modal -->
