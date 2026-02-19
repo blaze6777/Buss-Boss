@@ -64,8 +64,9 @@ table { width: 100%; min-width: 900px; }
 }
 
 /* Drivers horizontal scroll wrapper */
-.hscroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-.hscroll table{ min-width: 1100px; }
+body{overflow-x:hidden;}
+.hscroll{ width:100%; max-width:100%; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+.hscroll table{ min-width: 1400px; width: max-content; }
 </style>
 </head>
 <body>
@@ -360,7 +361,7 @@ table { width: 100%; min-width: 900px; }
 </div>
 
 <script>
-const APP_VERSION = "v2.6 (Year fix + Paid Training + Raises + Payroll + Rename/Fire + Year Log)";
+const APP_VERSION = "v2.7.5 (Training Center + Driver table scroll fix)";
 
 /* =========================
    STORAGE / HELPERS
