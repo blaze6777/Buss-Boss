@@ -52,26 +52,6 @@ table { width: 100%; min-width: 900px; }
 .actions-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
 .actions-wrap button, .actions-wrap select { flex: 0 0 auto; }
 
-
-/* Driver UI refresh */
-.driver-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:8px 0 12px 0}
-.driver-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:12px}
-.driver-card{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;background:rgba(255,255,255,.04)}
-.driver-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.driver-name{font-weight:800}
-.driver-sub{font-size:12px;opacity:.85;margin-top:2px}
-.driver-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.driver-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
-.driver-actions select{min-width:140px}
-.kpi-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center}
-.kpi{font-size:12px;opacity:.9;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 10px;background:rgba(255,255,255,.03)}
-.bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;min-width:140px}
-.bar > div{height:100%}
-@media (max-width: 560px){
-  .driver-actions{flex-direction:column;align-items:stretch}
-  .driver-actions button,.driver-actions select{width:100%}
-  .bar{width:100%}
-}
 </style>
 </head>
 <body>
@@ -2183,115 +2163,62 @@ function renderLot(){
   `;
 }
 
-
 function renderDrivers(){
   const panel=document.getElementById("driversPanel");
   if(!state.drivers.length){
     panel.innerHTML=`<div class="muted">No drivers yet. Add one or hire from the pool.</div>`;
   } else {
-    // sort: active first, then retired
-    const list = state.drivers.slice().sort((a,b)=> (a.isRetired===b.isRetired)? (a.name||"").localeCompare(b.name||"") : (a.isRetired?1:-1));
-
-    panel.innerHTML = `
-      <div class="driver-toolbar">
-        <div class="muted small">Tip: Training costs money and adds certs. Fire removes driver and clears assignments.</div>
-        <div class="row">
-          <button onclick="openHiringPool()">👥 Open Hiring Pool</button>
-        </div>
-      </div>
-      <div class="driver-grid">
-        ${list.map(d=>{
-          const yrs = driverExperienceYears(d);
-          const morale = clamp(Number(d.morale||70), 0, 100);
-          const salary = Number(d.salary||0);
-          const hbId = getDriverHomeBusId(d.id) || "";
-          const hb = hbId ? byId(state.buses, hbId) : null;
-
-          const retiredTag = d.isRetired ? `<span class="tag">RETIRED</span>` : "";
-          const lateTag = state.ops.lateDrivers.includes(d.id) ? `<span class="tag">LATE</span>` : "";
-          const calloffTag = state.ops.absentDrivers.includes(d.id) ? `<span class="tag">CALLED OFF</span>` : "";
-          const status = (d.status||"available").toUpperCase();
-          const certs = (d.certs||[]);
-          const certTags = certs.length ? certs.map(c=>`<span class="tag">${escapeHtml(c)}</span>`).join("") : `<span class="muted small">No certs yet</span>`;
-
-          return `
-            <div class="driver-card">
-              <div class="driver-head">
-                <div>
-                  <div class="driver-name">${escapeHtml(d.name||"")}</div>
-                  <div class="driver-sub">${yrs}y experience • $${salary.toLocaleString()}/yr • Status: ${status}</div>
-                  <div class="driver-tags">
-                    ${retiredTag} ${lateTag} ${calloffTag}
-                  </div>
-                </div>
-                <div class="right">
-                  <span class="kpi">Home: ${hb? escapeHtml(hb.name):"—"}</span>
-                </div>
-              </div>
-
-              <div class="kpi-row">
-                <span class="kpi">Morale ${Math.round(morale)}/100</span>
-                <div class="bar" title="Morale">
-                  <div style="width:${morale}%; background:rgba(70,200,120,.9)"></div>
-                </div>
-              </div>
-
-              <div class="kpi-row">
-                <span class="kpi">Certs</span>
-                <div class="driver-tags">${certTags}</div>
-              </div>
-
-              <div class="driver-actions">
-                ${d.isRetired ? `
-                  <button onclick="unretireDriver('${d.id}')">Unretire</button>
-                  <button class="danger" onclick="fireDriver('${d.id}')">Fire</button>
-                ` : `
-                  <button onclick="assignHomeBus('${d.id}')">🏠 Set Home Bus</button>
-                  <button onclick="praiseDriver('${d.id}')">👍 Praise</button>
-                  <button onclick="writeUpDriver('${d.id}')">⚠️ Write-up</button>
-                  <button class="danger" onclick="fireDriver('${d.id}')">🔥 Fire</button>
-                  <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value='';">
-                    <option value="">🎓 Train…</option>
-                    ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
-                  </select>
-                `}
-              </div>
-            </div>
-          `;
-        }).join("")}
-      </div>
-    `;
-  }
-
-  // Hiring panel (kept as-is)
-  const hiring=document.getElementById("hiringPanel");
-  const pool=state.hiring.pool||[];
-  if(!pool.length){
-    hiring.innerHTML = `<div class="muted small">Open Hiring Pool to choose 1 of 3 candidates.</div>`;
-  } else {
-    hiring.innerHTML = `
-      <div class="split">
-        <div>
-          <strong>Hiring Pool</strong>
-          <div class="muted small">Pick one candidate to hire. Hiring adds payroll pressure.</div>
-        </div>
-        <div class="row">
-          <button onclick="refreshHiringPool()">🔄 Refresh</button>
-          <button class="danger" onclick="closeHiringPool()">Close</button>
-        </div>
-      </div>
+    panel.innerHTML=`
       <table>
-        <thead><tr><th>Candidate</th><th>Trait</th><th>Expected Salary</th><th class="right">Action</th></tr></thead>
+        <thead><tr><th>Driver</th><th>Home Bus</th><th>Morale / Certs</th><th>Status</th><th class="right">Actions</th></tr></thead>
         <tbody>
-          ${pool.map(c=>{
-            const trait = TRAITS.find(t=>t.id===c.traitId);
-            const sal = Math.round((38000 + (trait?.salaryMod||0) + randInt(0,12000))/100)*100;
+          ${state.drivers.map(d=>{
+            const yrs=driverExperienceYears(d);
+            const retiredTag = d.isRetired ? `<span class="tag">RETIRED</span>` : "";
+            const lateTag = state.ops.lateDrivers.includes(d.id) ? `<span class="tag">LATE</span>` : "";
+            const calloffTag = state.ops.absentDrivers.includes(d.id) ? `<span class="tag">CALLED OFF</span>` : "";
             return `
               <tr>
-                <td><strong>${escapeHtml(c.name)}</strong><div class="muted small">Exp: ${c.years}y</div></td>
-                <td>${escapeHtml(trait?.name||"")}</td>
-                <td>$${sal.toLocaleString()}/yr</td>
-                <td class="right"><button class="primary" onclick="hireCandidate('${c.id}')">Hire</button></td>
+                <td>
+                  <strong>${d.name}</strong>
+                  <div class="small muted">Experience: ${yrs}y • Salary: $${Number(d.salary||0).toLocaleString()}/yr • Trait: ${traitById(d.traitId).name} ${retiredTag}</div>
+                
+                </td>
+                <td style="min-width:220px">
+                  ${d.isRetired ? `<span class="muted small">—</span>` : `
+                    <select onchange="setDriverHomeBus('${d.id}', this.value)">
+                      <option value="">(unassigned)</option>
+                      ${state.buses.map(b=>`<option value="${b.id}" ${(state.driverBusAssignments&&state.driverBusAssignments[d.id]===b.id)?"selected":""}>${b.name} ${b.status==="down"?"(DOWN)":""}</option>`).join("")}
+                    </select>
+                  `}
+
+
+                <td style="min-width:220px">
+                  <div><span class="mono">${Math.round(d.morale||0)}</span>/100</div>
+                  <div class="small muted">${(d.certs||[]).length ? (d.certs.map(cid=>certById(cid)?.name||cid).join(", ")) : "No certs"}</div>
+                  <div class="small muted">Kudos: ${d.kudos||0} • Strikes: ${d.strikes||0}</div>
+                </td>
+
+                <td>
+                  <span class="tag">${(d.status||"available").toUpperCase()}</span>
+                  ${lateTag} ${calloffTag}
+                </td>
+                <td class="right nowrap">
+                  ${d.isRetired ? `<span class="muted small">—</span>` : `
+                    <select onchange="setDriverStatus('${d.id}', this.value)">
+                      <option value="available" ${d.status==="available"?"selected":""}>available</option>
+                      <option value="vacation" ${d.status==="vacation"?"selected":""}>vacation</option>
+                      <option value="sick" ${d.status==="sick"?"selected":""}>sick</option>
+                    </select>
+                    <button onclick="praiseDriver('${d.id}')">Praise</button>
+                    <button onclick="writeUpDriver('${d.id}')">Write-up</button>
+                    <button class="danger" onclick="fireDriver('${d.id}')">Fire</button>
+                    <select onchange="if(this.value) trainDriver('${d.id}', this.value); this.value='';">
+                      <option value="">Train…</option>
+                      ${CERTS.map(c=>`<option value="${c.id}">${c.name} ($${c.cost})</option>`).join("")}
+                    </select>
+                  `}
+                </td>
               </tr>
             `;
           }).join("")}
@@ -2299,8 +2226,34 @@ function renderDrivers(){
       </table>
     `;
   }
-}
 
+  const hiring=document.getElementById("hiringPanel");
+  const pool=state.hiring.pool||[];
+  if(!pool.length){ hiring.innerHTML = `<div class="muted small">Open Hiring Pool to choose 1 of 3 candidates.</div>`; return; }
+  hiring.innerHTML = `
+    <div class="card" style="margin-top:10px;">
+      <div class="split">
+        <strong>🎤 Hiring Pool (Pick 1)</strong>
+        <button class="danger" onclick="state.hiring.pool=[]; save(); renderAll()">Close</button>
+      </div>
+      <div class="hr"></div>
+      <table>
+        <thead><tr><th>Candidate</th><th class="right">Cost</th><th class="right">Hire</th></tr></thead>
+        <tbody>
+          ${pool.map(c=>`
+            <tr>
+              <td>
+                <strong>${c.name}</strong>
+                <div class="small muted">Trait: ${traitById(c.traitId).name} • Start Year: ${c.hiredYear} • Experience: ${Math.max(0,state.gameYear-c.hiredYear)}y</div>
+              </td>
+              <td class="right"><span class="mono">$${c.cost.toLocaleString()}</span></td>
+              <td class="right"><button class="primary" onclick="hireCandidate('${c.candId}')">Hire</button></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 function renderLog(){
@@ -2328,26 +2281,6 @@ ensureDispatchDay();
 renderAll();
 recomputeAdvocacy();
 maybeAutoStartNewSchoolYear();
-
-// ===== AUTO START =====
-(function(){
-  function start(){
-    try{
-      if(typeof normalize === "function") normalize();
-      if(typeof ensureDispatchDay === "function") ensureDispatchDay();
-      if(typeof renderAll === "function") renderAll();
-    }catch(e){
-      alert("Bus Boss startup error:\n\n" + (e && e.message ? e.message : String(e)));
-      console.error(e);
-    }
-  }
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", start);
-  } else {
-    start();
-  }
-})();
-
 </script>
 
   <!-- Coverage Modal -->
