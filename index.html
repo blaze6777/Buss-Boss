@@ -72,6 +72,9 @@ body{overflow-x:hidden;}
 .hscroll{ overflow-x: scroll; }
 .hscroll table{ width: max-content !important; min-width: 1400px !important; }
 
+
+/* Status select */
+#driversPanel select{max-width: 180px;}
 </style>
 </head>
 <body>
@@ -366,7 +369,7 @@ body{overflow-x:hidden;}
 </div>
 
 <script>
-const APP_VERSION = "v2.7.6 (Driver scroll actually works)";
+const APP_VERSION = "v2.7.7 (Status dropdown always visible)";
 
 /* =========================
    STORAGE / HELPERS
@@ -2294,7 +2297,7 @@ function renderDrivers(){
                 </td>
 
                 <td>
-                  <span class="tag">${(d.status||"available").toUpperCase()}</span>
+                  <select onchange="setDriverStatus('${d.id}', this.value)" style="min-width:140px"><option value="available" ${d.status==='available'?'selected':''}>AVAILABLE</option><option value="sick" ${d.status==='sick'?'selected':''}>SICK</option><option value="vacation" ${d.status==='vacation'?'selected':''}>VACATION</option><option value="training" ${d.status==='training'?'selected':''}>TRAINING</option><option value="suspended" ${d.status==='suspended'?'selected':''}>SUSPENDED</option></select>
                   ${lateTag} ${calloffTag}
                 </td>
                 <td class="right nowrap">
