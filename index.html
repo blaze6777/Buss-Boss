@@ -63,15 +63,13 @@ table { width: 100%; min-width: 900px; }
   .train-actions button,.train-actions select{width:100%}
 }
 
-
-/* Extra horizontal scroll safety */
-.section{ overflow-x:auto; }
-#driversPanel{ display:block; overflow-x:auto; -webkit-overflow-scrolling: touch; }
-#driversPanel table{ min-width: 1100px; }
-
+/* Drivers horizontal scroll wrapper */
+.hscroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.hscroll table{ min-width: 1100px; }
 </style>
 </head>
 <body>
+<div style=\"padding:8px 12px;margin:10px 0;border:2px dashed #ffd54a;border-radius:12px;color:#ffd54a;font-weight:800\">BUS BOSS v2.7.4-scrollwrap-20260219180516 (if you don't see this, the new index.html isn't loading)</div>
 <header>
   <div class="wrap">
     <div class="topbar">
@@ -2259,7 +2257,7 @@ function renderDrivers(){
         <div class="muted small">Tip: Use the Training Center if the actions column is hard to reach.</div>
         <div class="row"><button onclick="openTrainingCenter()">🎓 Training Center</button></div>
       </div>
-      <table>
+      <div class="hscroll"><table>
         <thead><tr><th>Driver</th><th>Home Bus</th><th>Morale / Certs</th><th>Status</th><th class="right">Actions</th></tr></thead>
         <tbody>
           ${state.drivers.map(d=>{
