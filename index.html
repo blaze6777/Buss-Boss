@@ -45,6 +45,13 @@
   .danger{background:rgba(255,60,60,.15);border-color:rgba(255,60,60,.35)}
 
   .tiny{padding:4px 8px;font-size:12px;opacity:.95}
+
+/* RESPONSIVE FIX */
+.section { overflow-x: auto; }
+table { width: 100%; min-width: 900px; }
+.actions-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.actions-wrap button, .actions-wrap select { flex: 0 0 auto; }
+
 </style>
 </head>
 <body>
@@ -338,7 +345,7 @@
 </div>
 
 <script>
-const APP_VERSION = "v2.4 (PreTrip top + Year Log + Rename/Fire + Paid Training + Raises + Payroll)";
+const APP_VERSION = "v2.6 (Year fix + Paid Training + Raises + Payroll + Rename/Fire + Year Log)";
 
 /* =========================
    STORAGE / HELPERS
@@ -1811,17 +1818,24 @@ function saveSchoolYearSettings(){
   save(); renderAll();
 }
 function maybeAutoStartNewSchoolYear(){
-  const now=new Date();
-  const y=now.getFullYear();
-  const m=now.getMonth()+1;
-  const d=now.getDate();
+  // Uses GAME date (not the real-world clock) so offline play works.
+  const gd=new Date(state.gameDate + "T00:00:00");
+  const y=gd.getFullYear();
+  const mo=gd.getMonth()+1;
+  const da=gd.getDate();
   const {startMonth,startDay,lastStartedYear}=state.schoolYear;
-  const pastStart = (m>startMonth) || (m===startMonth && d>=startDay);
+  const pastStart = (mo>startMonth) || (mo===startMonth && da>=startDay);
+
   if(pastStart && lastStartedYear!==y){
     const ok=confirm(`📅 New School Year!\nStart the ${y}-${y+1} school year now?`);
-    state.schoolYear.lastStartedYear=y;
-    save();
-    if(ok) startNewSchoolYear(y);
+    if(ok){
+      startNewSchoolYear(y);
+      state.schoolYear.lastStartedYear=y;
+    } else {
+      // Don't ask again until the date changes
+      state.schoolYear.lastStartedYear=y;
+      save();
+    }
   }
 }
 function startNewSchoolYear(startYear){
@@ -2042,10 +2056,10 @@ function renderCustomRoutes(){
               ${r.miles} mi • +$${r.pay} • Wear x${r.wear} • Risk x${r.risk}
             </div>
           </td>
-          <td class="right">
+          <td class=\"right\"><div class=\"actions-wrap\">
             <button onclick="editRoute('${r.id}')">Edit</button>
             <button onclick="deleteRoute('${r.id}')">Delete</button>
-          </td>
+          </div></td>
         </tr>
       `;
     }).join("");
