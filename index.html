@@ -371,13 +371,7 @@ table { width: 100%; min-width: 900px; }
 </div>
 
 <script>
-window.onerror = function(msg, src, line, col, err){
-  try{
-    alert('Bus Boss JS Error:\n' + msg + '\n' + (src||'') + ':' + line + ':' + col);
-  }catch(e){}
-};
-
-const APP_VERSION = "v3.2.1 (Reports + DOT/Fuel/Union + Driver UI + Fix)";
+const APP_VERSION = "v2.6 (Year fix + Paid Training + Raises + Payroll + Rename/Fire + Year Log)";
 
 /* =========================
    STORAGE / HELPERS
@@ -404,8 +398,6 @@ function syncAdhocBusToDriver(){
     if(busSel){ busSel.value = busId; }
   }
 }
-
-
 
 
 /* =========================
@@ -791,7 +783,7 @@ function recordIncident(type, desc){
   if(!state.reports) state.reports={ fuelRuns: [], payrollHistory: [] };
   if(!Array.isArray(state.reports.fuelRuns)) state.reports.fuelRuns=[];
   if(!Array.isArray(state.reports.payrollHistory)) state.reports.payrollHistory=[];
-  if(typeof state.fuel.pricePerGallon!=='number') state.fuel.pricePerGallon=3.25;
+  if(typeof (state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25)!=='number') (state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25)=3.25;
   if(typeof state.fuel.mpgDefault!=='number') state.fuel.mpgDefault=7.0;
   if(typeof state.fuel.idleGph!=='number') state.fuel.idleGph=0.8;
   if(typeof state.fuel.spentThisYear!=='number') state.fuel.spentThisYear=0;
@@ -968,29 +960,29 @@ function chargeFuel(bus, miles, idleMinutes){
   const gallons = miles / mpg;
   const idleGallons = (Number(state.fuel.idleGph||0.8) / 60) * idleMinutes;
   const totalGallons = gallons + idleGallons;
-  const cost = totalGallons * Number(state.fuel.pricePerGallon||0);
+  const cost = totalGallons * Number((state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25)||0);
   state.wallet -= cost;
   state.fuel.spentToday += cost;
   state.fuel.spentThisYear += cost;
   state.fuel.idleMinutesToday += idleMinutes;
   // Record for reports
   if(state.reports && Array.isArray(state.reports.fuelRuns)){
-    state.reports.fuelRuns.push({ gameYear: state.gameYear, dayKey: dispatchKey(), busId: bus.id, miles, idleMin: idleMinutes, price: state.fuel.pricePerGallon, cost });
+    state.reports.fuelRuns.push({ gameYear: state.gameYear, dayKey: dispatchKey(), busId: bus.id, miles, idleMin: idleMinutes, price: (state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25), cost });
     if(state.reports.fuelRuns.length > 5000) state.reports.fuelRuns = state.reports.fuelRuns.slice(-4500);
   }
   return { mpg, gallons: totalGallons, cost };
 }
 function maybeFuelPriceSwing(){
   // Random walk with occasional shock
-  let p = Number(state.fuel.pricePerGallon||3.25);
+  let p = Number((state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25)||3.25);
   const shock = (Math.random()<0.12) ? (Math.random()<0.5 ? -0.55 : 0.75) : 0;
   p += (Math.random()*0.22 - 0.11) + shock;
   p = clamp(p, 2.10, 5.80);
-  state.fuel.pricePerGallon = Math.round(p*100)/100;
+  (state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25) = Math.round(p*100)/100;
   if(shock!==0){
-    logEvent("", `⛽ Fuel market shock: now $${state.fuel.pricePerGallon.toFixed(2)}/gal`);
+    logEvent("", `⛽ Fuel market shock: now $${(state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25).toFixed(2)}/gal`);
   } else {
-    logEvent("", `⛽ Fuel price update: $${state.fuel.pricePerGallon.toFixed(2)}/gal`);
+    logEvent("", `⛽ Fuel price update: $${(state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25).toFixed(2)}/gal`);
   }
 }
 
@@ -1175,7 +1167,7 @@ function renderReports(){
   if(reportTab==="summary"){
     const idle = fuel.reduce((s,x)=>s+Number(x.idleMin||0),0);
     const miles = fuel.reduce((s,x)=>s+Number(x.miles||0),0);
-    const avgP = fuel.length ? (fuel.reduce((s,x)=>s+Number(x.price||0),0)/fuel.length) : Number(state.fuel.pricePerGallon||0);
+    const avgP = fuel.length ? (fuel.reduce((s,x)=>s+Number(x.price||0),0)/fuel.length) : Number((state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25)||0);
     body.innerHTML = `
       <div class="grid">
         <div class="card">
@@ -1396,6 +1388,15 @@ function busAge(bus){ return Math.max(0, state.gameYear - Number(bus.inServiceYe
 function driverExperienceYears(d){ return Math.max(0, state.gameYear - Number(d.hiredYear || state.gameYear)); }
 
 function normalize(){
+  // === MIGRATION SAFE INIT ===
+  if(!state.fuel) state.fuel = { pricePerGallon:3.25, mpgDefault:7.0, idleGph:0.8, spentThisYear:0, spentToday:0, idleMinutesToday:0 };
+  if(!state.dot) state.dot = { compliance:85, nextCheckDay:null, lastResult:null };
+  if(!state.union) state.union = { contract:{ raiseBase:0.02, benefitsPct:0.06 }, nextNegotiationYear:null, strikeDaysLeft:0 };
+  if(!state.reports) state.reports = { fuelRuns: [], payrollHistory: [] };
+  if(!Array.isArray(state.reports.fuelRuns)) state.reports.fuelRuns = [];
+  if(!Array.isArray(state.reports.payrollHistory)) state.reports.payrollHistory = [];
+  // === END MIGRATION SAFE INIT ===
+
   if(!state.gameDate) state.gameDate=todayISO();
   if(!Array.isArray(state.buses)) state.buses=[];
   if(!Array.isArray(state.drivers)) state.drivers=[];
@@ -2325,7 +2326,7 @@ function renderAll(){
   ensureDispatchDay();
 
   document.getElementById("walletTop").textContent = `$${Math.round(state.wallet).toLocaleString()}`;
-  const fp=document.getElementById("fuelPrice"); if(fp) fp.textContent = Number(state.fuel.pricePerGallon||0).toFixed(2);
+  const fp=document.getElementById("fuelPrice"); if(fp) fp.textContent = Number((state.fuel && state.fuel.pricePerGallon != null ? state.fuel.pricePerGallon : 3.25)||0).toFixed(2);
   const sd=document.getElementById("strikeDays"); if(sd) sd.textContent = String(Math.max(0, Number(state.union.strikeDaysLeft||0)));
   const ds=document.getElementById("dotStatus"); if(ds) ds.textContent = state.dot.lastResult ? state.dot.lastResult : "OK";
   const verEl=document.getElementById("appVer"); if(verEl) verEl.textContent = APP_VERSION;
@@ -2710,6 +2711,8 @@ function renderDrivers(){
   }
 }
 
+}
+
 function renderLog(){
   const panel=document.getElementById("logPanel");
   if(!state.logs.length){ panel.innerHTML = `<div class="muted">No activity yet.</div>`; return; }
@@ -2731,17 +2734,10 @@ function renderLog(){
 /* =========================
    INIT
 ========================= */
-window.addEventListener("DOMContentLoaded", ()=>{
-  try{
-    ensureDispatchDay();
-    renderAll();
-    recomputeAdvocacy();
-    maybeAutoStartNewSchoolYear();
-  }catch(err){
-    console.error("Init error:", err);
-    alert("Bus Boss hit an error during startup:\n\n" + (err && err.message ? err.message : err) + "\n\n(If you can, open DevTools > Console for the full stack.)");
-  }
-});
+ensureDispatchDay();
+renderAll();
+recomputeAdvocacy();
+maybeAutoStartNewSchoolYear();
 </script>
 
   <!-- Coverage Modal -->
