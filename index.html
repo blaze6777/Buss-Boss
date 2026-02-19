@@ -2738,6 +2738,25 @@ ensureDispatchDay();
 renderAll();
 recomputeAdvocacy();
 maybeAutoStartNewSchoolYear();
+
+// ===== BOOT =====
+function boot(){
+  try{
+    if(!state.fuel) state.fuel = { pricePerGallon:3.25, mpgDefault:7.0, idleGph:0.8, spentThisYear:0, spentToday:0, idleMinutesToday:0 };
+    if(!state.dot) state.dot = { compliance:85, nextCheckDay:null, lastResult:null };
+    if(!state.union) state.union = { contract:{ raiseBase:0.02, benefitsPct:0.06 }, nextNegotiationYear:null, strikeDaysLeft:0 };
+    if(!state.reports) state.reports = { fuelRuns: [], payrollHistory: [] };
+    if(!Array.isArray(state.reports.fuelRuns)) state.reports.fuelRuns=[];
+    if(!Array.isArray(state.reports.payrollHistory)) state.reports.payrollHistory=[];
+    ensureDispatchDay();
+    renderAll();
+  }catch(e){
+    alert("Bus Boss hit an error during startup:\n\n" + (e && e.message ? e.message : String(e)) + "\n\n(If you can, open DevTools > Console for the full stack)");
+    console.error(e);
+  }
+}
+window.addEventListener("DOMContentLoaded", boot);
+
 </script>
 
   <!-- Coverage Modal -->
