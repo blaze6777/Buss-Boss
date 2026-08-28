@@ -151,7 +151,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;b
   </div>
 
   <div class="nav">
-    <button class="active" data-view="garage">Garage</button>
+    <button class="active" data-view="today">Command Center</button>
+    <button data-view="garage">Garage</button>
     <button data-view="routes">Routes</button>
     <button data-view="staffing">Staffing</button>
     <button data-view="training">Training</button>
@@ -171,6 +172,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;b
 <section id="today" class="view active">
  <div class="section-head"><div><h2>Today — Transportation Command Center</h2><div class="small">Everything that needs your attention before buses roll.</div></div><div class="actions"><button class="btn" onclick="undoLastAction()">↶ Undo</button><button class="btn primary" onclick="autosaveGame()">Save Now</button></div></div>
  <div class="today-grid" id="todayKpis"></div>
+ <div class="panel" style="margin-top:12px">
+   <div class="section-head">
+     <div><h2 style="margin:0">🌤️ Today’s Transportation Weather</h2><div class="small">In-game forecast used for route and delay decisions.</div></div>
+     <button class="btn" onclick="openWeatherCenter()">Weather Decisions</button>
+   </div>
+   <div id="commandWeather" class="detail"></div>
+ </div>
  <div class="grid2" style="margin-top:12px">
   <div class="panel"><h2 style="margin-top:0">Route Coverage</h2><div id="coverageBoard"></div></div>
   <aside class="panel"><h2 style="margin-top:0">Needs Attention</h2><div id="attentionBoard"></div></aside>
@@ -687,6 +695,20 @@ function advanceDay(){
  state.simMinutes=315;
  state.dispatchStep=0;
  state.buses.forEach(b=>{b.liveStatus='Parked / Pre-Trip';});
+ // New fictional transportation forecast for each school day.
+ if(Math.random()<.38){
+   let forecasts=[
+     {condition:'Clear',temp:68,roads:'Dry'},
+     {condition:'Partly Cloudy',temp:62,roads:'Dry'},
+     {condition:'Light Rain',temp:57,roads:'Wet'},
+     {condition:'Dense Fog',temp:54,roads:'Reduced visibility'},
+     {condition:'Snow',temp:27,roads:'Snow covered'},
+     {condition:'Extreme Cold',temp:3,roads:'Dry / icy spots possible'}
+   ];
+   state.weather={...forecasts[Math.floor(Math.random()*forecasts.length)]};
+ }else if(!state.weather){
+   state.weather={condition:'Clear',temp:64,roads:'Dry'};
+ }
  maybeMaintenanceEvent();
 
  state.buses.forEach(b=>{
@@ -936,18 +958,15 @@ function enrollDriverTraining(index,courseId){
 function scheduleGroupTraining(){
  ensureTrainingData();
  let eligible=state.staff.filter(s=>s.employmentStatus!=='Retired'&&s.employmentStatus!=='Resigned');
- let perDriver=80;
- let cost=eligible.length*perDriver;
+ let groupCourses=trainingCourses.filter(c=>['safety','evac','student','physical'].includes(c.id));
  openModal('Schedule Group Training',`
-   <div class="alert"><b>Annual Safety + Evacuation Group Session</b>
-     <div class="small">${eligible.length} active driver${eligible.length===1?'':'s'} • ${money(perDriver)} per driver • Total ${money(cost)}</div>
+   <div class="alert"><b>Select a group training course</b>
+     <div class="small">${eligible.length} active driver${eligible.length===1?'':'s'} will be included.</div>
    </div>
-   <div class="detail">
-     <div class="kv"><span>Training</span><b>Annual Safety Refresher</b></div>
-     <div class="kv"><span>Drill</span><b>Student Evacuation</b></div>
-     <div class="kv"><span>Drivers included</span><b>${eligible.length}</b></div>
-     <div class="kv"><span>Department cost</span><b>${money(cost)}</b></div>
-   </div>
+   <label style="display:block;margin-top:10px">Course</label>
+   <select id="groupTrainingCourse" onchange="updateGroupTrainingCost()" style="width:100%;padding:9px">
+     ${groupCourses.map(c=>`<option value="${c.id}">${c.name} — ${money(c.cost)} per driver</option>`).join('')}
+   </select>
    <label style="display:block;margin-top:10px">Schedule for</label>
    <select id="groupTrainingWhen" style="width:100%;padding:9px">
      <option value="Today">Today</option>
@@ -955,37 +974,53 @@ function scheduleGroupTraining(){
      <option value="Next In-Service Day">Next In-Service Day</option>
      <option value="Summer Planning">Summer Planning</option>
    </select>
+   <div id="groupTrainingSummary" class="detail" style="margin-top:12px"></div>
    <div class="actions">
      <button class="btn primary" onclick="confirmGroupTraining()">Schedule & Complete</button>
      <button class="btn" onclick="closeModal()">Cancel</button>
    </div>
  `);
+ updateGroupTrainingCost();
+}
+function updateGroupTrainingCost(){
+ ensureTrainingData();
+ let eligible=state.staff.filter(s=>s.employmentStatus!=='Retired'&&s.employmentStatus!=='Resigned');
+ let id=$('groupTrainingCourse')?$('groupTrainingCourse').value:'safety';
+ let c=trainingCourses.find(x=>x.id===id);
+ if(!c)return;
+ let cost=eligible.length*c.cost;
+ if($('groupTrainingSummary'))$('groupTrainingSummary').innerHTML=`
+   <div class="kv"><span>Training</span><b>${c.name}</b></div>
+   <div class="kv"><span>Drivers included</span><b>${eligible.length}</b></div>
+   <div class="kv"><span>Cost per driver</span><b>${money(c.cost)}</b></div>
+   <div class="kv"><span>Total cost</span><b>${money(cost)}</b></div>`;
 }
 function confirmGroupTraining(){
  ensureTrainingData();
  let eligible=state.staff.filter(s=>s.employmentStatus!=='Retired'&&s.employmentStatus!=='Resigned');
- let perDriver=80,cost=eligible.length*perDriver;
+ let courseId=$('groupTrainingCourse')?$('groupTrainingCourse').value:'safety';
+ let c=trainingCourses.find(x=>x.id===courseId);
+ if(!c)return alert('Select a training course.');
+ let cost=eligible.length*c.cost;
  if(state.budget<cost)return alert(`Not enough budget. Group training requires ${money(cost)}.`);
  let when=$('groupTrainingWhen')?$('groupTrainingWhen').value:'Today';
  snapshotAction('Group training');
  state.budget-=cost;
  eligible.forEach(s=>{
-   s.training.annualSafety='Current';
-   s.training.evacuation='Current';
+   s.training[c.field]=c.result;
    s.history=s.history||[];
-   s.history.push({year:state.year,event:`Completed group Annual Safety Refresher and Evacuation Drill (${when})`});
+   s.history.push({year:state.year,event:`Completed group ${c.name} (${when})`});
  });
  state.calendar=state.calendar||[];
- state.calendar.push({date:`Day ${state.day+1}`,item:`Group Driver Training — Annual Safety & Evacuation (${when})`});
+ state.calendar.push({date:`Day ${state.day+1}`,item:`Group Driver Training — ${c.name} (${when})`});
  state.news=state.news||[];
- state.news.unshift({text:`Transportation completed annual group safety and evacuation training for ${eligible.length} drivers.`,tone:'good'});
- log(`Group annual safety and evacuation training completed for ${eligible.length} drivers. Cost ${money(cost)}.`);
+ state.news.unshift({text:`Transportation completed ${c.name} for ${eligible.length} drivers.`,tone:'good'});
+ log(`Group training completed: ${c.name} for ${eligible.length} drivers. Cost ${money(cost)}.`);
  closeModal();
  autosaveGame();
  render();
- alert(`Group training complete for ${eligible.length} drivers. Annual Safety and Evacuation are now Current.`);
+ alert(`${c.name} completed for ${eligible.length} drivers.`);
 }
-
 
 function ensureV4Data(){
  ensureAssignmentFields(); ensureTrainingData();
@@ -1200,6 +1235,16 @@ function renderToday(){
   ['On-Time Performance',`${state.dailyStats.onTime}%`,''],
   ['Budget Remaining',money(state.budget),'']
  ].map(x=>`<div class="panel ${x[2]}"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ if($('commandWeather')){
+   let w=state.weather||{condition:'Clear',temp:64,roads:'Dry'};
+   let icon=/snow/i.test(w.condition)?'❄️':/fog/i.test(w.condition)?'🌫️':/rain/i.test(w.condition)?'🌧️':/cold/i.test(w.condition)?'🥶':'☀️';
+   let impact=/snow|fog|rain|cold/i.test(w.condition)?'Review delay and routing conditions':'Normal transportation operations';
+   $('commandWeather').innerHTML=`
+     <div class="kv"><span>Forecast</span><b>${icon} ${w.condition}</b></div>
+     <div class="kv"><span>Temperature</span><b>${w.temp}°F</b></div>
+     <div class="kv"><span>Road Conditions</span><b>${w.roads}</b></div>
+     <div class="kv"><span>Transportation Impact</span><b>${impact}</b></div>`;
+ }
  $('coverageBoard').innerHTML=state.routes.map(r=>{let c=routeCoverage(r);return `<div class="coverage-card ${c.ok?'priority-green':'priority-red'}"><b>Route ${r.id}</b> — ${c.reason}<div class="small">${r.temporaryDriver||r.driver||'No driver'} • Bus ${r.temporaryBus||r.bus||'—'}</div>${!c.ok?`<div class="coverage-actions"><button class="btn" onclick="quickCover(${r.id},'sub')">Assign Sub</button><button class="btn" onclick="quickCover(${r.id},'spare')">Use Spare Bus</button><button class="btn" onclick="quickCover(${r.id},'combine')">Combine Route</button></div>`:''}</div>`}).join('');
  let due=state.staff.filter(s=>s.training&&Object.values(s.training).some(v=>['Due Soon','Needs Training','Needs Endorsement'].includes(v)));
  $('attentionBoard').innerHTML=[
