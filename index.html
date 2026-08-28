@@ -725,15 +725,20 @@ function routeDailyMiles(r){
 function addDailyRouteMileage(){
  state.routes.forEach(r=>{
    let c=routeCoverage(r);
-   if(!c.ok)return;
-   let bus=state.buses.find(b=>b.id===(r.temporaryBus||r.bus));
-   if(!bus)return;
+   if(!c.ok){
+     log(`Route ${r.id} mileage not added: ${c.reason}.`);
+     return;
+   }
+   let activeBusId=r.temporaryBus?Number(r.temporaryBus):Number(r.bus);
+   let bus=state.buses.find(b=>Number(b.id)===activeBusId);
+   if(!bus){log(`Route ${r.id} mileage not added: assigned bus could not be found.`);return;}
    let miles=routeDailyMiles(r);
-   bus.miles+=miles;
-   bus.fuel=Math.max(10,bus.fuel-Math.max(4,Math.round(miles/12)));
+   bus.miles=Number(bus.miles||0)+miles;
+   bus.fuel=Math.max(10,Number(bus.fuel||100)-Math.max(4,Math.round(miles/12)));
    if(miles>=110&&Math.random()<.18)bus.condition=Math.max(35,bus.condition-1);
    bus.history=bus.history||[];
-   if(miles>=110)bus.history.push({year:state.year,event:`Long route day: Route ${r.id} added ${miles} miles`});
+   bus.history.push({year:state.year,event:`Route ${r.id} service added ${miles} miles${r.temporaryBus?' (temporary assignment)':''}`});
+   log(`Bus ${bus.id} added ${miles} miles from Route ${r.id}.`);
  });
 }
 function destinationTripMiles(destination){
@@ -876,7 +881,7 @@ function renderAssignments(){
      </select></td>
      <td>${(()=>{let b=state.buses.find(x=>x.id===r.bus);return b?`<select onchange="setBusDesignation(${b.id},this.value)">${['Regular Route','Spare','Trip Bus','Special Ed','Maintenance Reserve'].map(d=>`<option ${b.designation===d?'selected':''}>${d}</option>`).join('')}</select>`:'—'})()}</td>
      <td><select onchange="setTemporaryBus(${r.id},this.value)" style="min-width:150px">
-       <option value="">None</option>${state.buses.filter(b=>b.id!==r.bus).map(b=>`<option value="${b.id}" ${String(r.temporaryBus)===String(b.id)?'selected':''}>Bus ${b.id} — ${b.year}</option>`).join('')}
+       <option value="">Use permanent Bus ${r.bus||'—'}</option>${state.buses.filter(b=>b.id!==r.bus).map(b=>`<option value="${b.id}" ${String(r.temporaryBus)===String(b.id)?'selected':''}>Bus ${b.id} — ${b.year}</option>`).join('')}
      </select></td>
      <td><select onchange="setTemporaryDriver(${r.id},this.value)" style="min-width:170px">
        <option value="">None</option>${state.staff.filter(s=>s.name!==r.driver).map(s=>`<option value="${s.name}" ${r.temporaryDriver===s.name?'selected':''}>${s.name} — ${s.years} yr${s.years===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('')}
@@ -933,14 +938,40 @@ function assignDriverToRoute(routeId,name){
 }
 function assignBusToRoute(routeId,busId){
  let r=state.routes.find(x=>x.id===routeId);
+ if(!r)return alert('Route not found.');
+ busId=busId?Number(busId):null;
+
+ // A new permanent assignment replaces any old temporary bus override.
+ r.temporaryBus=null;
+
  if(busId){
    let other=state.routes.find(x=>x.id!==routeId&&x.bus===busId);
-   if(other){ other.bus=null; }
+   if(other){
+     other.bus=null;
+     other.temporaryBus=null;
+   }
  }
- let old=state.buses.find(b=>b.id===r.bus); if(old){old.route=null;old.driver=null;if(old.designation==='Regular Route')old.designation='Spare';old.status='Spare'}
- r.bus=busId||null;
- let b=state.buses.find(x=>x.id===busId); if(b){b.route=routeId;b.driver=r.driver;b.designation='Regular Route';b.status='Ready'}
- log(`Route ${routeId} bus assignment changed to ${busId?'Bus '+busId:'unassigned'}.`);render()
+
+ let old=state.buses.find(b=>b.id===r.bus);
+ if(old&&old.id!==busId){
+   old.route=null;old.driver=null;
+   if(old.designation==='Regular Route')old.designation='Spare';
+   old.status='Spare';
+ }
+
+ r.bus=busId;
+ let b=state.buses.find(x=>x.id===busId);
+ if(b){
+   // Clear this bus from any conflicting route bookkeeping.
+   state.buses.forEach(x=>{if(x.id!==b.id&&x.route===routeId){x.route=null;if(x.designation==='Regular Route')x.designation='Spare';}});
+   b.route=routeId;
+   b.driver=r.driver;
+   b.designation=r.specialNeeds?'Special Ed':'Regular Route';
+   b.status='Ready';
+ }
+ log(`Route ${routeId} permanent bus assignment changed to ${busId?'Bus '+busId:'unassigned'}. Future route mileage will post to ${busId?'Bus '+busId:'no bus'}.`);
+ autosaveGame();
+ render();
 }
 function setBusDesignation(busId,value){
  let b=state.buses.find(x=>x.id===busId); if(!b)return;
@@ -956,6 +987,12 @@ function setTemporaryBus(routeId,value){
  let r=state.routes.find(x=>x.id===routeId);r.temporaryBus=value?Number(value):null;
  log(`Route ${routeId} temporary bus ${r.temporaryBus?'set to Bus '+r.temporaryBus:'cleared'}.`);render()
 }
+function clearRouteBusOverride(routeId){
+ let r=state.routes.find(x=>x.id===routeId);if(!r)return;
+ r.temporaryBus=null;
+ log(`Route ${routeId} temporary bus override cleared. Permanent Bus ${r.bus||'—'} will receive route mileage.`);
+ autosaveGame();render();
+}
 function clearTemporaryAssignments(){state.routes.forEach(r=>{r.temporaryBus=null;r.temporaryDriver=null});log('All temporary route assignments cleared.');render()}
 function autoAssignYear(){
  ensureAssignmentFields();
@@ -969,9 +1006,10 @@ function autoAssignYear(){
 }
 function assignBusToRouteSilent(routeId,busId){
  let r=state.routes.find(x=>x.id===routeId),b=state.buses.find(x=>x.id===busId);if(!r||!b)return;
- state.routes.forEach(x=>{if(x.id!==routeId&&x.bus===busId)x.bus=null});
- state.buses.forEach(x=>{if(x.id!==busId&&x.route===routeId)x.route=null});
- r.bus=busId;b.route=routeId;b.designation='Regular Route';b.status='Ready';b.driver=r.driver
+ r.temporaryBus=null;
+ state.routes.forEach(x=>{if(x.id!==routeId&&x.bus===busId){x.bus=null;x.temporaryBus=null}});
+ state.buses.forEach(x=>{if(x.id!==busId&&x.route===routeId){x.route=null;if(x.designation==='Regular Route')x.designation='Spare'}});
+ r.bus=busId;b.route=routeId;b.designation=r.specialNeeds?'Special Ed':'Regular Route';b.status='Ready';b.driver=r.driver
 }
 function assignDriverSilent(routeId,name){
  let r=state.routes.find(x=>x.id===routeId);if(!r)return;
