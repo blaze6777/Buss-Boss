@@ -498,8 +498,9 @@ function render(){
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(b.dataset.view).classList.add('active')});
 function busParkedToday(b){
-  if(state.dispatchStep>=2 && state.dispatchStep<6 && b.route) return false;
-  return true;
+  let s=dispatchStageFromTime();
+  if(!b.route)return true;
+  return !([1,2,5,6].includes(s));
 }
 function busCardHTML(b,spaceNo){
   if(!b || !busParkedToday(b)){
@@ -523,7 +524,7 @@ function renderBuses(){
   const split=Math.ceil(spaces/2);
   $('parkingRowTop').innerHTML=slots.slice(0,split).map((b,i)=>busCardHTML(b,i+1)).join('');
   $('parkingRowBottom').innerHTML=slots.slice(split).map((b,i)=>busCardHTML(b,split+i+1)).join('');
-  if($('lotStatus')) $('lotStatus').textContent=state.dispatchStep>=2&&state.dispatchStep<6?'Routes are out • spaces reflect live fleet':'Pre-dispatch • fleet parked';
+  if($('lotStatus')) $('lotStatus').textContent=`${minsToTime(state.simMinutes)} • ${simPhase()} • lot reflects live dispatch`;
   const maint=state.buses.filter(b=>b.status==='Maintenance'||b.status==='Inspection Due');
   if($('bay1')) $('bay1').textContent=maint[0]?'Bus '+maint[0].id:'Open';
   if($('bay2')) $('bay2').textContent=maint[1]?'Bus '+maint[1].id:'Open';
@@ -585,26 +586,49 @@ function confirmBusPurchase(){
  state.buses.push({id,year:2026,model,miles:18,fuel:100,status:designation==='Regular Route'?'Ready':'Spare',condition:100,route:null,driver:null,designation});
  state.budget-=112000;closeModal();log(`New Bus ${id} purchased as ${designation}.`);render()
 }
+function dispatchStageFromTime(){
+ ensureV4Data();
+ let m=state.simMinutes;
+ if(m<345)return 0;          // check-in
+ if(m<390)return 1;          // HS AM
+ if(m<450)return 2;          // Elem AM
+ if(m<780)return 3;          // school day
+ if(m<900)return 4;          // PM prep
+ if(m<960)return 5;          // HS PM
+ if(m<1035)return 6;         // Elem PM
+ return 7;                   // return
+}
 function renderDispatch(){
- let phases=['Driver check-in & pre-trip','High school routes depart','High school unload','Elementary routes begin','Elementary unload','Buses return to garage'];
- $('dispatchTimeline').innerHTML=phases.map((p,i)=>`<div class="alert">${i<state.dispatchStep?'✅':i===state.dispatchStep?'▶️':'○'} ${p}</div>`).join('');
- let ready=state.routes.filter(r=>r.driver&&state.buses.find(b=>b.id===(r.temporaryBus||r.bus))?.status!=='Maintenance').length;$('readiness').innerHTML=`<div class="kv"><span>Covered routes</span><b>${ready}/${state.routes.length}</b></div><div class="kv"><span>Spare buses</span><b>${state.buses.filter(b=>b.status==='Spare').length}</b></div><div class="kv"><span>Substitute drivers</span><b>${state.staff.filter(s=>s.status==='Substitute'&&!s.route).length}</b></div>`
+ ensureCalendarData();ensureUXData();
+ let phases=['Driver check-in & pre-trip','High school AM routes','Elementary AM routes','School day / trips','PM route preparation','High school PM routes','Elementary PM routes','Return, fuel & shutdown'];
+ let current=dispatchStageFromTime();
+ state.dispatchStep=current;
+ $('dispatchTimeline').innerHTML=phases.map((p,i)=>`<div class="alert ${i===current?'priority-yellow':i<current?'priority-green':''}">${i<current?'✅':i===current?'▶️':'○'} ${p}</div>`).join('');
+ let covered=state.routes.filter(r=>routeCoverage(r).ok).length;
+ $('readiness').innerHTML=`<div class="kv"><span>Current time</span><b>${minsToTime(state.simMinutes)}</b></div><div class="kv"><span>Current phase</span><b>${simPhase()}</b></div><div class="kv"><span>Covered routes</span><b>${covered}/${state.routes.length}</b></div><div class="kv"><span>Spare buses</span><b>${state.buses.filter(b=>b.designation==='Spare'&&b.status!=='Maintenance').length}</b></div><div class="kv"><span>Substitute drivers</span><b>${state.staff.filter(s=>s.status==='Substitute'&&!s.route).length}</b></div>`;
 }
 function startDispatch(){
- let uncovered=state.routes.find(r=>!r.driver);
- if(uncovered){let sub=state.staff.find(s=>s.status==='Substitute'&&!s.route);if(sub){sub.route=uncovered.id;uncovered.driver=sub.name;let b=state.buses.find(x=>x.id===uncovered.bus);if(b)b.driver=sub.name;log(`${sub.name} assigned to uncovered Route ${uncovered.id}.`)}else{radio(`Route ${uncovered.id} is uncovered and no substitute is available.`,['Use a regular trip driver','Delay the route']);return}}
- state.dispatchStep=Math.min(6,state.dispatchStep+1);
- const msgs=[
- 'All regular drivers are checking in. Bus 24 needs an inspection sign-off.',
- 'High school runs are pulling out of the garage.',
- 'Bus 18 reports a railroad delay of approximately six minutes.',
- 'High school students are unloaded. Drivers are beginning elementary runs.',
- 'Route 24 reports 72 elementary students — bus is at full seated capacity.',
- 'Elementary routes are returning. Maintenance reports Bus 42 has a weak battery.'
- ];
- radio(msgs[Math.max(0,state.dispatchStep-1)]||'AM dispatch complete.');
- if(state.dispatchStep>=6){state.onTime=Math.max(88,Math.min(100,state.onTime+(Math.random()>.5?1:-1)));state.buses.forEach(b=>{if(b.route){b.miles+=50;b.fuel=Math.max(20,b.fuel-14)}});log('AM dispatch completed.')}
- render()
+ ensureCalendarData();ensureUXData();
+ let uncovered=state.routes.filter(r=>!routeCoverage(r).ok);
+ if(uncovered.length){
+   log(`${uncovered.length} route(s) need coverage before dispatch.`);
+   document.querySelector('[data-view="today"]').click();
+   render();
+   alert('Dispatch cannot begin until uncovered routes are handled on the Today screen.');
+   return;
+ }
+ if(state.simMinutes<345)state.simMinutes=345;
+ else if(state.simMinutes<390)state.simMinutes=390;
+ else if(state.simMinutes<450)state.simMinutes=450;
+ else if(state.simMinutes<780)state.simMinutes=780;
+ else if(state.simMinutes<900)state.simMinutes=900;
+ else if(state.simMinutes<960)state.simMinutes=960;
+ else if(state.simMinutes<1035)state.simMinutes=1035;
+ else state.simMinutes=1080;
+ applyTimePhase();
+ log(`Dispatch advanced to ${simPhase()} at ${minsToTime(state.simMinutes)}.`);
+ radio(`Dispatch is now synchronized with Operations: ${simPhase()} at ${minsToTime(state.simMinutes)}.`);
+ autosaveGame();render();
 }
 function radio(text,choices=[]){$('radioBox').innerHTML=`<strong>RADIO:</strong> ${text}`+choices.map(c=>`<button class="choice" onclick="radioChoice('${c.replaceAll("'","")}')">${c}</button>`).join('')}
 function radioChoice(c){log(`Dispatch decision: ${c}.`);state.board=Math.max(55,Math.min(100,state.board+(c.includes('Delay')?-1:1)));radio(`Decision recorded: ${c}.`);render()}
@@ -881,17 +905,35 @@ function ensureV4Data(){
 function minsToTime(m){let h=Math.floor(m/60)%24,mm=m%60,amp=h>=12?'PM':'AM';let hh=h%12||12;return `${hh}:${String(mm).padStart(2,'0')} ${amp}`}
 function simPhase(){let m=state.simMinutes;if(m<345)return'Pre-Trip & Driver Check-In';if(m<390)return'High School Morning Routes';if(m<450)return'Elementary Morning Routes';if(m<780)return'School Day / Trips / Maintenance';if(m<900)return'PM Route Preparation';if(m<960)return'High School PM Routes';if(m<1035)return'Elementary PM Routes';return'Return, Fuel & Shutdown'}
 function renderOperations(){
- if(!$('simClock'))return;ensureV4Data();$('simClock').textContent=minsToTime(state.simMinutes);$('simPhase').textContent=simPhase();$('dayProgress').style.width=Math.min(100,Math.max(0,(state.simMinutes-315)/(1080-315)*100))+'%';
+ if(!$('simClock'))return;ensureV4Data();ensureUXData();applyTimePhase();$('simClock').textContent=minsToTime(state.simMinutes);$('simPhase').textContent=simPhase();$('dayProgress').style.width=Math.min(100,Math.max(0,(state.simMinutes-315)/(1080-315)*100))+'%';
  $('seasonLabel').textContent=state.season==='Summer'?'☀️ Summer Transportation Planning':'🚌 School Year Operations';$('seasonHelp').textContent=state.season==='Summer'?'Inspections, route planning, hiring, training, bidding and opening-day preparation.':'Run daily routes, trips, staffing, safety and fleet operations.';
- $('opsHeadline').textContent=simPhase();$('opsSummary').innerHTML=`<div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="kv"><span>Parent satisfaction</span><b>${state.parents}%</b></div>`;
+ $('opsHeadline').textContent=simPhase();let coveredNow=state.routes.filter(r=>routeCoverage(r).ok).length;let stage=dispatchStageFromTime();$('opsSummary').innerHTML=`<div class="kv"><span>Dispatch Status</span><b>${coveredNow}/${state.routes.length} routes covered</b></div><div class="kv"><span>Fleet Movement</span><b>${[1,2,5,6].includes(stage)?'Route buses are out':'Route buses at garage / staging'}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="kv"><span>Parent satisfaction</span><b>${state.parents}%</b></div><div class="actions"><button class="btn primary" onclick="startDispatch()">Advance Dispatch Phase</button><button class="btn" onclick="document.querySelector('[data-view=&quot;dispatch&quot;]').click()">Open Dispatch</button></div>`;
  let cats=state.budgetCategories;$('budgetDetailMini').innerHTML=Object.entries(cats).slice(0,6).map(([k,v])=>`<div class="alert"><b>${k}</b><div>${money(v)}</div></div>`).join('');
  $('newsFeed').innerHTML=(state.news.slice(0,4).map(n=>`<div class="news">${n.text}</div>`).join('')||'<div class="small">No district news yet.</div>');$('reputationBadge').textContent=state.reputation>=90?'Excellent':state.reputation>=75?'Good':'Needs Attention';
  let open=state.workOrders.filter(w=>w.status!=='Completed');$('workOrderMini').innerHTML=open.slice(0,5).map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)}</div></span><button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button></div>`).join('')||'<div class="alert">✅ Shop workload is light.</div>';
  $('recognitionMini').innerHTML=state.awards.slice(0,3).map(a=>`<div class="award">🏆 <b>${a.name}</b><div class="small">${a.award}</div></div>`).join('')||'<div class="small">No awards issued yet this year.</div>';
 }
-function advanceTime(){ensureV4Data();state.simMinutes+=30;if(state.simMinutes>1080){state.simMinutes=315;advanceDay();return}applyTimePhase();render()}
-function runToNextPhase(){let bounds=[345,390,450,780,900,960,1035,1080];let n=bounds.find(x=>x>state.simMinutes);state.simMinutes=n||315;applyTimePhase();render()}
-function applyTimePhase(){let p=simPhase();if(/Routes/.test(p)){state.dispatchStep=3}else if(/School Day/.test(p)){state.dispatchStep=6}else if(/Return/.test(p)){state.dispatchStep=0;state.buses.forEach(b=>{if(b.status==='Ready')b.fuel=Math.max(10,b.fuel-Math.floor(Math.random()*5+3))})}}
+function advanceTime(){ensureV4Data();state.simMinutes+=30;if(state.simMinutes>1080){state.simMinutes=315;advanceDay();return}applyTimePhase();autosaveGame();render()}
+function runToNextPhase(){let bounds=[345,390,450,780,900,960,1035,1080];let n=bounds.find(x=>x>state.simMinutes);state.simMinutes=n||315;applyTimePhase();autosaveGame();render()}
+function applyTimePhase(){
+ ensureV4Data();
+ state.dispatchStep=dispatchStageFromTime();
+ let p=simPhase();
+ state.buses.forEach(b=>{
+   if(!b.route)return;
+   if(state.dispatchStep===1)b.liveStatus='High School AM Route';
+   else if(state.dispatchStep===2)b.liveStatus='Elementary AM Route';
+   else if(state.dispatchStep===3)b.liveStatus='At Garage / Midday';
+   else if(state.dispatchStep===4)b.liveStatus='PM Pre-Trip';
+   else if(state.dispatchStep===5)b.liveStatus='High School PM Route';
+   else if(state.dispatchStep===6)b.liveStatus='Elementary PM Route';
+   else if(state.dispatchStep===7)b.liveStatus='Returning / Fueling';
+   else b.liveStatus='Parked / Pre-Trip';
+ });
+ if(state.dispatchStep===7){
+   state.buses.forEach(b=>{if(b.status==='Ready')b.fuel=Math.max(10,b.fuel-Math.floor(Math.random()*5+3))});
+ }
+}
 function randomOperationalEvent(){let events=[['Principal Call','The high school asks for a 15-minute early dismissal Friday.','Approve','Decline'],['Student Left Item','A parent reports a backpack was left on Bus 18.','Search bus','Call driver'],['Railroad Delay','A train is blocking two routes.','Reroute buses','Hold routes'],['Driver Compliment','A parent emailed praise for a driver helping a nervous kindergarten student.','Recognize driver','Log compliment'],['Minor Incident','A bus mirror clipped a trash cart. No injuries.','Document incident','Review camera']];let e=events[Math.floor(Math.random()*events.length)];openModal(e[0],`<div class="alert">${e[1]}</div><div class="actions"><button class="btn primary" onclick="resolveOperationalEvent('${e[2]}')">${e[2]}</button><button class="btn" onclick="resolveOperationalEvent('${e[3]}')">${e[3]}</button></div>`)}
 function resolveOperationalEvent(choice){state.incidents.push({day:state.day,type:'Operational event',decision:choice});state.reputation=Math.min(100,state.reputation+1);log(`Operational decision: ${choice}.`);closeModal();render()}
 function openMaintenanceCenter(){ensureV4Data();openModal('Maintenance Work Orders',`<div class="small">Maintenance is intentionally occasional. Routine PMs and repairs appear periodically, not every day.</div>${state.workOrders.map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)} • ${w.days||1} day(s)</div></span>${w.status!=='Completed'?`<button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button>`:'✅'}</div>`).join('')||'<div class="alert">✅ No open work orders.</div>'}<div class="actions"><button class="btn" onclick="createRoutineWorkOrder()">Add Routine PM</button></div>`)}
