@@ -675,26 +675,26 @@ function ensureAssignmentFields(){
 }
 function renderAssignments(){
  if(!$('assignmentBody'))return; ensureAssignmentFields();
- const driverOptions=state.staff.map(s=>`<option value="${s.name}">${s.name}${s.status==='Substitute'?' (Sub)':''}</option>`).join('');
- const busOptions=state.buses.map(b=>`<option value="${b.id}">Bus ${b.id} — ${b.designation}</option>`).join('');
+ const driverOptions=state.staff.map(s=>`<option value="${s.name}">${s.name} — ${s.years} yr${s.years===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('');
+ const busOptions=state.buses.map(b=>`<option value="${b.id}">Bus ${b.id} — ${b.year} • ${b.designation}</option>`).join('');
  $('assignmentBody').innerHTML=state.routes.map(r=>`
    <tr>
      <td><b>Route ${r.id}</b></td>
      <td>
        <select id="driverSelect_${r.id}" style="min-width:170px">
-         <option value="">Unassigned</option>${state.staff.map(s=>`<option value="${s.name}" ${r.driver===s.name?'selected':''}>${s.name}${s.status==='Substitute'?' (Sub)':''}</option>`).join('')}
+         <option value="">Unassigned</option>${state.staff.map(s=>`<option value="${s.name}" ${r.driver===s.name?'selected':''}>${s.name} — ${s.years} yr${s.years===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('')}
        </select>
        <button class="btn" style="padding:6px 9px;margin-left:4px" onclick="applyDriverSelection(${r.id})">Apply</button>
      </td>
      <td><select onchange="assignBusToRoute(${r.id},Number(this.value))" style="min-width:150px">
-       <option value="">Unassigned</option>${state.buses.map(b=>`<option value="${b.id}" ${r.bus===b.id?'selected':''}>Bus ${b.id}</option>`).join('')}
+       <option value="">Unassigned</option>${state.buses.map(b=>`<option value="${b.id}" ${r.bus===b.id?'selected':''}>Bus ${b.id} — ${b.year}</option>`).join('')}
      </select></td>
      <td>${(()=>{let b=state.buses.find(x=>x.id===r.bus);return b?`<select onchange="setBusDesignation(${b.id},this.value)">${['Regular Route','Spare','Trip Bus','Special Ed','Maintenance Reserve'].map(d=>`<option ${b.designation===d?'selected':''}>${d}</option>`).join('')}</select>`:'—'})()}</td>
      <td><select onchange="setTemporaryBus(${r.id},this.value)" style="min-width:150px">
-       <option value="">None</option>${state.buses.filter(b=>b.id!==r.bus).map(b=>`<option value="${b.id}" ${String(r.temporaryBus)===String(b.id)?'selected':''}>Bus ${b.id}</option>`).join('')}
+       <option value="">None</option>${state.buses.filter(b=>b.id!==r.bus).map(b=>`<option value="${b.id}" ${String(r.temporaryBus)===String(b.id)?'selected':''}>Bus ${b.id} — ${b.year}</option>`).join('')}
      </select></td>
      <td><select onchange="setTemporaryDriver(${r.id},this.value)" style="min-width:170px">
-       <option value="">None</option>${state.staff.filter(s=>s.name!==r.driver).map(s=>`<option value="${s.name}" ${r.temporaryDriver===s.name?'selected':''}>${s.name}${s.status==='Substitute'?' (Sub)':''}</option>`).join('')}
+       <option value="">None</option>${state.staff.filter(s=>s.name!==r.driver).map(s=>`<option value="${s.name}" ${r.temporaryDriver===s.name?'selected':''}>${s.name} — ${s.years} yr${s.years===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('')}
      </select></td>
    </tr>`).join('');
  const unassignedBuses=state.buses.filter(b=>!b.route);
