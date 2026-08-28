@@ -668,29 +668,55 @@ function facility(name){openModal(name, name==='Maintenance Shop'?'You can servi
 function editStops(){openModal('Edit Route '+selectedRoute,'Stop editor concept: add, remove, reorder, or transfer stops between routes. Every change recalculates student load, mileage and run time.')}
 function reassignRoute(){let r=state.routes.find(x=>x.id===selectedRoute);let spare=state.buses.find(b=>b.status==='Spare');if(spare){let old=state.buses.find(b=>b.id===r.bus);if(old){old.route=null;old.status='Spare'}spare.route=r.id;spare.status='Ready';spare.driver=r.driver;r.bus=spare.id;log(`Route ${r.id} reassigned to Bus ${spare.id}.`);render()}else alert('No spare bus available.')}
 function autoBalance(){let overloaded=state.routes.find(r=>r.elemStudents>=72);if(overloaded){overloaded.elemStudents-=5;let other=state.routes.find(r=>r.id!==overloaded.id&&r.elem===overloaded.elem&&r.elemStudents<65);if(other)other.elemStudents+=5;log(`Routing office balanced 5 students off Route ${overloaded.id}.`)}render()}
-function advanceDay(){autosaveGame();ensureCalendarData();
+function advanceDay(){
+ autosaveGame();ensureCalendarData();ensureUXData();
  if(state.season==='Summer'){
    state.summerDaysRemaining=Math.max(0,(state.summerDaysRemaining||42)-1);
    state.day++;
+   state.simMinutes=480;
+   state.dispatchStep=0;
    if(Math.random()<.18)generateApplicant();
-   if(state.summerDaysRemaining<=0){
-     openingDay();
-     return;
-   }
+   if(state.summerDaysRemaining<=0){openingDay();return;}
    log(`Summer planning day advanced. ${state.summerDaysRemaining} days until Opening Day.`);
    render();return;
  }
- maybeMaintenanceEvent();state.day++;state.schoolDay=(state.schoolDay||0)+1;state.dispatchStep=0;
- state.buses.forEach(b=>{if(b.status==='Ready'||b.status==='Spare'){b.miles+=Math.floor(8+Math.random()*20);b.fuel=Math.max(18,b.fuel-Math.floor(3+Math.random()*8));b.condition=Math.max(35,b.condition-(Math.random()>.75?1:0))}});
+
+ // Start a clean new operating day without destroying permanent assignments.
+ state.day++;
+ state.schoolDay=(state.schoolDay||0)+1;
+ state.simMinutes=315;
+ state.dispatchStep=0;
+ state.buses.forEach(b=>{b.liveStatus='Parked / Pre-Trip';});
+ maybeMaintenanceEvent();
+
+ state.buses.forEach(b=>{
+   if(b.status==='Ready'||b.status==='Spare'){
+     b.miles+=Math.floor(8+Math.random()*20);
+     b.fuel=Math.max(18,b.fuel-Math.floor(3+Math.random()*8));
+     b.condition=Math.max(35,b.condition-(Math.random()>.75?1:0));
+   }
+ });
+
  if(Math.random()<.35)generateTrip();
  if(Math.random()<.25)generateApplicant();
- if(Math.random()<.3){let d=state.staff.find(s=>s.status==='Regular'&&s.route);if(d){let r=state.routes.find(r=>r.id===d.route);d.status='Called Off';d.route=null;if(r)r.driver=null;log(`${d.name} called off for the morning. Route ${r?.id||''} needs coverage.`)}}
- if(state.schoolDay>=state.schoolDaysPerYear){
-   yearEnd();
-   return;
+
+ // A call-off is a one-day absence only. Keep the driver's permanent route/bus assignment.
+ if(Math.random()<.3){
+   let candidates=state.staff.filter(s=>s.status==='Regular'&&s.route);
+   let d=candidates[Math.floor(Math.random()*candidates.length)];
+   if(d){
+     state.absences=state.absences||[];
+     if(!state.absences.some(a=>a.driver===d.name&&a.day===state.day)){
+       state.absences.push({driver:d.name,day:state.day,type:'Sick / Call-Off'});
+       log(`${d.name} called off for School Day ${state.schoolDay}. Route ${d.route} needs temporary coverage today.`);
+     }
+   }
  }
- log(`School Day ${state.schoolDay} of ${state.schoolDaysPerYear} complete. ${state.schoolDaysPerYear-state.schoolDay} school days remain.`);
- render()
+
+ if(state.schoolDay>=state.schoolDaysPerYear){yearEnd();return;}
+ log(`School Day ${state.schoolDay} of ${state.schoolDaysPerYear} begins. ${state.schoolDaysPerYear-state.schoolDay} school days remain after today.`);
+ autosaveGame();
+ render();
 }
 function renderReports(){$('onTime').textContent=state.onTime+'%';$('morale').textContent=state.morale+'%';$('parents').textContent=state.parents+'%';$('fleetReady').textContent=Math.round(state.buses.filter(b=>!['Maintenance'].includes(b.status)).length/state.buses.length*100)+'%';$('approvedTrips').textContent=state.trips.filter(t=>t.status==='Approved').length}
 function renderLog(){$('log').innerHTML=(state.log||[]).map(x=>`<div class="log-entry">${x}</div>`).join('')||'<div class="small">No activity yet.</div>'}
@@ -1029,7 +1055,18 @@ function giveAward(name,award){let s=state.staff.find(x=>x.name===name);if(s){s.
 function openDistrictGrowth(){ensureV4Data();openModal('District Growth & Enrollment',`<div class="detail"><div class="kv"><span>Elementary Schools</span><b>${state.districtGrowth.schools}</b></div><div class="kv"><span>New Subdivisions</span><b>${state.districtGrowth.subdivisions}</b></div><div class="kv"><span>Tracked Riders</span><b>${state.students.length}</b></div></div><div class="actions"><button class="btn" onclick="addSubdivision()">New Subdivision</button><button class="btn" onclick="addElementarySchool()">Open Elementary School</button></div>`)}
 function addSubdivision(){state.districtGrowth.subdivisions++;for(let i=0;i<8;i++)generateStudentSilent();state.news.unshift({text:'A new subdivision adds riders and pressure to existing routes.',tone:'warn'});closeModal();render()}
 function addElementarySchool(){if(state.budget<30000)return alert('Transportation planning requires $30,000.');state.budget-=30000;state.districtGrowth.schools++;state.news.unshift({text:'District opens a new elementary attendance area; transportation begins route planning.',tone:'good'});closeModal();render()}
-function generateStudentSilent(){let first=['Ethan','Olivia','Lucas','Mia','Henry','Ella','Jack','Grace'],last=['Turner','Wilson','Bennett','Morris','Adams'];let name=first[Math.floor(Math.random()*first.length)]+' '+last[Math.floor(Math.random()*last.length)],grade=Math.floor(Math.random()*12)+1;let route=state.routes[Math.floor(Math.random()*state.routes.length)];state.students.push({id:Date.now()+Math.random(),name,grade,school:grade<=6?route.elem:'Warsaw High School',route:route.id,stop:['Maple & 5th','Fox Run','Meadow Lane','County Rd 150'][Math.floor(Math.random()*4)],household:name.split(' ')[1],status:'Active',behavior:0,special:Math.random()<.08})}
+function generateStudentSilent(){
+ let first=['Ethan','Olivia','Lucas','Mia','Henry','Ella','Jack','Grace'],last=['Turner','Wilson','Bennett','Morris','Adams'];
+ let name=first[Math.floor(Math.random()*first.length)]+' '+last[Math.floor(Math.random()*last.length)],grade=Math.floor(Math.random()*12)+1;
+ let regularRoutes=state.routes.filter(r=>!r.specialNeeds),route=regularRoutes[Math.floor(Math.random()*regularRoutes.length)]||state.routes[0];
+ let special=Math.random()<.08;
+ if(special){
+   let sr=state.routes.find(r=>r.specialNeeds);
+   if(sr)route=sr;
+ }
+ let school=route.specialNeeds?(grade<=6?'Harrison Elementary':'Warsaw High School'):(grade<=6?(route.elem||'Lincoln Elementary'):'Warsaw High School');
+ state.students.push({id:Date.now()+Math.random(),name,grade,school,route:route.id,stop:route.specialNeeds?'Door-to-door':['Maple & 5th','Fox Run','Meadow Lane','County Rd 150'][Math.floor(Math.random()*4)],household:name.split(' ')[1],status:'Active',behavior:0,special});
+}
 
 function ensureCalendarData(){
  if(!state.schoolDaysPerYear)state.schoolDaysPerYear=180;
@@ -1120,6 +1157,7 @@ function cameraReview(studentName){openModal('Bus Camera Review',`<div class="al
 
 function ensureUXData(){
  ensureV4Data();
+ state.staff.forEach(s=>{if(s.status==='Called Off')s.status='Regular';});
  state.absences=state.absences||[];
  state.parentLog=state.parentLog||[];
  state.undoStack=state.undoStack||[];
@@ -1320,7 +1358,12 @@ advanceDay = function(){
  render()
 }
 const oldRender = render;
-render = function(){ ensureV4Data(); oldRender(); renderStudents(); renderDesk(); renderAssignments(); renderTraining(); renderOperations(); }
+render = function(){
+ ensureV4Data();ensureUXData();ensureCalendarData();
+ oldRender();
+ renderStudents();renderDesk();renderAssignments();renderTraining();
+ renderOperations();renderToday();renderCalendarUX();
+}
 
 render();
 </script>
