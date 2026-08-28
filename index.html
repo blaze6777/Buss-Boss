@@ -154,7 +154,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;b
     <button class="active" data-view="today">Command Center</button>
     <button data-view="garage">Garage</button>
     <button data-view="routes">Routes</button>
-    <button data-view="staffing">Staffing</button>
+    <button data-view="department">Department</button>
+    <button data-view="staffing">Drivers & Applicants</button>
     <button data-view="training">Training</button>
     <button data-view="calendar">Calendar</button>
     <button data-view="trips">Trip Requests</button>
@@ -266,7 +267,24 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;b
     <div class="route-card-grid" id="routeCards" style="margin-top:12px"></div>
   </section>
 
-  <section id="staffing" class="view">
+  <section id="department" class="view">
+  <div class="section-head">
+    <div><h2>Transportation Department</h2><div class="small">Manage the entire operation — administration, dispatch, routing, safety, maintenance, office staff, aides and drivers.</div></div>
+    <div class="actions"><button class="btn primary" onclick="openDepartmentHiring()">Hire Department Staff</button><button class="btn" onclick="openDepartmentBudget()">Department Payroll</button></div>
+  </div>
+  <div class="today-grid" id="departmentKpis"></div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h2 style="margin-top:0">Organization Chart</h2><div id="orgChart"></div></div>
+    <aside class="panel"><h2 style="margin-top:0">Department Health</h2><div id="departmentHealth"></div></aside>
+  </div>
+  <div class="panel" style="margin-top:12px"><h2 style="margin-top:0">Department Staff</h2><div class="staff-grid" id="departmentStaffGrid"></div></div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h2 style="margin-top:0">Maintenance Shop</h2><div id="shopDepartment"></div></div>
+    <div class="panel"><h2 style="margin-top:0">Special Needs Transportation</h2><div id="specialDepartment"></div></div>
+  </div>
+</section>
+
+<section id="staffing" class="view">
     <div class="section-head"><div><h2>Staffing & Applicants</h2><div class="small">Review candidates, interview, hire, reject, and build a substitute pool.</div></div><button class="btn" onclick="generateApplicant()">New Applicant</button></div>
     <div class="grid2">
       <div class="app-grid" id="applicantGrid"></div>
@@ -681,36 +699,18 @@ function dispatchStageFromTime(){
 }
 function renderDispatch(){
  ensureCalendarData();ensureUXData();
- let phases=['Driver check-in & pre-trip','High school AM routes','Elementary AM routes','School day / trips','PM route preparation','High school PM routes','Elementary PM routes','Return, fuel & shutdown'];
- let current=dispatchStageFromTime();
- state.dispatchStep=current;
- $('dispatchTimeline').innerHTML=phases.map((p,i)=>`<div class="alert ${i===current?'priority-yellow':i<current?'priority-green':''}">${i<current?'✅':i===current?'▶️':'○'} ${p}</div>`).join('');
  let covered=state.routes.filter(r=>routeCoverage(r).ok).length;
- $('readiness').innerHTML=`<div class="kv"><span>Current time</span><b>${minsToTime(state.simMinutes)}</b></div><div class="kv"><span>Current phase</span><b>${simPhase()}</b></div><div class="kv"><span>Covered routes</span><b>${covered}/${state.routes.length}</b></div><div class="kv"><span>Spare buses</span><b>${state.buses.filter(b=>b.designation==='Spare'&&b.status!=='Maintenance').length}</b></div><div class="kv"><span>Substitute drivers</span><b>${state.staff.filter(s=>s.status==='Substitute'&&!s.route).length}</b></div>`;
+ $('dispatchTimeline').innerHTML=`
+  <div class="alert priority-green">1. Driver check-in & pre-trip</div>
+  <div class="alert priority-green">2. Morning routes</div>
+  <div class="alert priority-green">3. Midday trips / maintenance</div>
+  <div class="alert priority-green">4. Afternoon routes</div>
+  <div class="alert priority-green">5. Return, fuel & shutdown</div>
+  <div class="small" style="margin-top:8px">These steps are now processed together when you run the transportation day.</div>`;
+ $('readiness').innerHTML=`<div class="kv"><span>Date</span><b>${formatGameDate()}</b></div><div class="kv"><span>Routes ready</span><b>${covered}/${state.routes.length}</b></div><div class="kv"><span>Spare buses</span><b>${state.buses.filter(b=>b.designation==='Spare'&&b.status!=='Maintenance').length}</b></div><div class="kv"><span>Substitute drivers</span><b>${state.staff.filter(s=>s.status==='Substitute'&&!s.route).length}</b></div><div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Full Day</button></div>`;
 }
-function startDispatch(){
- ensureCalendarData();ensureUXData();
- let uncovered=state.routes.filter(r=>!routeCoverage(r).ok);
- if(uncovered.length){
-   log(`${uncovered.length} route(s) need coverage before dispatch.`);
-   document.querySelector('[data-view="today"]').click();
-   render();
-   alert('Dispatch cannot begin until uncovered routes are handled on the Today screen.');
-   return;
- }
- if(state.simMinutes<345)state.simMinutes=345;
- else if(state.simMinutes<390)state.simMinutes=390;
- else if(state.simMinutes<450)state.simMinutes=450;
- else if(state.simMinutes<780)state.simMinutes=780;
- else if(state.simMinutes<900)state.simMinutes=900;
- else if(state.simMinutes<960)state.simMinutes=960;
- else if(state.simMinutes<1035)state.simMinutes=1035;
- else state.simMinutes=1080;
- applyTimePhase();
- log(`Dispatch advanced to ${simPhase()} at ${minsToTime(state.simMinutes)}.`);
- radio(`Dispatch is now synchronized with Operations: ${simPhase()} at ${minsToTime(state.simMinutes)}.`);
- autosaveGame();render();
-}
+function startDispatch(){runTransportationDay()}
+
 function radio(text,choices=[]){$('radioBox').innerHTML=`<strong>RADIO:</strong> ${text}`+choices.map(c=>`<button class="choice" onclick="radioChoice('${c.replaceAll("'","")}')">${c}</button>`).join('')}
 function radioChoice(c){log(`Dispatch decision: ${c}.`);state.board=Math.max(55,Math.min(100,state.board+(c.includes('Delay')?-1:1)));radio(`Decision recorded: ${c}.`);render()}
 function facility(name){openModal(name, name==='Maintenance Shop'?'You can service buses, track preventive maintenance, inspections, tires, batteries, brakes, and shop capacity here.':name==='Driver Lounge'?'Drivers clock in here. Call-offs, substitutes, morale, seniority, and trip sign-ups appear in this room.':name==='Director Office'?'Your office contains budget, staffing, school board, route, weather, incident, and annual planning tools.':'This facility is part of your transportation center and will affect daily operations.')}
@@ -833,17 +833,7 @@ function advanceDay(){
  if(Math.random()<.25)generateApplicant();
 
  // A call-off is a one-day absence only. Keep the driver's permanent route/bus assignment.
- if(Math.random()<.3){
-   let candidates=state.staff.filter(s=>s.status==='Regular'&&s.route);
-   let d=candidates[Math.floor(Math.random()*candidates.length)];
-   if(d){
-     state.absences=state.absences||[];
-     if(!state.absences.some(a=>a.driver===d.name&&a.day===state.day)){
-       state.absences.push({driver:d.name,day:state.day,type:'Sick / Call-Off'});
-       log(`${d.name} called off for School Day ${state.schoolDay}. Route ${d.route} needs temporary coverage today.`);
-     }
-   }
- }
+ if(Math.random()<.3)createDriverCalloff();
 
  if(state.schoolDay>=state.schoolDaysPerYear){yearEnd();return;}
  log(`School Day ${state.schoolDay} of ${state.schoolDaysPerYear} begins. ${state.schoolDaysPerYear-state.schoolDay} school days remain after today.`);
@@ -905,7 +895,7 @@ function applyDriverSelection(routeId){
 function setTemporaryDriver(routeId,name){
  let r=state.routes.find(x=>x.id===routeId); if(!r)return;
  r.temporaryDriver=name||null;
- log(`Route ${routeId} temporary driver ${name?'set to '+name:'cleared'}.`);
+ log(`Route ${routeId} temporary driver ${name?'set to '+name+' until the regular driver returns':'cleared'}.`);
  render();
 }
 
@@ -985,7 +975,7 @@ function setBusDesignation(busId,value){
 }
 function setTemporaryBus(routeId,value){
  let r=state.routes.find(x=>x.id===routeId);r.temporaryBus=value?Number(value):null;
- log(`Route ${routeId} temporary bus ${r.temporaryBus?'set to Bus '+r.temporaryBus:'cleared'}.`);render()
+ log(`Route ${routeId} temporary bus ${r.temporaryBus?'set to Bus '+r.temporaryBus+' until the regular bus returns':'cleared'}.`);render()
 }
 function clearRouteBusOverride(routeId){
  let r=state.routes.find(x=>x.id===routeId);if(!r)return;
@@ -1178,22 +1168,164 @@ function ensureV4Data(){
  if(!state.reputation)state.reputation=82;
  if(!state.weather)state.weather={condition:'Clear',temp:64,roads:'Dry'};
  if(!state.districtGrowth)state.districtGrowth={subdivisions:0,schools:3,projectedRiders:state.students.length};
+ if(!state.departmentApplicants)state.departmentApplicants=[];
+ if(!state.departmentPositions)state.departmentPositions=[
+  {role:'Assistant Transportation Director',target:1},
+  {role:'Operations Supervisor',target:1},
+  {role:'Dispatcher',target:2},
+  {role:'Route Coordinator',target:1},
+  {role:'Driver Trainer',target:1},
+  {role:'Safety Coordinator',target:1},
+  {role:'Lead Mechanic',target:1},
+  {role:'Bus Mechanic',target:2},
+  {role:'Parts / Fleet Clerk',target:1},
+  {role:'Transportation Secretary',target:1},
+  {role:'Special Needs Coordinator',target:1},
+  {role:'Bus Aide / Monitor',target:2}
+ ];
+ state.supportStaff=state.supportStaff||[];
+ const seedSupport=[
+  {name:'Dana Brooks',role:'Dispatcher',age:42,years:9,status:'Active',pay:24.75,morale:88,attendance:98,performance:92},
+  {name:'Mike Evans',role:'Lead Mechanic',age:51,years:14,status:'Active',pay:31.50,morale:90,attendance:97,performance:94},
+  {name:'Jenna Price',role:'Transportation Secretary',age:39,years:6,status:'Active',pay:23.25,morale:91,attendance:99,performance:93},
+  {name:'Cole Martin',role:'Bus Mechanic',age:31,years:3,status:'Active',pay:27.25,morale:86,attendance:97,performance:88},
+  {name:'Rachel Owens',role:'Assistant Transportation Director',age:45,years:8,status:'Active',pay:72000,morale:91,attendance:98,performance:92,salary:true},
+  {name:'Marcus Reed',role:'Route Coordinator',age:37,years:5,status:'Active',pay:28.50,morale:89,attendance:99,performance:91},
+  {name:'Terry Lawson',role:'Driver Trainer',age:58,years:19,status:'Active',pay:29.25,morale:94,attendance:98,performance:96},
+  {name:'Nicole Grant',role:'Special Needs Coordinator',age:43,years:7,status:'Active',pay:30.00,morale:93,attendance:99,performance:94},
+  {name:'Lisa Monroe',role:'Bus Aide / Monitor',age:48,years:6,status:'Active',pay:19.50,morale:90,attendance:98,performance:92}
+ ];
+ seedSupport.forEach(x=>{if(!state.supportStaff.some(s=>s.name===x.name))state.supportStaff.push(x)});
+ state.supportStaff.forEach((s,i)=>{if(s.age==null)s.age=35+i;if(s.pay==null)s.pay=s.role.includes('Mechanic')?27:23;if(s.morale==null)s.morale=88;if(s.attendance==null)s.attendance=98;if(s.performance==null)s.performance=90;if(!s.history)s.history=[]});
  state.buses.forEach(b=>{if(!b.history)b.history=[];if(b.repairSpend==null)b.repairSpend=0;if(b.breakdowns==null)b.breakdowns=0;if(b.purchasePrice==null)b.purchasePrice=112000});
  state.staff.forEach(s=>{if(!s.history)s.history=[];if(s.attendance==null)s.attendance=98;if(s.safetyScore==null)s.safetyScore=95;if(s.compliments==null)s.compliments=0;if(s.complaints==null)s.complaints=0;if(!s.preferredBus)s.preferredBus=(state.buses.find(b=>b.driver===s.name)||{}).id||null});
 }
 function minsToTime(m){let h=Math.floor(m/60)%24,mm=m%60,amp=h>=12?'PM':'AM';let hh=h%12||12;return `${hh}:${String(mm).padStart(2,'0')} ${amp}`}
 function simPhase(){let m=state.simMinutes;if(m<345)return'Pre-Trip & Driver Check-In';if(m<390)return'High School Morning Routes';if(m<450)return'Elementary Morning Routes';if(m<780)return'School Day / Trips / Maintenance';if(m<900)return'PM Route Preparation';if(m<960)return'High School PM Routes';if(m<1035)return'Elementary PM Routes';return'Return, Fuel & Shutdown'}
 function renderOperations(){
- if(!$('simClock'))return;ensureV4Data();ensureUXData();applyTimePhase();$('simClock').textContent=minsToTime(state.simMinutes);$('simPhase').textContent=simPhase();$('dayProgress').style.width=Math.min(100,Math.max(0,(state.simMinutes-315)/(1080-315)*100))+'%';
- $('seasonLabel').textContent=state.season==='Summer'?'☀️ Summer Transportation Planning':'🚌 School Year Operations';$('seasonHelp').textContent=state.season==='Summer'?'Inspections, route planning, hiring, training, bidding and opening-day preparation.':'Run daily routes, trips, staffing, safety and fleet operations.';
- $('opsHeadline').textContent=simPhase();let coveredNow=state.routes.filter(r=>routeCoverage(r).ok).length;let stage=dispatchStageFromTime();$('opsSummary').innerHTML=`<div class="kv"><span>Dispatch Status</span><b>${coveredNow}/${state.routes.length} routes covered</b></div><div class="kv"><span>Fleet Movement</span><b>${[1,2,5,6].includes(stage)?'Route buses are out':'Route buses at garage / staging'}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="kv"><span>Parent satisfaction</span><b>${state.parents}%</b></div><div class="actions"><button class="btn primary" onclick="startDispatch()">Advance Dispatch Phase</button><button class="btn" onclick="document.querySelector('[data-view=&quot;dispatch&quot;]').click()">Open Dispatch</button></div>`;
+ if(!$('simClock'))return;ensureV4Data();ensureUXData();ensureCalendarData();
+ $('simClock').textContent=formatGameDate();
+ $('simPhase').textContent=state.season==='Summer'?'Summer Planning':'Daily Transportation Operations';
+ $('dayProgress').style.width='100%';
+ $('seasonLabel').textContent=state.season==='Summer'?'☀️ Summer Transportation Planning':'🚌 School Day '+(state.schoolDay||0)+' of '+state.schoolDaysPerYear;
+ $('seasonHelp').textContent=state.season==='Summer'?'Inspections, route planning, hiring, training, bidding and opening-day preparation.':'Resolve coverage, review weather and trips, then run the entire transportation day with one action.';
+ $('opsHeadline').textContent='Daily Operations';
+ let coveredNow=state.routes.filter(r=>routeCoverage(r).ok).length;
+ $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
  let cats=state.budgetCategories;$('budgetDetailMini').innerHTML=Object.entries(cats).slice(0,6).map(([k,v])=>`<div class="alert"><b>${k}</b><div>${money(v)}</div></div>`).join('');
  $('newsFeed').innerHTML=(state.news.slice(0,4).map(n=>`<div class="news">${n.text}</div>`).join('')||'<div class="small">No district news yet.</div>');$('reputationBadge').textContent=state.reputation>=90?'Excellent':state.reputation>=75?'Good':'Needs Attention';
- let open=state.workOrders.filter(w=>w.status!=='Completed');$('workOrderMini').innerHTML=open.slice(0,5).map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)}</div></span><button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button></div>`).join('')||'<div class="alert">✅ Shop workload is light.</div>';
- $('recognitionMini').innerHTML=state.awards.slice(0,3).map(a=>`<div class="award">🏆 <b>${a.name}</b><div class="small">${a.award}</div></div>`).join('')||'<div class="small">No awards issued yet this year.</div>';
+ let open=state.workOrders.filter(w=>w.status!=='Completed');$('workOrderMini').innerHTML=open.slice(0,5).map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)}</div></span><button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button></div>`).join('')||'<div class="small">No open work orders.</div>';
+ if($('recognitionMini'))$('recognitionMini').innerHTML=(state.awards||[]).slice(0,4).map(a=>`<div class="alert">🏆 ${a.name} — ${a.award}</div>`).join('')||'<div class="small">No recognition recorded yet.</div>';
 }
-function advanceTime(){ensureV4Data();state.simMinutes+=30;if(state.simMinutes>1080){state.simMinutes=315;advanceDay();return}applyTimePhase();autosaveGame();render()}
-function runToNextPhase(){let bounds=[345,390,450,780,900,960,1035,1080];let n=bounds.find(x=>x>state.simMinutes);state.simMinutes=n||315;applyTimePhase();autosaveGame();render()}
+
+function driverAbsentToday(name){
+ return state.absences.some(a=>a.driver===name&&a.day===state.day);
+}
+function reconcileTemporaryCoverage(){
+ state.routes.forEach(r=>{
+   // Driver: keep the substitute only while the permanent driver is actually absent.
+   if(r.temporaryDriver&&r.driver&&!driverAbsentToday(r.driver)){
+     let returning=r.driver,sub=r.temporaryDriver;
+     r.temporaryDriver=null;
+     log(`${returning} returned to Route ${r.id}. Substitute ${sub} released.`);
+   }
+
+   // Bus: keep the spare only while the permanent bus is unavailable.
+   if(r.temporaryBus&&r.bus){
+     let regular=state.buses.find(b=>Number(b.id)===Number(r.bus));
+     if(regular&&!['Maintenance','Inspection Due'].includes(regular.status)){
+       let subBus=r.temporaryBus;
+       r.temporaryBus=null;
+       log(`Bus ${regular.id} returned to Route ${r.id}. Temporary Bus ${subBus} released.`);
+     }
+   }
+ });
+}
+function createDriverCalloff(){
+ let candidates=state.staff.filter(s=>s.status==='Regular'&&s.route);
+ if(!candidates.length)return;
+ let d=candidates[Math.floor(Math.random()*candidates.length)];
+ let duration=1+Math.floor(Math.random()*3);
+ state.absences=state.absences||[];
+ for(let i=0;i<duration;i++){
+   let day=state.day+i;
+   if(!state.absences.some(a=>a.driver===d.name&&a.day===day)){
+     state.absences.push({driver:d.name,day,reason:'Sick / Call-Off',type:'Sick / Call-Off',duration});
+   }
+ }
+ log(`${d.name} called off for ${duration} school day${duration===1?'':'s'}. Route ${d.route} needs substitute coverage.`);
+}
+
+function applyDepartmentOperationalEffects(){
+ let dispatchers=departmentRoleCount('Dispatcher'),mechanics=state.supportStaff.filter(s=>s.status==='Active'&&/Mechanic/.test(s.role)).length,router=departmentRoleCount('Route Coordinator'),trainer=departmentRoleCount('Driver Trainer')+departmentRoleCount('Safety Coordinator');
+ if(dispatchers<1){state.dailyStats.onTime=Math.max(70,state.dailyStats.onTime-4);log('Department impact: no dispatcher on staff; on-time performance suffered.');}
+ if(mechanics<1&&state.workOrders.some(w=>w.status!=='Completed'))log('Department impact: no mechanic available; open repairs cannot progress normally.');
+ if(!router&&Math.random()<.12)log('Department impact: routing vacancy is creating extra workload as enrollment changes.');
+ if(!trainer&&Math.random()<.10)log('Department impact: safety/training vacancy is increasing compliance workload.');
+}
+function generateDepartmentEvent(){
+ let events=[
+  ['Principal Transportation Request','A principal requests a permanent stop change after dismissal congestion.','Route Coordinator'],
+  ['Mechanic Workload','The shop has several PM services due next week.','Bus Mechanic'],
+  ['Driver Coaching','A newer driver needs additional student-management coaching.','Driver Trainer'],
+  ['Special Needs Change','A new student requires door-to-door accessible transportation.','Special Needs Coordinator'],
+  ['Radio Coverage','Several afternoon calls arrive at the same time.','Dispatcher']
+ ];
+ if(Math.random()>.14)return;
+ let e=events[Math.floor(Math.random()*events.length)];
+ let staffed=departmentRoleCount(e[2])>0||state.supportStaff.some(s=>s.status==='Active'&&s.role===e[2]);
+ log(`${e[0]}: ${e[1]} ${staffed?e[2]+' handled the routine issue.':'Director attention needed — '+e[2]+' position is vacant.'}`);
+ if(!staffed)state.reputation=Math.max(50,state.reputation-1);
+}
+function transportationAnnualBudgetProposal(){
+ let fleetAge=state.buses.length?state.buses.reduce((a,b)=>a+busAge(b),0)/state.buses.length:0;
+ let replacements=state.buses.filter(b=>busAge(b)>=12||b.miles>=180000||b.condition<60).length;
+ let vacancies=departmentVacancies().length;
+ let requested=350000+replacements*128000+vacancies*45000;
+ openModal('Annual Transportation Budget Proposal',`<div class="detail"><div class="kv"><span>Base operating request</span><b>${money(350000)}</b></div><div class="kv"><span>Replacement buses recommended</span><b>${replacements}</b></div><div class="kv"><span>Department vacancies</span><b>${vacancies}</b></div><div class="kv"><span>Average fleet age</span><b>${fleetAge.toFixed(1)} years</b></div><div class="kv"><span>Total proposed request</span><b>${money(requested)}</b></div></div><div class="actions"><button class="btn primary" onclick="submitAnnualBudget(${requested})">Submit to School Board</button></div>`);
+}
+function submitAnnualBudget(amount){
+ let approval=.55+(state.reputation-75)/100+(state.board-75)/150,approved=Math.random()<approval,award=approved?amount:Math.round(amount*(.72+Math.random()*.18));
+ state.budget+=award;state.boardRequests.push({item:'Annual Transportation Budget',cost:amount,status:approved?'Approved':'Partially Approved',year:state.year});
+ closeModal();openModal('School Board Budget Decision',`${approved?'The board approved the full transportation proposal.':'The board partially funded the transportation proposal.'}<div class="alert"><b>${money(award)}</b> added to the transportation budget.</div>`);render();
+}
+function runTransportationDay(){
+ ensureCalendarData();ensureUXData();
+ let uncovered=state.routes.filter(r=>!routeCoverage(r).ok);
+ if(uncovered.length){
+   log(`${uncovered.length} route(s) need coverage before the day can run.`);
+   document.querySelector('[data-view="today"]').click();render();
+   alert('Resolve uncovered routes in the Command Center before running the transportation day.');
+   return;
+ }
+ let today=formatGameDate();
+ applyDepartmentOperationalEffects();generateDepartmentEvent();
+ let routeMiles=state.routes.reduce((sum,r)=>sum+routeDailyMiles(r),0);
+ addDailyRouteMileage();
+ processTripsForCurrentDate();
+ state.simMinutes=1080;
+ state.dispatchStep=7;
+ state.buses.forEach(b=>{b.liveStatus=b.route?'Returned / Parked':'Parked';});
+ log(`${today} transportation day completed. Regular routes operated ${routeMiles} total fleet miles.`);
+ autosaveGame();
+ // Move directly into the next school day after completing today's work.
+ state.day++;
+ state.schoolDay=(state.schoolDay||0)+1;
+ if(state.schoolDay>=state.schoolDaysPerYear){yearEnd();return;}
+ advanceToNextSchoolDay();
+ state.simMinutes=315;state.dispatchStep=0;
+ state.buses.forEach(b=>{b.liveStatus='Parked / Pre-Trip';});
+ maybeMaintenanceEvent();
+ reconcileTemporaryCoverage();
+ if(Math.random()<.35)generateTrip();
+ if(Math.random()<.25)generateApplicant();
+ if(Math.random()<.3)createDriverCalloff();
+ let forecasts=[{condition:'Clear',temp:68,roads:'Dry'},{condition:'Partly Cloudy',temp:62,roads:'Dry'},{condition:'Light Rain',temp:57,roads:'Wet'},{condition:'Dense Fog',temp:54,roads:'Reduced visibility'},{condition:'Snow',temp:27,roads:'Snow covered'},{condition:'Extreme Cold',temp:3,roads:'Dry / icy spots possible'}];
+ if(Math.random()<.38)state.weather={...forecasts[Math.floor(Math.random()*forecasts.length)]};
+ autosaveGame();render();
+}
+function advanceTime(){runTransportationDay()}
+function runToNextPhase(){runTransportationDay()}
 function applyTimePhase(){
  ensureV4Data();
  state.dispatchStep=dispatchStageFromTime();
@@ -1217,11 +1349,64 @@ function randomOperationalEvent(){let events=[['Principal Call','The high school
 function resolveOperationalEvent(choice){state.incidents.push({day:state.day,type:'Operational event',decision:choice});state.reputation=Math.min(100,state.reputation+1);log(`Operational decision: ${choice}.`);closeModal();render()}
 function openMaintenanceCenter(){ensureV4Data();openModal('Maintenance Work Orders',`<div class="small">Maintenance is intentionally occasional. Routine PMs and repairs appear periodically, not every day.</div>${state.workOrders.map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)} • ${w.days||1} day(s)</div></span>${w.status!=='Completed'?`<button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button>`:'✅'}</div>`).join('')||'<div class="alert">✅ No open work orders.</div>'}<div class="actions"><button class="btn" onclick="createRoutineWorkOrder()">Add Routine PM</button></div>`)}
 function createRoutineWorkOrder(){let candidates=state.buses.filter(b=>b.status!=='Maintenance');if(!candidates.length)return;let b=candidates[Math.floor(Math.random()*candidates.length)];let items=[['Oil / filter PM',420],['Brake inspection',280],['Tire rotation',360],['Annual inspection prep',525],['Battery test',190]];let it=items[Math.floor(Math.random()*items.length)];state.workOrders.push({id:Date.now(),bus:b.id,issue:it[0],cost:it[1],status:'Scheduled',days:1});log(`Routine work order opened for Bus ${b.id}: ${it[0]}.`);closeModal();render()}
-function completeWorkOrder(id){let w=state.workOrders.find(x=>x.id===id);if(!w||w.status==='Completed')return;if(state.budget<w.cost)return alert('Not enough budget.');state.budget-=w.cost;w.status='Completed';let b=state.buses.find(x=>x.id===w.bus);if(b){b.condition=Math.min(100,b.condition+6);b.repairSpend+=w.cost;if(b.status==='Maintenance')b.status=b.route?'Ready':'Spare';b.history.push({year:state.year,event:w.issue,cost:w.cost})}log(`Bus ${w.bus} work order completed: ${w.issue}.`);closeModal();render()}
+function completeWorkOrder(id){
+ let w=state.workOrders.find(x=>x.id===id);
+ if(!w||w.status==='Completed')return;
+ if(state.budget<w.cost)return alert('Not enough budget.');
+ state.budget-=w.cost;w.status='Completed';
+ let b=state.buses.find(x=>x.id===w.bus);
+ if(b){
+   b.condition=Math.min(100,b.condition+6);
+   b.repairSpend=(b.repairSpend||0)+w.cost;
+   if(b.status==='Maintenance'||b.status==='Inspection Due')b.status=b.route?'Ready':'Spare';
+   b.history=b.history||[];
+   b.history.push({year:state.year,event:w.issue,cost:w.cost});
+   let r=state.routes.find(x=>Number(x.bus)===Number(b.id));
+   if(r&&r.temporaryBus){
+     let subId=r.temporaryBus;
+     r.temporaryBus=null;
+     log(`Bus ${b.id} repaired and automatically returned to Route ${r.id}. Temporary Bus ${subId} released.`);
+   }
+ }
+ log(`Bus ${w.bus} work order completed: ${w.issue}.`);
+ closeModal();autosaveGame();render();
+}
 function maybeMaintenanceEvent(){if(Math.random()>.16)return;let candidates=state.buses.filter(b=>b.status!=='Maintenance');if(!candidates.length)return;let b=candidates.sort((a,b)=>a.condition-b.condition)[0];let issues=[['Battery replacement',480],['Brake repair',1250],['DEF sensor',790],['Tire replacement',980],['Door mechanism',640]];let it=issues[Math.floor(Math.random()*issues.length)];state.workOrders.push({id:Date.now()+Math.random(),bus:b.id,issue:it[0],cost:it[1],status:'Scheduled',days:1});if(Math.random()<.35){b.status='Maintenance';b.breakdowns++}log(`Shop note: Bus ${b.id} needs ${it[0].toLowerCase()}.`)}
 function openDriverFile(name){ensureV4Data();let s=state.staff.find(x=>x.name===name);if(!s)return;let currentBus=state.buses.find(b=>b.driver===name);openModal('Employee File — '+s.name,`<div class="detail"><div class="kv"><span>Age / Service</span><b>${s.age} / ${s.years} yrs</b></div><div class="kv"><span>Route</span><b>${s.route||'Unassigned'}</b></div><div class="kv"><span>Current Bus</span><b>${currentBus?'Bus '+currentBus.id:'—'}</b></div><div class="kv"><span>Preferred Bus</span><b>${s.preferredBus?'Bus '+s.preferredBus:'None'}</b></div><div class="kv"><span>Attendance</span><b>${s.attendance}%</b></div><div class="kv"><span>Safety Score</span><b>${s.safetyScore}%</b></div><div class="kv"><span>Compliments / Complaints</span><b>${s.compliments} / ${s.complaints}</b></div><div class="kv"><span>Morale</span><b>${s.morale}%</b></div></div><h3>History</h3>${s.history.map(h=>`<div class="alert">Year ${h.year}: ${h.event}</div>`).join('')||'<div class="small">No archived history yet.</div>'}`)}
-function openBusFile(id){ensureV4Data();let b=state.buses.find(x=>x.id===id);if(!b)return;let annual=Math.round(b.repairSpend/Math.max(1,state.year));openModal('Bus File — '+b.id,`<div class="detail"><div class="kv"><span>Vehicle</span><b>${b.year} ${b.model}</b></div><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Purpose</span><b>${b.designation}</b></div><div class="kv"><span>Condition</span><b>${b.condition}%</b></div><div class="kv"><span>Total Repair Spend</span><b>${money(b.repairSpend)}</b></div><div class="kv"><span>Average / Year</span><b>${money(annual)}</b></div><div class="kv"><span>Breakdowns</span><b>${b.breakdowns}</b></div></div><h3>History</h3>${b.history.map(h=>`<div class="alert">Year ${h.year}: ${h.event}${h.cost?' • '+money(h.cost):''}</div>`).join('')||'<div class="small">No archived history yet.</div>'}<div class="actions"><button class="btn" onclick="replacementDecision(${b.id})">Replacement Review</button></div>`)}
-function replacementDecision(id){let b=state.buses.find(x=>x.id===id);let score=(2026-b.year)*4+b.miles/10000+(100-b.condition)/5+b.repairSpend/5000;openModal('Replacement Review — Bus '+id,`<div class="alert"><b>Replacement priority: ${score>25?'HIGH':score>15?'MEDIUM':'LOW'}</b></div><div class="small">Age, mileage, condition and repair spending are considered. You can submit a bus purchase request to the school board.</div><div class="actions"><button class="btn primary" onclick="submitBoardRequest('Replacement Bus',128000)">Request Replacement</button></div>`)}
+function openBusFile(id){ensureV4Data();let b=state.buses.find(x=>x.id===id);if(!b)return;let annual=Math.round((b.repairSpend||0)/Math.max(1,busAge(b)||1));openModal('Bus File — '+b.id,`<div class="detail"><div class="kv"><span>Vehicle</span><b>${b.year} ${b.model}</b></div><div class="kv"><span>Bus Age</span><b>${busAge(b)} years</b></div><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Purpose</span><b>${b.designation}</b></div><div class="kv"><span>Condition</span><b>${b.condition}%</b></div><div class="kv"><span>Total Repair Spend</span><b>${money(b.repairSpend||0)}</b></div><div class="kv"><span>Average / Year</span><b>${money(annual)}</b></div><div class="kv"><span>Breakdowns</span><b>${b.breakdowns||0}</b></div></div><h3>History</h3>${(b.history||[]).map(h=>`<div class="alert">Year ${h.year}: ${h.event}${h.cost?' • '+money(h.cost):''}</div>`).join('')||'<div class="small">No archived history yet.</div>'}<div class="actions"><button class="btn" onclick="replacementDecision(${b.id})">Replacement Review</button><button class="btn" onclick="retireBus(${b.id})">Retire / Dispose Bus</button></div>`)}
+function retireBus(id){
+ let b=state.buses.find(x=>x.id===id);if(!b)return;
+ let assigned=state.routes.find(r=>Number(r.bus)===Number(id)||Number(r.temporaryBus)===Number(id));
+ let pendingTrip=state.trips.find(t=>Number(t.bus)===Number(id)&&t.status==='Approved'&&!t.mileageApplied);
+ let age=busAge(b);
+ let estimatedValue=Math.max(1500,Math.round((b.purchasePrice||112000)*Math.max(.04,.34-age*.018)*(Math.max(35,b.condition||70)/100)/500)*500);
+ openModal('Retire / Dispose Bus '+id,`
+   <div class="alert"><b>${b.year} ${b.model}</b><div class="small">${b.miles.toLocaleString()} miles • ${b.condition}% condition • ${age} years old</div></div>
+   ${assigned?`<div class="alert priority-red">⚠️ Bus ${id} is currently assigned to Route ${assigned.id}. Assign another bus before disposal.</div>`:''}
+   ${pendingTrip?`<div class="alert priority-red">⚠️ Bus ${id} has an approved trip assignment. Reassign that trip before disposal.</div>`:''}
+   <div class="detail">
+    <div class="kv"><span>Estimated trade / auction value</span><b>${money(estimatedValue)}</b></div>
+    <div class="kv"><span>Disposition</span><b>Removed permanently from active fleet</b></div>
+   </div>
+   <div class="actions">
+    <button class="btn primary" ${assigned||pendingTrip?'disabled':''} onclick="confirmRetireBus(${id},${estimatedValue})">Dispose Bus • ${money(estimatedValue)}</button>
+    <button class="btn" onclick="closeModal()">Keep Bus</button>
+   </div>`);
+}
+function confirmRetireBus(id,value){
+ let b=state.buses.find(x=>x.id===id);if(!b)return;
+ if(state.routes.some(r=>Number(r.bus)===Number(id)||Number(r.temporaryBus)===Number(id)))return alert('This bus is still assigned to a route.');
+ if(state.trips.some(t=>Number(t.bus)===Number(id)&&t.status==='Approved'&&!t.mileageApplied))return alert('This bus still has an approved trip.');
+ snapshotAction('Bus disposal');
+ state.retiredBuses=state.retiredBuses||[];
+ state.retiredBuses.push({...b,retiredDate:state.gameDate,retiredYear:state.year,disposalValue:value});
+ state.buses=state.buses.filter(x=>Number(x.id)!==Number(id));
+ state.budget+=value;
+ if(selectedBus===id&&state.buses.length)selectedBus=state.buses[0].id;
+ log(`Bus ${id} retired from the fleet for ${money(value)}. Proceeds returned to transportation budget.`);
+ closeModal();autosaveGame();render();
+}
+function replacementDecision(id){let b=state.buses.find(x=>x.id===id);if(!b)return;let age=busAge(b),score=age*4+b.miles/10000+(100-b.condition)/5+(b.repairSpend||0)/5000;openModal('Replacement Review — Bus '+id,`<div class="alert"><b>Replacement priority: ${score>25?'HIGH':score>15?'MEDIUM':'LOW'}</b></div><div class="detail"><div class="kv"><span>Bus Age</span><b>${age} years</b></div><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Condition</span><b>${b.condition}%</b></div></div><div class="small">Age, mileage, condition and repair spending are considered. You can submit a bus purchase request to the school board.</div><div class="actions"><button class="btn primary" onclick="submitBoardRequest('Replacement Bus',128000)">Request Replacement</button></div>`)}
 function openBudgetDetail(){ensureV4Data();let total=Object.values(state.budgetCategories).reduce((a,b)=>a+b,0);openModal('Annual Transportation Budget',`<div class="detail">${Object.entries(state.budgetCategories).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${money(v)}</b></div>`).join('')}<div class="kv"><span>Planned Department Spend</span><b>${money(total)}</b></div><div class="kv"><span>Available Cash</span><b>${money(state.budget)}</b></div></div>`)}
 function openBoardRequests(){ensureV4Data();openModal('School Board Requests',`<div class="actions"><button class="btn" onclick="submitBoardRequest('Replacement Bus',128000)">1 Replacement Bus • $128k</button><button class="btn" onclick="submitBoardRequest('Additional Driver Position',52000)">Driver Position • $52k</button><button class="btn" onclick="submitBoardRequest('Mechanic Position',61000)">Mechanic Position • $61k</button><button class="btn" onclick="submitBoardRequest('Driver Pay Increase',84000)">Driver Raise Plan • $84k</button></div><h3>Request History</h3>${state.boardRequests.map(r=>`<div class="alert"><b>${r.item}</b> • ${money(r.cost)} • ${r.status}</div>`).join('')||'<div class="small">No requests submitted yet.</div>'}`)}
 function submitBoardRequest(item,cost){let chance=(state.board+state.reputation)/200;let approved=Math.random()<chance;state.boardRequests.push({item,cost,status:approved?'Approved':'Tabled',year:state.year});if(approved){state.budget+=cost;state.board=Math.min(100,state.board+2);state.news.unshift({text:`School board approves ${item.toLowerCase()} for transportation.`,tone:'good'})}else state.board=Math.max(50,state.board-1);closeModal();openModal('Board Decision',approved?`Approved: <b>${item}</b>. ${money(cost)} was added to transportation funding.`:`The board tabled <b>${item}</b> and requested more justification.`);render()}
@@ -1253,13 +1438,15 @@ function ensureCalendarData(){
  if(state.summerDaysRemaining===undefined||state.summerDaysRemaining===null)state.summerDaysRemaining=42;
 }
 function busAge(b){
- return Math.max(0,(new Date().getFullYear())-Number(b.year||new Date().getFullYear()));
+ ensureRealCalendar();
+ let gameYear=Number(String(state.gameDate||'2026-08-24').slice(0,4))||2026;
+ return Math.max(0,gameYear-Number(b.year||gameYear));
 }
 
 function summerPlanning(){ensureCalendarData();state.season='Summer';state.simMinutes=480;state.summerDaysRemaining=42;state.routes.forEach(r=>{r.temporaryBus=null;r.temporaryDriver=null});state.news.unshift({text:'Summer planning opens: inspections, hiring, training and route assignments are underway.',tone:'good'});log('Summer transportation planning started. 42 days until Opening Day.');render()}
 function openingDay(){ensureCalendarData();state.season='School';state.simMinutes=315;state.day=0;state.schoolDay=0;state.news.unshift({text:'Opening day transportation operations begin.',tone:'good'});log(`Opening Day begins at 5:15 AM for School Year ${state.year}.`);render()}
 function yearEnd(){
- ensureV4Data();
+ ensureV4Data();annualDepartmentProgression();
  state.formerStaff=state.formerStaff||[];
  let departures=[];
  let returning=[];
@@ -1295,7 +1482,7 @@ function yearEnd(){
  state.staff=returning;
  state.buses.forEach(b=>{
    b.history=b.history||[];
-   let age=Math.max(0,(Number(String(state.year).slice(0,4))||2026)-Number(b.year||2026));
+   let age=busAge(b);
    b.history.push({year:state.year,event:`Ended year at ${b.miles.toLocaleString()} miles • ${b.designation} • fleet age ${age} years`});
    b.miles+=Math.floor(8500+Math.random()*5000);
    b.condition=Math.max(35,b.condition-Math.floor(Math.random()*5+2))
@@ -1338,6 +1525,7 @@ function ensureUXData(){
  ensureV4Data();
  state.staff.forEach(s=>{if(s.status==='Called Off')s.status='Regular';});
  state.absences=state.absences||[];
+ state.absences.forEach(a=>{if(!a.reason)a.reason=a.type||'Absent';});
  state.parentLog=state.parentLog||[];
  state.undoStack=state.undoStack||[];
  state.policies=state.policies||{seniorityBidding:false,assignedBuses:true,minSpare:1,tripRule:'Trip buses first',unionRules:false};
@@ -1365,7 +1553,80 @@ function routeCoverage(r){
  if(!driver||absent)return {ok:false,reason:'No available driver'};
  if(!bus||bus.status==='Maintenance'||bus.status==='Inspection Due')return {ok:false,reason:'No available bus'};
  if(r.specialNeeds&&!bus.wheelchairLift)return {ok:false,reason:'Special-needs route requires lift-equipped bus'};
+ if(r.specialNeeds&&r.aide&&departmentRoleCount('Bus Aide / Monitor')<1)return {ok:false,reason:'Special-needs route requires an aide / monitor'};
  return {ok:true,reason:'Covered'};
+}
+
+function departmentRoleCount(role){return state.supportStaff.filter(s=>s.status==='Active'&&s.role===role).length}
+function departmentVacancies(){
+ ensureV4Data();
+ return state.departmentPositions.map(p=>({...p,current:departmentRoleCount(p.role)})).filter(p=>p.current<p.target);
+}
+function departmentHealthScore(){
+ let vac=departmentVacancies().length;
+ let perf=state.supportStaff.length?state.supportStaff.reduce((a,s)=>a+(s.performance||85),0)/state.supportStaff.length:70;
+ return Math.max(40,Math.round(perf-vac*4));
+}
+function renderDepartment(){
+ if(!$('departmentKpis'))return;ensureV4Data();
+ let vac=departmentVacancies(),mechanics=state.supportStaff.filter(s=>s.status==='Active'&&/Mechanic/.test(s.role)).length,aides=departmentRoleCount('Bus Aide / Monitor');
+ $('departmentKpis').innerHTML=[
+  ['Department Staff',state.supportStaff.filter(s=>s.status==='Active').length,''],
+  ['Drivers',state.staff.length,''],
+  ['Vacancies',vac.length,vac.length?'priority-yellow':'priority-green'],
+  ['Mechanics',mechanics,mechanics<2?'priority-yellow':'priority-green'],
+  ['Aides / Monitors',aides,aides<2?'priority-yellow':'priority-green'],
+  ['Department Health',departmentHealthScore()+'%',departmentHealthScore()<75?'priority-yellow':'priority-green']
+ ].map(x=>`<div class="panel ${x[2]}"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ let groups=[
+  ['Director’s Office',['Assistant Transportation Director','Operations Supervisor']],
+  ['Operations',['Dispatcher','Route Coordinator']],
+  ['Safety & Training',['Driver Trainer','Safety Coordinator']],
+  ['Fleet Maintenance',['Lead Mechanic','Bus Mechanic','Parts / Fleet Clerk']],
+  ['Administration',['Transportation Secretary']],
+  ['Special Needs',['Special Needs Coordinator','Bus Aide / Monitor']]
+ ];
+ $('orgChart').innerHTML=groups.map(g=>`<div class="alert"><b>${g[0]}</b><div class="small">${g[1].map(role=>`${role}: ${departmentRoleCount(role)}/${(state.departmentPositions.find(p=>p.role===role)||{target:1}).target}`).join('<br>')}</div></div>`).join('');
+ $('departmentHealth').innerHTML=(vac.length?vac.map(v=>`<div class="alert priority-yellow"><b>Vacancy:</b> ${v.role} (${v.current}/${v.target})</div>`).join(''):'<div class="alert priority-green">✅ All target department positions are staffed.</div>')+
+ `<div class="alert"><b>Operational effects</b><div class="small">Dispatch staffing supports daily coverage. Mechanics affect repair turnaround. Trainers and safety staff support compliance. Aides are required for specialized transportation. Routing staff support district growth.</div></div>`;
+ $('departmentStaffGrid').innerHTML=state.supportStaff.filter(s=>s.status==='Active').map((s,i)=>`<button class="card" onclick="openSupportStaffFile(${i})"><b>${s.name}</b><div>${s.role}</div><div class="small">Age ${s.age} • ${s.years} yrs service</div><div class="small">Performance ${s.performance}% • Morale ${s.morale}%</div></button>`).join('');
+ let open=state.workOrders.filter(w=>w.status!=='Completed');
+ $('shopDepartment').innerHTML=`<div class="kv"><span>Mechanics on staff</span><b>${mechanics}</b></div><div class="kv"><span>Open work orders</span><b>${open.length}</b></div><div class="kv"><span>Repair capacity</span><b>${mechanics>=3?'Strong':mechanics>=2?'Normal':'Limited'}</b></div><div class="actions"><button class="btn" onclick="openMaintenanceCenter()">Open Work Orders</button></div>`;
+ let sr=state.routes.filter(r=>r.specialNeeds);
+ $('specialDepartment').innerHTML=`<div class="kv"><span>Special routes</span><b>${sr.length}</b></div><div class="kv"><span>Aides / Monitors</span><b>${aides}</b></div><div class="kv"><span>Accessible buses</span><b>${state.buses.filter(b=>b.wheelchairLift).length}</b></div><div class="kv"><span>Coordinator</span><b>${departmentRoleCount('Special Needs Coordinator')?'Staffed':'Vacant'}</b></div>`;
+}
+function openSupportStaffFile(i){
+ let s=state.supportStaff[i];if(!s)return;
+ openModal('Employee File — '+s.name,`<div class="detail"><div class="kv"><span>Position</span><b>${s.role}</b></div><div class="kv"><span>Age / Service</span><b>${s.age} / ${s.years} yrs</b></div><div class="kv"><span>Pay</span><b>${s.salary?money(s.pay)+'/yr':money(s.pay)+'/hr'}</b></div><div class="kv"><span>Attendance</span><b>${s.attendance}%</b></div><div class="kv"><span>Performance</span><b>${s.performance}%</b></div><div class="kv"><span>Morale</span><b>${s.morale}%</b></div></div><div class="actions"><button class="btn" onclick="promoteSupportStaff(${i})">Promote / Change Role</button><button class="btn" onclick="separateSupportStaff(${i})">End Employment</button></div>`);
+}
+function openDepartmentHiring(){
+ ensureV4Data();let vac=departmentVacancies();
+ let roles=(vac.length?vac.map(v=>v.role):state.departmentPositions.map(p=>p.role));
+ openModal('Hire Department Staff',`<div class="alert"><b>${vac.length} target vacancy${vac.length===1?'':'ies'}</b><div class="small">${vac.map(v=>v.role).join(' • ')||'Department is fully staffed; you may still add positions.'}</div></div><label>Position</label><select id="deptHireRole" style="width:100%;padding:9px">${roles.map(r=>`<option>${r}</option>`).join('')}</select><label>Name</label><input id="deptHireName" placeholder="Employee name" style="width:100%;padding:9px"><div class="actions"><button class="btn primary" onclick="confirmDepartmentHire()">Hire Employee</button></div>`);
+}
+function confirmDepartmentHire(){
+ let role=$('deptHireRole').value,name=$('deptHireName').value.trim();if(!name)return alert('Enter an employee name.');
+ let salary=/Director|Supervisor|Coordinator/.test(role),pay=salary?(role.includes('Director')?68000:role.includes('Supervisor')?58000:54000):(/Mechanic/.test(role)?27.5:/Trainer|Safety/.test(role)?28.5:/Aide/.test(role)?19.5:23.5);
+ state.supportStaff.push({name,role,age:25+Math.floor(Math.random()*30),years:0,status:'Active',pay,salary,morale:90,attendance:100,performance:85,history:[{year:state.year,event:`Hired as ${role}`}]});
+ log(`${name} hired as ${role}.`);closeModal();autosaveGame();render();
+}
+function promoteSupportStaff(i){
+ let s=state.supportStaff[i];if(!s)return;
+ openModal('Change Role — '+s.name,`<label>New position</label><select id="newSupportRole" style="width:100%;padding:9px">${state.departmentPositions.map(p=>`<option ${p.role===s.role?'selected':''}>${p.role}</option>`).join('')}</select><div class="actions"><button class="btn primary" onclick="confirmSupportRole(${i})">Apply Change</button></div>`);
+}
+function confirmSupportRole(i){let s=state.supportStaff[i],old=s.role;s.role=$('newSupportRole').value;s.history.push({year:state.year,event:`Changed from ${old} to ${s.role}`});log(`${s.name} moved from ${old} to ${s.role}.`);closeModal();render()}
+function separateSupportStaff(i){let s=state.supportStaff[i];if(!s)return;if(!confirm(`End ${s.name}'s employment?`))return;s.status='Former';s.history.push({year:state.year,event:'Employment ended'});log(`${s.name} left the transportation department.`);closeModal();render()}
+function openDepartmentBudget(){
+ let active=state.supportStaff.filter(s=>s.status==='Active'),annual=active.reduce((sum,s)=>sum+(s.salary?s.pay:s.pay*2080),0),drivers=state.staff.reduce((sum,s)=>sum+(s.payRate||22)*1440,0);
+ openModal('Transportation Department Payroll',`<div class="detail"><div class="kv"><span>Department / support payroll</span><b>${money(Math.round(annual))}</b></div><div class="kv"><span>Estimated driver payroll</span><b>${money(Math.round(drivers))}</b></div><div class="kv"><span>Total estimated payroll</span><b>${money(Math.round(annual+drivers))}</b></div></div>`);
+}
+function annualDepartmentProgression(){
+ state.supportStaff.filter(s=>s.status==='Active').forEach(s=>{
+  s.age++;s.years++;s.history=s.history||[];
+  s.history.push({year:state.year,event:`Completed year as ${s.role}`});
+  if(s.age>=64&&Math.random()<.10+(s.age-64)*.04){s.status='Former';s.history.push({year:state.year,event:'Retired from transportation department'});}
+  else if(Math.random()<.025+(s.morale<60?.06:0)){s.status='Former';s.history.push({year:state.year,event:'Resigned from transportation department'});}
+ });
 }
 function renderToday(){
  if(!$('todayKpis'))return;ensureUXData();ensureCalendarData();
@@ -1390,8 +1651,9 @@ function renderToday(){
      <div class="kv"><span>Transportation Impact</span><b>${impact}</b></div>`;
  }
  $('coverageBoard').innerHTML=state.routes.map(r=>{let c=routeCoverage(r);return `<div class="coverage-card ${c.ok?'priority-green':'priority-red'}"><b>Route ${r.id}</b> — ${c.reason}<div class="small">${r.temporaryDriver||r.driver||'No driver'} • Bus ${r.temporaryBus||r.bus||'—'}</div>${!c.ok?`<div class="coverage-actions"><button class="btn" onclick="quickCover(${r.id},'sub')">Assign Sub</button><button class="btn" onclick="quickCover(${r.id},'spare')">Use Spare Bus</button><button class="btn" onclick="quickCover(${r.id},'combine')">Combine Route</button></div>`:''}</div>`}).join('');
- let due=state.staff.filter(s=>s.training&&Object.values(s.training).some(v=>['Due Soon','Needs Training','Needs Endorsement'].includes(v)));
+ let due=state.staff.filter(s=>s.training&&Object.values(s.training).some(v=>['Due Soon','Needs Training','Needs Endorsement'].includes(v))),deptVac=departmentVacancies();
  $('attentionBoard').innerHTML=[
+   ...deptVac.slice(0,3).map(v=>`<div class="alert priority-yellow">🏢 Department vacancy: ${v.role}</div>`),
    ...uncovered.map(r=>`<div class="alert priority-red">🚨 Route ${r.id} is uncovered.</div>`),
    ...due.slice(0,3).map(s=>`<div class="alert priority-yellow">📋 Training/compliance due: ${s.name}</div>`),
    ...maint.map(b=>`<div class="alert priority-yellow">🔧 Bus ${b.id}: ${b.status}</div>`)
@@ -1402,8 +1664,8 @@ function renderToday(){
 }
 function quickCover(routeId,type){
  snapshotAction('Route coverage change');let r=state.routes.find(x=>x.id===routeId);
- if(type==='sub'){let used=state.routes.map(x=>x.temporaryDriver||x.driver);let s=state.staff.find(x=>x.status==='Substitute'&&!used.includes(x.name));if(!s)return alert('No substitute driver is currently available.');r.temporaryDriver=s.name;log(`${s.name} assigned to cover Route ${routeId}.`)}
- if(type==='spare'){let used=state.routes.map(x=>x.temporaryBus||x.bus);let b=state.buses.find(x=>x.designation==='Spare'&&!used.includes(x.id)&&x.status!=='Maintenance');if(!b)return alert('No spare bus is currently available.');r.temporaryBus=b.id;log(`Bus ${b.id} assigned temporarily to Route ${routeId}.`)}
+ if(type==='sub'){let used=state.routes.map(x=>x.temporaryDriver||x.driver);let s=state.staff.find(x=>x.status==='Substitute'&&!used.includes(x.name));if(!s)return alert('No substitute driver is currently available.');r.temporaryDriver=s.name;log(`${s.name} assigned to cover Route ${routeId} until ${r.driver||'the regular driver'} returns.`)}
+ if(type==='spare'){let used=state.routes.map(x=>x.temporaryBus||x.bus);let b=state.buses.find(x=>x.designation==='Spare'&&!used.includes(x.id)&&x.status!=='Maintenance');if(!b)return alert('No spare bus is currently available.');r.temporaryBus=b.id;log(`Bus ${b.id} assigned temporarily to Route ${routeId} until permanent Bus ${r.bus||'—'} returns to service.`)}
  if(type==='combine'){let other=state.routes.find(x=>x.id!==routeId&&routeCoverage(x).ok);if(!other)return alert('No route can safely absorb this route right now.');r.temporaryDriver=other.driver;r.temporaryBus=other.bus;state.dailyStats.onTime=Math.max(70,state.dailyStats.onTime-5);log(`Route ${routeId} temporarily combined with Route ${other.id}; expect delays.`)}
  autosaveGame();render()
 }
@@ -1439,7 +1701,7 @@ function annualReview(){
  openModal('Annual Transportation Performance Review',`<div class="today-grid"><div class="alert"><b>Overall Score</b><div class="big-kpi">${score}</div></div><div class="alert"><b>On-Time</b><div class="big-kpi">${state.dailyStats.onTime}%</div></div><div class="alert"><b>Route Coverage</b><div class="big-kpi">${Math.round(covered)}%</div></div></div><div class="alert">${score>=90?'🏆 Excellent transportation performance.':score>=80?'👍 Solid year with opportunities for improvement.':'⚠️ Improvement plan recommended for next year.'}</div>`)
 }
 function selectedFleetCard(b){
- return `<div class="bus-silhouette"><b style="font-size:24px">BUS ${b.id}</b><div class="windows"><i></i><i></i><i></i><i></i><i></i><i></i></div><b>${b.year} ${b.model}</b></div><div class="detail" style="margin-top:10px"><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Bus Age</span><b>${Math.max(0,(Number(String(state.year).slice(0,4))||2026)-Number(b.year||2026))} years</b></div><div class="kv"><span>Route</span><b>${b.route||'—'}</b></div><div class="kv"><span>Driver</span><b>${b.driver||'—'}</b></div><div class="kv"><span>Next PM</span><b>${b.nextPM.toLocaleString()} mi</b></div><div class="kv"><span>Inspection</span><b>${b.inspection}</b></div><div class="kv"><span>Purpose</span><b>${b.designation}</b></div></div>`;
+ return `<div class="bus-silhouette"><b style="font-size:24px">BUS ${b.id}</b><div class="windows"><i></i><i></i><i></i><i></i><i></i><i></i></div><b>${b.year} ${b.model}</b></div><div class="detail" style="margin-top:10px"><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Bus Age</span><b>${busAge(b)} years</b></div><div class="kv"><span>Route</span><b>${b.route||'—'}</b></div><div class="kv"><span>Driver</span><b>${b.driver||'—'}</b></div><div class="kv"><span>Next PM</span><b>${b.nextPM.toLocaleString()} mi</b></div><div class="kv"><span>Inspection</span><b>${b.inspection}</b></div><div class="kv"><span>Purpose</span><b>${b.designation}</b></div></div>`;
 }
 
 function deskApp(name){
@@ -1453,6 +1715,8 @@ function deskApp(name){
  else if(name==='Save Manager'){saveManager()}
  else if(name==='Policies'){districtPolicies()}
  else if(name==='Annual Review'){annualReview()}
+ else if(name==='Annual Budget'){transportationAnnualBudgetProposal()}
+ else if(name==='Department'){document.querySelector('[data-view="department"]').click()}
  else if(name==='Payroll'){payrollReport()}
 }
 function inboxHTML(){
@@ -1551,7 +1815,7 @@ render = function(){
  ensureV4Data();ensureUXData();ensureCalendarData();
  oldRender();
  renderStudents();renderDesk();renderAssignments();renderTraining();
- renderOperations();renderToday();renderCalendarUX();
+ renderOperations();renderToday();renderCalendarUX();renderDepartment();
 }
 
 render();
