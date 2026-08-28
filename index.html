@@ -457,13 +457,13 @@ const initial = {
  routes:[
  {id:12,bus:12,driver:'Mark Reynolds',hsStudents:61,hsStops:11,hsMiles:22,hsTime:45,elem:'Lincoln Elementary',elemStudents:68,elemStops:14,elemMiles:19,elemTime:42},
  {id:18,bus:18,driver:'Linda Carter',hsStudents:58,hsStops:10,hsMiles:20,hsTime:42,elem:'Jefferson Elementary',elemStudents:54,elemStops:11,elemMiles:18,elemTime:39},
- {id:24,bus:24,driver:'Amanda Lewis',hsStudents:66,hsStops:13,hsMiles:24,hsTime:49,elem:'Lincoln Elementary',elemStudents:72,elemStops:16,elemMiles:22,elemTime:48},
+ {id:24,bus:24,driver:'Amanda Lewis',hsStudents:66,hsStops:15,hsMiles:32,hsTime:58,elem:'Lincoln Elementary',elemStudents:72,elemStops:18,elemMiles:28,elemTime:54},
  {id:31,bus:31,driver:'Robert King',hsStudents:61,hsStops:12,hsMiles:23,hsTime:47,elem:'Harrison Elementary',elemStudents:57,elemStops:12,elemMiles:18,elemTime:40},
  {id:37,bus:37,driver:null,hsStudents:55,hsStops:9,hsMiles:18,hsTime:38,elem:'Harrison Elementary',elemStudents:63,elemStops:13,elemMiles:20,elemTime:43},
- {id:46,bus:46,driver:'Tina Alvarez',hsStudents:69,hsStops:14,hsMiles:25,hsTime:50,elem:'Jefferson Elementary',elemStudents:60,elemStops:13,elemMiles:19,elemTime:41},
+ {id:46,bus:46,driver:'Tina Alvarez',hsStudents:69,hsStops:16,hsMiles:36,hsTime:63,elem:'Jefferson Elementary',elemStudents:60,elemStops:15,elemMiles:30,elemTime:56},
  {id:51,bus:51,driver:'James Porter',hsStudents:52,hsStops:9,hsMiles:17,hsTime:37,elem:'Lincoln Elementary',elemStudents:57,elemStops:12,elemMiles:18,elemTime:40},
- {id:55,bus:55,driver:'Melissa Grant',hsStudents:66,hsStops:12,hsMiles:24,hsTime:48,elem:'Jefferson Elementary',elemStudents:64,elemStops:13,elemMiles:20,elemTime:42},
- {id:90,bus:60,driver:'Denise Harper',type:'Special Needs',specialNeeds:true,students:12,stops:9,miles:28,time:58,school:'District Special Services',wheelchairs:3,aide:true,doorToDoor:true}],
+ {id:55,bus:55,driver:'Melissa Grant',hsStudents:66,hsStops:15,hsMiles:31,hsTime:57,elem:'Jefferson Elementary',elemStudents:64,elemStops:16,elemMiles:29,elemTime:55},
+ {id:90,bus:60,driver:'Denise Harper',type:'Special Needs',specialNeeds:true,students:12,stops:11,miles:36,time:68,school:'District Special Services',wheelchairs:3,aide:true,doorToDoor:true}],
  supportStaff:[
  {name:'Dana Brooks',role:'Dispatcher',years:9,status:'Active'},
  {name:'Mike Evans',role:'Lead Mechanic',years:14,status:'Active'},
@@ -502,9 +502,40 @@ const $=id=>document.getElementById(id);
 function log(msg){state.log=state.log||[];state.log.unshift(msg);renderLog()}
 function money(n){return '$'+Math.round(n).toLocaleString()}
 function statusClass(s){return /Ready|Spare|Approved/.test(s)?'good':/Due|Pending/.test(s)?'warn':/Maintenance|Denied|Called/.test(s)?'bad':''}
+function parseGameDate(){
+ ensureRealCalendar();
+ let [y,m,d]=state.gameDate.split('-').map(Number);
+ return new Date(Date.UTC(y,m-1,d));
+}
+function isoDateUTC(dt){return dt.toISOString().slice(0,10)}
+function formatGameDate(){
+ let d=parseGameDate();
+ return new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(d);
+}
+function advanceToNextSchoolDay(){
+ let d=parseGameDate();
+ do{d.setUTCDate(d.getUTCDate()+1)}while(d.getUTCDay()===0||d.getUTCDay()===6);
+ state.gameDate=isoDateUTC(d);
+}
+function advanceCalendarDay(){
+ let d=parseGameDate();d.setUTCDate(d.getUTCDate()+1);state.gameDate=isoDateUTC(d);
+}
+function ensureRealCalendar(){
+ if(!state.gameDate){
+   // Old saves began on Monday, August 24, 2026. Convert their day counter into a real weekday date.
+   let d=new Date(Date.UTC(2026,7,24));
+   let remaining=Math.max(0,state.day||0);
+   while(remaining>0){
+     d.setUTCDate(d.getUTCDate()+1);
+     if(d.getUTCDay()!==0&&d.getUTCDay()!==6)remaining--;
+   }
+   state.gameDate=isoDateUTC(d);
+ }
+}
 function render(){
+ ensureRealCalendar();
  $('budget').textContent=money(state.budget);$('busCount').textContent=state.buses.length;$('driverCount').textContent=state.staff.length;$('boardScore').textContent=state.board;
- const days=['Monday','Tuesday','Wednesday','Thursday','Friday'];$('clockText').textContent=days[state.day%5]+' • August '+(24+state.day)+' • 5:35 AM • School Year '+state.year;
+ $('clockText').textContent=formatGameDate()+' • '+minsToTime(state.simMinutes||315)+' • School Year '+state.year;
  renderBuses();renderAlerts();renderRoutes();renderApplicants();renderStaff();renderTrips();renderFleet();renderDispatch();renderReports();renderLog()
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(b.dataset.view).classList.add('active')});
@@ -550,7 +581,7 @@ function routeHTML(r){
  return `<div class="timeline"><span class="node">🚌 Garage</span><span class="arrow">→</span><span class="node">🏠 ${r.hsStops} HS stops</span><span class="arrow">→</span><span class="node">🎓 High School</span><span class="arrow">→</span><span class="node">🏠 ${r.elemStops} Elem stops</span><span class="arrow">→</span><span class="node">🏫 ${r.elem}</span><span class="arrow">→</span><span class="node">🅿️ Garage</span></div>`;
 }
 function renderRoutes(){
- $('routeCards').innerHTML=state.routes.map(r=>`<button class="card" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>${r.specialNeeds?'♿ Special Needs Route':'Route'} ${r.id}</b><div class="small">Bus ${r.bus} • ${r.driver||'No driver'}</div><div style="margin:9px 0">${routeHTML(r)}</div><div class="small">${r.specialNeeds?`${r.students} riders • ${r.wheelchairs} wheelchair riders • aide ${r.aide?'assigned':'not assigned'}`:`HS ${r.hsStudents}/72 • Elementary ${r.elemStudents}/72`}</div></button>`).join('');
+ $('routeCards').innerHTML=state.routes.map(r=>`<button class="card" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>${r.specialNeeds?'♿ Special Needs Route':'Route'} ${r.id}</b><div class="small">Bus ${r.bus} • ${r.driver||'No driver'}</div><div style="margin:9px 0">${routeHTML(r)}</div><div class="small">${r.specialNeeds?`${r.students} riders • ${r.wheelchairs} wheelchair riders • ${routeDailyMiles(r)} mi/day`:`HS ${r.hsStudents}/72 • Elementary ${r.elemStudents}/72 • ${routeDailyMiles(r)} mi/day`}</div></button>`).join('');
  renderMapStops();selectRoute(selectedRoute,false)
 }
 function selectRoute(id){
@@ -558,7 +589,7 @@ function selectRoute(id){
  $('routeTitle').textContent=(r.specialNeeds?'Special Needs Route ':'Route ')+id;
  $('routeDetail').innerHTML=r.specialNeeds
  ?`${routeHTML(r)}<div class="kv"><span>Driver</span><b>${r.driver||'UNASSIGNED'}</b></div><div class="kv"><span>Bus</span><b>${r.bus}</b></div><div class="kv"><span>Riders</span><b>${r.students}</b></div><div class="kv"><span>Wheelchair riders</span><b>${r.wheelchairs}</b></div><div class="kv"><span>Aide/Monitor</span><b>${r.aide?'Assigned':'Not assigned'}</b></div><div class="kv"><span>Service</span><b>${r.doorToDoor?'Door-to-door':'Community stops'}</b></div><div class="kv"><span>Runtime</span><b>${r.time} min</b></div><div class="kv"><span>Miles</span><b>${r.miles}</b></div>`
- :`${routeHTML(r)}<div class="kv"><span>Driver</span><b>${r.driver||'UNASSIGNED'}</b></div><div class="kv"><span>Bus</span><b>${r.bus}</b></div><div class="kv"><span>HS run</span><b>${r.hsStudents} students • ${r.hsTime} min</b></div><div class="kv"><span>Elementary</span><b>${r.elem} • ${r.elemStudents} students • ${r.elemTime} min</b></div><div class="kv"><span>Total AM miles</span><b>${r.hsMiles+r.elemMiles}</b></div>`;
+ :`${routeHTML(r)}<div class="kv"><span>Driver</span><b>${r.driver||'UNASSIGNED'}</b></div><div class="kv"><span>Bus</span><b>${r.bus}</b></div><div class="kv"><span>HS run</span><b>${r.hsStudents} students • ${r.hsTime} min</b></div><div class="kv"><span>Elementary</span><b>${r.elem} • ${r.elemStudents} students • ${r.elemTime} min</b></div><div class="kv"><span>AM miles</span><b>${r.hsMiles+r.elemMiles}</b></div><div class="kv"><span>Daily route miles</span><b>${routeDailyMiles(r)}</b></div>`;
 }
 function renderMapStops(){
  let pts=[[24,40],[31,34],[38,29],[63,31],[70,25],[72,42],[29,61],[35,68],[63,64],[72,69],[24,28],[21,55],[37,56],[67,55]];
@@ -575,11 +606,21 @@ function reject(i){state.applicants[i].status='Rejected';log(`${state.applicants
 function generateApplicant(){let names=['Rachel Turner','Brandon Cole','Denise Warren','Michael Stone','Heather Young','Caleb Foster'];let n=names[Math.floor(Math.random()*names.length)];state.applicants.unshift({name:n,age:25+Math.floor(Math.random()*38),exp:Math.random()>.4?'Previous CDL driving':'Entry-level candidate',cdl:Math.random()>.35?'Class B + P/S':'Needs school bus endorsement',record:Math.random()>.2?'Clean':'1 minor citation',availability:Math.random()>.25?'Full-time':'Substitute only',score:65+Math.floor(Math.random()*31),status:'New'});log(`New driver application received from ${n}.`);render()}
 function renderStaff(){$('staffGrid').innerHTML=state.staff.map(s=>`<button class="card" onclick="openDriverFile('${s.name}')"><span class="badge">${s.status}</span><b>${s.name}</b><div class="small">Age ${s.age} • ${s.years} years service</div><div class="small">Route ${s.route||'Unassigned'} • Morale ${s.morale}%</div><div class="small">Safety ${s.safetyScore||95}% • Attendance ${s.attendance||98}%</div></button>`).join('')}
 function renderTrips(){
- $('tripGrid').innerHTML=state.trips.map(t=>`<div class="card"><span class="trip-status ${t.status.toLowerCase()}">${t.status}</span><b>${t.school}</b><div>${t.type}</div><div class="small">${t.date} • ${t.depart}–${t.return}</div><div class="small">📍 ${t.destination} • ${t.passengers} passengers</div>${t.status==='Approved'?`<div class="small" style="margin-top:7px">Bus ${t.bus} • ${t.driver}</div>`:''}<div class="actions">${t.status==='Pending'?`<button class="btn primary" onclick="approveTrip(${t.id})">Approve</button><button class="btn" onclick="denyTrip(${t.id})">Deny</button>`:''}</div></div>`).join('')
+ $('tripGrid').innerHTML=state.trips.map(t=>`<div class="card"><span class="trip-status ${t.status.toLowerCase()}">${t.status}</span><b>${t.school}</b><div>${t.type}</div><div class="small">${t.date} • ${t.depart}–${t.return}</div><div class="small">📍 ${t.destination} • ${t.passengers} passengers • ${t.tripMiles||destinationTripMiles(t.destination)} round-trip miles</div>${t.status==='Approved'?`<div class="small" style="margin-top:7px">Bus ${t.bus} • ${t.driver}</div>`:''}<div class="actions">${t.status==='Pending'?`<button class="btn primary" onclick="approveTrip(${t.id})">Approve</button><button class="btn" onclick="denyTrip(${t.id})">Deny</button>`:''}</div></div>`).join('')
 }
-function approveTrip(id){let t=state.trips.find(x=>x.id===id);let bus=state.buses.find(b=>b.designation==='Trip Bus'&&b.status!=='Maintenance')||state.buses.find(b=>b.designation==='Spare'&&b.status!=='Maintenance')||state.buses.find(b=>b.status==='Ready'&&!b.route);let driver=state.staff.find(s=>s.trip&&s.status==='Substitute'&&!s.route);if(!driver)driver=state.staff.find(s=>s.trip&&s.status==='Regular');if(!bus)bus=state.buses.find(b=>b.status==='Ready');if(!bus||!driver){alert('No suitable bus or trip driver is currently available.');return}t.status='Approved';t.bus=bus.id;t.driver=driver.name;state.budget-=Math.round(180+t.passengers*1.2);log(`${t.type} trip approved: Bus ${bus.id}, ${driver.name}.`);render()}
+function approveTrip(id){let t=state.trips.find(x=>x.id===id);let bus=state.buses.find(b=>b.designation==='Trip Bus'&&b.status!=='Maintenance')||state.buses.find(b=>b.designation==='Spare'&&b.status!=='Maintenance')||state.buses.find(b=>b.status==='Ready'&&!b.route);let driver=state.staff.find(s=>s.trip&&s.status==='Substitute'&&!s.route);if(!driver)driver=state.staff.find(s=>s.trip&&s.status==='Regular');if(!bus)bus=state.buses.find(b=>b.status==='Ready');if(!bus||!driver){alert('No suitable bus or trip driver is currently available.');return}t.status='Approved';t.bus=bus.id;t.driver=driver.name;t.tripMiles=t.tripMiles||destinationTripMiles(t.destination);normalizeTripDates();state.budget-=Math.round(180+t.passengers*1.2);log(`${t.type} trip approved: Bus ${bus.id}, ${driver.name}. Estimated round-trip mileage: ${t.tripMiles}.`);render()}
 function denyTrip(id){let t=state.trips.find(x=>x.id===id);t.status='Denied';state.parents=Math.max(50,state.parents-1);log(`${t.type} trip denied.`);render()}
-function generateTrip(){let opts=[['Edgewood Middle School','Girls Basketball','Fort Wayne','42'],['Lincoln Elementary','Kindergarten Zoo Trip','Fort Wayne Children’s Zoo','69'],['Warsaw High School','Band Competition','Indianapolis','58'],['Harrison Elementary','4th Grade History Trip','State Museum','71'],['Warsaw High School','Academic Team','South Bend','24']];let o=opts[Math.floor(Math.random()*opts.length)];let id=Math.max(...state.trips.map(t=>t.id))+1;state.trips.push({id,school:o[0],type:o[1],destination:o[2],date:'Sep '+(11+Math.floor(Math.random()*15)),depart:'8:30 AM',return:'4:30 PM',passengers:+o[3],buses:1,status:'Pending',driver:null,bus:null});log(`New trip request: ${o[1]}.`);render()}
+function generateTrip(){
+ ensureRealCalendar();
+ let opts=[['Edgewood Middle School','Girls Basketball','Fort Wayne','42'],['Lincoln Elementary','Kindergarten Zoo Trip','Fort Wayne Children’s Zoo','69'],['Warsaw High School','Band Competition','Indianapolis','58'],['Harrison Elementary','4th Grade History Trip','State Museum','71'],['Warsaw High School','Academic Team','South Bend','24']];
+ let o=opts[Math.floor(Math.random()*opts.length)],id=Math.max(0,...state.trips.map(t=>t.id))+1;
+ let d=parseGameDate();d.setUTCDate(d.getUTCDate()+5+Math.floor(Math.random()*16));
+ while(d.getUTCDay()===0||d.getUTCDay()===6)d.setUTCDate(d.getUTCDate()+1);
+ let iso=isoDateUTC(d),label=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'short',day:'numeric'}).format(d);
+ state.trips.push({id,school:o[0],type:o[1],destination:o[2],date:label,isoDate:iso,depart:'8:30 AM',return:'4:30 PM',passengers:+o[3],buses:1,status:'Pending',driver:null,bus:null,tripMiles:destinationTripMiles(o[2]),mileageApplied:false});
+ log(`New trip request: ${o[1]} on ${label}.`);
+ render();
+}
 function renderFleet(){ensureV4Data();$('fleetBody').innerHTML=state.buses.map(b=>`<tr><td><button class="btn" onclick="openBusFile(${b.id})"><b>${b.id}</b></button></td><td>${b.year} ${b.model}</td><td>${b.miles.toLocaleString()}</td><td>${b.fuel}%</td><td>${b.route||b.designation}</td><td><span class="status ${statusClass(b.status)}">${b.status}</span></td><td>${b.condition}%<div class="small">Repairs ${money(b.repairSpend||0)}</div></td></tr>`).join('')}
 function fuelBus(id){let b=state.buses.find(x=>x.id===id);if(b.fuel>=100)return;b.fuel=100;state.budget-=85;log(`Bus ${id} fueled for $85.`);render()}
 function maintainBus(id){let b=state.buses.find(x=>x.id===id);state.budget-=650;b.condition=Math.min(100,b.condition+12);b.status=b.route?'Ready':'Spare';log(`Bus ${id} serviced. Cost $650.`);render()}
@@ -676,11 +717,78 @@ function facility(name){openModal(name, name==='Maintenance Shop'?'You can servi
 function editStops(){openModal('Edit Route '+selectedRoute,'Stop editor concept: add, remove, reorder, or transfer stops between routes. Every change recalculates student load, mileage and run time.')}
 function reassignRoute(){let r=state.routes.find(x=>x.id===selectedRoute);let spare=state.buses.find(b=>b.status==='Spare');if(spare){let old=state.buses.find(b=>b.id===r.bus);if(old){old.route=null;old.status='Spare'}spare.route=r.id;spare.status='Ready';spare.driver=r.driver;r.bus=spare.id;log(`Route ${r.id} reassigned to Bus ${spare.id}.`);render()}else alert('No spare bus available.')}
 function autoBalance(){let overloaded=state.routes.find(r=>r.elemStudents>=72);if(overloaded){overloaded.elemStudents-=5;let other=state.routes.find(r=>r.id!==overloaded.id&&r.elem===overloaded.elem&&r.elemStudents<65);if(other)other.elemStudents+=5;log(`Routing office balanced 5 students off Route ${overloaded.id}.`)}render()}
+
+function routeDailyMiles(r){
+ if(r.specialNeeds)return Math.max(0,Number(r.miles||0))*2;
+ return (Math.max(0,Number(r.hsMiles||0))+Math.max(0,Number(r.elemMiles||0)))*2;
+}
+function addDailyRouteMileage(){
+ state.routes.forEach(r=>{
+   let c=routeCoverage(r);
+   if(!c.ok)return;
+   let bus=state.buses.find(b=>b.id===(r.temporaryBus||r.bus));
+   if(!bus)return;
+   let miles=routeDailyMiles(r);
+   bus.miles+=miles;
+   bus.fuel=Math.max(10,bus.fuel-Math.max(4,Math.round(miles/12)));
+   if(miles>=110&&Math.random()<.18)bus.condition=Math.max(35,bus.condition-1);
+   bus.history=bus.history||[];
+   if(miles>=110)bus.history.push({year:state.year,event:`Long route day: Route ${r.id} added ${miles} miles`});
+ });
+}
+function destinationTripMiles(destination){
+ let d=String(destination||'').toLowerCase();
+ if(d.includes('indianapolis'))return 250;
+ if(d.includes('state museum'))return 250;
+ if(d.includes('south bend'))return 95;
+ if(d.includes('fort wayne'))return 95;
+ if(d.includes('science central'))return 95;
+ if(d.includes('zoo'))return 100;
+ if(d.includes('community arts'))return 30;
+ return 55;
+}
+function normalizeTripDates(){
+ ensureRealCalendar();
+ let baseYear=Number(state.gameDate.slice(0,4));
+ const months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+ state.trips.forEach(t=>{
+   if(!t.tripMiles)t.tripMiles=destinationTripMiles(t.destination);
+   if(!t.isoDate&&t.date){
+     let m=String(t.date).match(/^([A-Za-z]{3,})\s+(\d{1,2})/);
+     if(m){
+       let mon=months[m[1].slice(0,3).toLowerCase()];
+       if(mon){
+         let y=baseYear;
+         let curMon=Number(state.gameDate.slice(5,7));
+         if(mon<curMon-3)y++;
+         t.isoDate=`${y}-${String(mon).padStart(2,'0')}-${String(Number(m[2])).padStart(2,'0')}`;
+       }
+     }
+   }
+ });
+}
+function processTripsForCurrentDate(){
+ normalizeTripDates();
+ state.trips.filter(t=>t.status==='Approved'&&t.bus&&!t.mileageApplied&&t.isoDate===state.gameDate).forEach(t=>{
+   let b=state.buses.find(x=>x.id===t.bus);
+   if(!b)return;
+   let miles=Number(t.tripMiles||destinationTripMiles(t.destination));
+   b.miles+=miles;
+   b.fuel=Math.max(8,b.fuel-Math.max(5,Math.round(miles/10)));
+   b.condition=Math.max(35,b.condition-(miles>=180?1:0));
+   b.history=b.history||[];
+   b.history.push({year:state.year,event:`Trip: ${t.type} to ${t.destination} added ${miles} miles`});
+   t.mileageApplied=true;
+   t.status='Completed';
+   log(`Bus ${b.id} completed ${t.type}. ${miles} trip miles added.`);
+ });
+}
 function advanceDay(){
  autosaveGame();ensureCalendarData();ensureUXData();
  if(state.season==='Summer'){
    state.summerDaysRemaining=Math.max(0,(state.summerDaysRemaining||42)-1);
    state.day++;
+   advanceCalendarDay();
    state.simMinutes=480;
    state.dispatchStep=0;
    if(Math.random()<.18)generateApplicant();
@@ -689,9 +797,12 @@ function advanceDay(){
    render();return;
  }
 
- // Start a clean new operating day without destroying permanent assignments.
+ // Complete today's routes/trips, then move to the next real school day.
+ addDailyRouteMileage();
+ processTripsForCurrentDate();
  state.day++;
  state.schoolDay=(state.schoolDay||0)+1;
+ advanceToNextSchoolDay();
  state.simMinutes=315;
  state.dispatchStep=0;
  state.buses.forEach(b=>{b.liveStatus='Parked / Pre-Trip';});
@@ -711,13 +822,7 @@ function advanceDay(){
  }
  maybeMaintenanceEvent();
 
- state.buses.forEach(b=>{
-   if(b.status==='Ready'||b.status==='Spare'){
-     b.miles+=Math.floor(8+Math.random()*20);
-     b.fuel=Math.max(18,b.fuel-Math.floor(3+Math.random()*8));
-     b.condition=Math.max(35,b.condition-(Math.random()>.75?1:0));
-   }
- });
+
 
  if(Math.random()<.35)generateTrip();
  if(Math.random()<.25)generateApplicant();
@@ -1104,6 +1209,7 @@ function generateStudentSilent(){
 }
 
 function ensureCalendarData(){
+ ensureRealCalendar();
  if(!state.schoolDaysPerYear)state.schoolDaysPerYear=180;
  if(state.schoolDay===undefined||state.schoolDay===null)state.schoolDay=Math.min(state.day||0,state.schoolDaysPerYear);
  if(state.summerDaysRemaining===undefined||state.summerDaysRemaining===null)state.summerDaysRemaining=42;
