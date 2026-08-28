@@ -434,7 +434,8 @@ const initial = {
  {id:42,year:2012,model:'IC CE',miles:83774,fuel:66,status:'Spare',condition:58,route:null,driver:null,designation:'Spare'},
  {id:46,year:2023,model:'Blue Bird Vision',miles:18440,fuel:92,status:'Ready',condition:97,route:46,driver:'Tina Alvarez',designation:'Regular Route'},
  {id:51,year:2016,model:'Thomas C2',miles:68810,fuel:79,status:'Ready',condition:72,route:51,driver:'James Porter',designation:'Regular Route'},
- {id:55,year:2020,model:'IC CE',miles:41785,fuel:86,status:'Ready',condition:88,route:55,driver:'Melissa Grant',designation:'Regular Route'}],
+ {id:55,year:2020,model:'IC CE',miles:41785,fuel:86,status:'Ready',condition:88,route:55,driver:'Melissa Grant',designation:'Regular Route'},
+ {id:60,year:2024,model:'Thomas Minotour Special Needs',miles:12640,fuel:91,status:'Ready',condition:96,route:90,driver:'Denise Harper',designation:'Special Ed',wheelchairLift:true,wheelchairPositions:4,capacity:24}],
  staff:[
  {name:'Mark Reynolds',age:54,years:16,cdl:'Valid',status:'Regular',route:12,morale:88,trip:true},
  {name:'Linda Carter',age:47,years:11,cdl:'Valid',status:'Regular',route:18,morale:82,trip:false},
@@ -443,7 +444,8 @@ const initial = {
  {name:'Tina Alvarez',age:44,years:8,cdl:'Valid',status:'Regular',route:46,morale:89,trip:true},
  {name:'James Porter',age:57,years:14,cdl:'Valid',status:'Regular',route:51,morale:80,trip:false},
  {name:'Melissa Grant',age:35,years:3,cdl:'Valid',status:'Regular',route:55,morale:93,trip:true},
- {name:'Carol Simmons',age:59,years:12,cdl:'Valid',status:'Substitute',route:null,morale:85,trip:true}],
+ {name:'Carol Simmons',age:59,years:12,cdl:'Valid',status:'Substitute',route:null,morale:85,trip:true},
+ {name:'Denise Harper',age:46,years:7,cdl:'Class B + P/S',status:'Regular',route:90,morale:92,trip:true}],
  routes:[
  {id:12,bus:12,driver:'Mark Reynolds',hsStudents:61,hsStops:11,hsMiles:22,hsTime:45,elem:'Lincoln Elementary',elemStudents:68,elemStops:14,elemMiles:19,elemTime:42},
  {id:18,bus:18,driver:'Linda Carter',hsStudents:58,hsStops:10,hsMiles:20,hsTime:42,elem:'Jefferson Elementary',elemStudents:54,elemStops:11,elemMiles:18,elemTime:39},
@@ -452,7 +454,8 @@ const initial = {
  {id:37,bus:37,driver:null,hsStudents:55,hsStops:9,hsMiles:18,hsTime:38,elem:'Harrison Elementary',elemStudents:63,elemStops:13,elemMiles:20,elemTime:43},
  {id:46,bus:46,driver:'Tina Alvarez',hsStudents:69,hsStops:14,hsMiles:25,hsTime:50,elem:'Jefferson Elementary',elemStudents:60,elemStops:13,elemMiles:19,elemTime:41},
  {id:51,bus:51,driver:'James Porter',hsStudents:52,hsStops:9,hsMiles:17,hsTime:37,elem:'Lincoln Elementary',elemStudents:57,elemStops:12,elemMiles:18,elemTime:40},
- {id:55,bus:55,driver:'Melissa Grant',hsStudents:66,hsStops:12,hsMiles:24,hsTime:48,elem:'Jefferson Elementary',elemStudents:64,elemStops:13,elemMiles:20,elemTime:42}],
+ {id:55,bus:55,driver:'Melissa Grant',hsStudents:66,hsStops:12,hsMiles:24,hsTime:48,elem:'Jefferson Elementary',elemStudents:64,elemStops:13,elemMiles:20,elemTime:42},
+ {id:90,bus:60,driver:'Denise Harper',type:'Special Needs',specialNeeds:true,students:12,stops:9,miles:28,time:58,school:'District Special Services',wheelchairs:3,aide:true,doorToDoor:true}],
  supportStaff:[
  {name:'Dana Brooks',role:'Dispatcher',years:9,status:'Active'},
  {name:'Mike Evans',role:'Lead Mechanic',years:14,status:'Active'},
@@ -464,7 +467,7 @@ const initial = {
  {id:3,name:'Liam Carter',grade:11,school:'Warsaw High School',route:18,stop:'Lakeview Dr',household:'Carter',status:'Active',behavior:0,special:false},
  {id:4,name:'Ava Carter',grade:2,school:'Jefferson Elementary',route:18,stop:'Lakeview Dr',household:'Carter',status:'Active',behavior:0,special:false},
  {id:5,name:'Mason Hill',grade:9,school:'Warsaw High School',route:24,stop:'County Rd 200',household:'Hill',status:'Active',behavior:2,special:false},
- {id:6,name:'Sophia Green',grade:3,school:'Harrison Elementary',route:31,stop:'Pinecrest',household:'Green',status:'Active',behavior:0,special:true}],
+ {id:6,name:'Sophia Green',grade:3,school:'Harrison Elementary',route:90,stop:'Door-to-door',household:'Green',status:'Active',behavior:0,special:true}],
  parentCalls:[
  {id:1,from:'Mrs. Parker',topic:'Stop request',detail:'Asks if the Oak & 3rd stop can move one block closer.',status:'Open'},
  {id:2,from:'Mr. Hill',topic:'Late bus',detail:'Route 24 was 11 minutes late yesterday.',status:'Open'}],
@@ -511,7 +514,7 @@ function busCardHTML(b,spaceNo){
     <button class="parked-bus" onclick="selectBus(${b.id})">
       <div class="bus-roof"><span class="bus-number">BUS ${b.id}</span><span class="status ${statusClass(b.status)}">${b.status}</span></div>
       <div class="bus-window-row"><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="bus-meta"><b>${b.year} ${b.model}</b><br>${b.miles.toLocaleString()} miles<br>${b.route?'Route '+b.route:'No regular route'} • Fuel ${b.fuel}%</div>
+      <div class="bus-meta"><b>${b.year} ${b.model}</b><br>${b.miles.toLocaleString()} miles<br>${b.route?'Route '+b.route:'No regular route'} • Fuel ${b.fuel}%${b.wheelchairLift?'<br>♿ Wheelchair lift equipped':''}</div>
       <span class="bus-purpose">${b.designation|| (b.route?'Regular Route':'Spare')}</span>
     </button>
   </div>`;
@@ -534,12 +537,21 @@ function selectBus(id,scroll=true){selectedBus=id;let b=state.buses.find(x=>x.id
 function renderAlerts(){
  let a=[];state.buses.filter(b=>b.status==='Inspection Due').forEach(b=>a.push(`⚠ Bus ${b.id} inspection due`));state.routes.filter(r=>!r.driver).forEach(r=>a.push(`👤 Route ${r.id} uncovered`));let spare=state.buses.find(b=>b.status==='Spare');if(spare)a.push(`🚌 Bus ${spare.id} available as spare`);let pending=state.trips.filter(t=>t.status==='Pending').length;if(pending)a.push(`📄 ${pending} trip request${pending>1?'s':''} pending`);$('alerts').innerHTML=(a.length?a:['✅ No active alerts']).map(x=>`<div class="alert">${x}</div>`).join('')
 }
-function routeHTML(r){return `<div class="timeline"><span class="node">🚌 Garage</span><span class="arrow">→</span><span class="node">🏠 ${r.hsStops} HS stops</span><span class="arrow">→</span><span class="node">🎓 High School</span><span class="arrow">→</span><span class="node">🏠 ${r.elemStops} Elem stops</span><span class="arrow">→</span><span class="node">🏫 ${r.elem}</span><span class="arrow">→</span><span class="node">🅿️ Garage</span></div>`}
+function routeHTML(r){
+ if(r.specialNeeds)return `<div class="timeline"><span class="node">🚌 Garage</span><span class="arrow">→</span><span class="node">🏠 ${r.stops} door-to-door stops</span><span class="arrow">→</span><span class="node">♿ ${r.school}</span><span class="arrow">→</span><span class="node">🅿️ Garage</span></div>`;
+ return `<div class="timeline"><span class="node">🚌 Garage</span><span class="arrow">→</span><span class="node">🏠 ${r.hsStops} HS stops</span><span class="arrow">→</span><span class="node">🎓 High School</span><span class="arrow">→</span><span class="node">🏠 ${r.elemStops} Elem stops</span><span class="arrow">→</span><span class="node">🏫 ${r.elem}</span><span class="arrow">→</span><span class="node">🅿️ Garage</span></div>`;
+}
 function renderRoutes(){
- $('routeCards').innerHTML=state.routes.map(r=>`<button class="card" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>Route ${r.id}</b><div class="small">Bus ${r.bus} • ${r.driver||'No driver'}</div><div style="margin:9px 0">${routeHTML(r)}</div><div class="small">HS ${r.hsStudents}/72 • Elementary ${r.elemStudents}/72</div></button>`).join('');
+ $('routeCards').innerHTML=state.routes.map(r=>`<button class="card" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>${r.specialNeeds?'♿ Special Needs Route':'Route'} ${r.id}</b><div class="small">Bus ${r.bus} • ${r.driver||'No driver'}</div><div style="margin:9px 0">${routeHTML(r)}</div><div class="small">${r.specialNeeds?`${r.students} riders • ${r.wheelchairs} wheelchair riders • aide ${r.aide?'assigned':'not assigned'}`:`HS ${r.hsStudents}/72 • Elementary ${r.elemStudents}/72`}</div></button>`).join('');
  renderMapStops();selectRoute(selectedRoute,false)
 }
-function selectRoute(id){selectedRoute=id;let r=state.routes.find(x=>x.id===id);if(!r)return;$('routeTitle').textContent='Route '+id;$('routeDetail').innerHTML=`${routeHTML(r)}<div class="kv"><span>Driver</span><b>${r.driver||'UNASSIGNED'}</b></div><div class="kv"><span>Bus</span><b>${r.bus}</b></div><div class="kv"><span>HS run</span><b>${r.hsStudents} students • ${r.hsTime} min</b></div><div class="kv"><span>Elementary</span><b>${r.elem} • ${r.elemStudents} students • ${r.elemTime} min</b></div><div class="kv"><span>Total AM miles</span><b>${r.hsMiles+r.elemMiles}</b></div>`}
+function selectRoute(id){
+ selectedRoute=id;let r=state.routes.find(x=>x.id===id);if(!r)return;
+ $('routeTitle').textContent=(r.specialNeeds?'Special Needs Route ':'Route ')+id;
+ $('routeDetail').innerHTML=r.specialNeeds
+ ?`${routeHTML(r)}<div class="kv"><span>Driver</span><b>${r.driver||'UNASSIGNED'}</b></div><div class="kv"><span>Bus</span><b>${r.bus}</b></div><div class="kv"><span>Riders</span><b>${r.students}</b></div><div class="kv"><span>Wheelchair riders</span><b>${r.wheelchairs}</b></div><div class="kv"><span>Aide/Monitor</span><b>${r.aide?'Assigned':'Not assigned'}</b></div><div class="kv"><span>Service</span><b>${r.doorToDoor?'Door-to-door':'Community stops'}</b></div><div class="kv"><span>Runtime</span><b>${r.time} min</b></div><div class="kv"><span>Miles</span><b>${r.miles}</b></div>`
+ :`${routeHTML(r)}<div class="kv"><span>Driver</span><b>${r.driver||'UNASSIGNED'}</b></div><div class="kv"><span>Bus</span><b>${r.bus}</b></div><div class="kv"><span>HS run</span><b>${r.hsStudents} students • ${r.hsTime} min</b></div><div class="kv"><span>Elementary</span><b>${r.elem} • ${r.elemStudents} students • ${r.elemTime} min</b></div><div class="kv"><span>Total AM miles</span><b>${r.hsMiles+r.elemMiles}</b></div>`;
+}
 function renderMapStops(){
  let pts=[[24,40],[31,34],[38,29],[63,31],[70,25],[72,42],[29,61],[35,68],[63,64],[72,69],[24,28],[21,55],[37,56],[67,55]];
  $('mapStops').innerHTML=pts.map((p,i)=>`<div class="stop" title="Bus stop" style="left:${p[0]}%;top:${p[1]}%"></div>`).join('')
@@ -568,23 +580,43 @@ function openBusPurchase(){
  openModal('Purchase New Bus',`
    <div class="detail">
      <div><label>Bus number</label><input id="newBusNumber" type="number" min="1" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px" placeholder="e.g. 61"></div>
+     <div><label>Bus Type</label><select id="newBusType" onchange="updateBusPurchaseOptions()" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
+       <option value="standard">Standard School Bus</option>
+       <option value="special">Special Needs / Wheelchair Bus</option>
+     </select></div>
      <div><label>Designation</label><select id="newBusDesignation" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
        <option>Regular Route</option><option>Spare</option><option>Trip Bus</option><option>Special Ed</option><option>Maintenance Reserve</option>
      </select></div>
      <div><label>Model</label><select id="newBusModel" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
        <option>Blue Bird Vision</option><option>Thomas C2</option><option>IC CE</option>
      </select></div>
-     <div class="alert">Purchase price: <b>$112,000</b></div>
+     <div id="specialBusInfo" class="alert" style="display:none">♿ Wheelchair lift • 4 wheelchair positions • 24-passenger flexible capacity • tie-down equipment</div>
+     <div class="alert">Purchase price: <b id="purchasePrice">$112,000</b></div>
    </div>
    <div class="actions"><button class="btn primary" onclick="confirmBusPurchase()">Purchase Bus</button></div>`)
 }
+function updateBusPurchaseOptions(){
+ let special=$('newBusType').value==='special',model=$('newBusModel'),des=$('newBusDesignation');
+ if(special){
+   model.innerHTML='<option>Thomas Minotour Special Needs</option><option>Blue Bird Micro Bird Special Needs</option><option>IC CE Special Needs</option>';
+   des.value='Special Ed';
+   $('specialBusInfo').style.display='block';
+   $('purchasePrice').textContent='$138,000';
+ }else{
+   model.innerHTML='<option>Blue Bird Vision</option><option>Thomas C2</option><option>IC CE</option>';
+   $('specialBusInfo').style.display='none';
+   $('purchasePrice').textContent='$112,000';
+ }
+}
 function confirmBusPurchase(){
- if(state.budget<112000)return alert('Not enough budget.');
- let id=Number(document.getElementById('newBusNumber').value),designation=document.getElementById('newBusDesignation').value,model=document.getElementById('newBusModel').value;
+ let special=$('newBusType').value==='special',price=special?138000:112000;
+ if(state.budget<price)return alert('Not enough budget.');
+ let id=Number($('newBusNumber').value),designation=$('newBusDesignation').value,model=$('newBusModel').value;
  if(!id||id<1)return alert('Enter a valid bus number.');
  if(state.buses.some(b=>b.id===id))return alert('That bus number is already in use.');
- state.buses.push({id,year:2026,model,miles:18,fuel:100,status:designation==='Regular Route'?'Ready':'Spare',condition:100,route:null,driver:null,designation});
- state.budget-=112000;closeModal();log(`New Bus ${id} purchased as ${designation}.`);render()
+ snapshotAction('Bus purchase');
+ state.buses.push({id,year:2026,model,miles:18,fuel:100,status:designation==='Regular Route'?'Ready':(designation==='Special Ed'?'Ready':'Spare'),condition:100,route:null,driver:null,designation,wheelchairLift:special,wheelchairPositions:special?4:0,capacity:special?24:72});
+ state.budget-=price;closeModal();log(`New Bus ${id} purchased as ${designation}${special?' with wheelchair lift':''} for ${money(price)}.`);autosaveGame();render()
 }
 function dispatchStageFromTime(){
  ensureV4Data();
@@ -877,12 +909,55 @@ function enrollDriverTraining(index,courseId){
 }
 function scheduleGroupTraining(){
  ensureTrainingData();
- let cost=state.staff.length*80;
- if(state.budget<cost)return alert('Not enough budget.');
+ let eligible=state.staff.filter(s=>s.employmentStatus!=='Retired'&&s.employmentStatus!=='Resigned');
+ let perDriver=80;
+ let cost=eligible.length*perDriver;
+ openModal('Schedule Group Training',`
+   <div class="alert"><b>Annual Safety + Evacuation Group Session</b>
+     <div class="small">${eligible.length} active driver${eligible.length===1?'':'s'} • ${money(perDriver)} per driver • Total ${money(cost)}</div>
+   </div>
+   <div class="detail">
+     <div class="kv"><span>Training</span><b>Annual Safety Refresher</b></div>
+     <div class="kv"><span>Drill</span><b>Student Evacuation</b></div>
+     <div class="kv"><span>Drivers included</span><b>${eligible.length}</b></div>
+     <div class="kv"><span>Department cost</span><b>${money(cost)}</b></div>
+   </div>
+   <label style="display:block;margin-top:10px">Schedule for</label>
+   <select id="groupTrainingWhen" style="width:100%;padding:9px">
+     <option value="Today">Today</option>
+     <option value="Tomorrow">Tomorrow</option>
+     <option value="Next In-Service Day">Next In-Service Day</option>
+     <option value="Summer Planning">Summer Planning</option>
+   </select>
+   <div class="actions">
+     <button class="btn primary" onclick="confirmGroupTraining()">Schedule & Complete</button>
+     <button class="btn" onclick="closeModal()">Cancel</button>
+   </div>
+ `);
+}
+function confirmGroupTraining(){
+ ensureTrainingData();
+ let eligible=state.staff.filter(s=>s.employmentStatus!=='Retired'&&s.employmentStatus!=='Resigned');
+ let perDriver=80,cost=eligible.length*perDriver;
+ if(state.budget<cost)return alert(`Not enough budget. Group training requires ${money(cost)}.`);
+ let when=$('groupTrainingWhen')?$('groupTrainingWhen').value:'Today';
+ snapshotAction('Group training');
  state.budget-=cost;
- state.staff.forEach(s=>{s.training.annualSafety='Current';s.training.evacuation='Current'});
- log(`Group annual safety and evacuation training completed for ${state.staff.length} drivers. Cost ${money(cost)}.`);
+ eligible.forEach(s=>{
+   s.training.annualSafety='Current';
+   s.training.evacuation='Current';
+   s.history=s.history||[];
+   s.history.push({year:state.year,event:`Completed group Annual Safety Refresher and Evacuation Drill (${when})`});
+ });
+ state.calendar=state.calendar||[];
+ state.calendar.push({date:`Day ${state.day+1}`,item:`Group Driver Training — Annual Safety & Evacuation (${when})`});
+ state.news=state.news||[];
+ state.news.unshift({text:`Transportation completed annual group safety and evacuation training for ${eligible.length} drivers.`,tone:'good'});
+ log(`Group annual safety and evacuation training completed for ${eligible.length} drivers. Cost ${money(cost)}.`);
+ closeModal();
+ autosaveGame();
  render();
+ alert(`Group training complete for ${eligible.length} drivers. Annual Safety and Evacuation are now Current.`);
 }
 
 
@@ -1072,6 +1147,7 @@ function routeCoverage(r){
  let absent=driver&&state.absences.some(a=>a.driver===driver.name&&a.day===state.day);
  if(!driver||absent)return {ok:false,reason:'No available driver'};
  if(!bus||bus.status==='Maintenance'||bus.status==='Inspection Due')return {ok:false,reason:'No available bus'};
+ if(r.specialNeeds&&!bus.wheelchairLift)return {ok:false,reason:'Special-needs route requires lift-equipped bus'};
  return {ok:true,reason:'Covered'};
 }
 function renderToday(){
