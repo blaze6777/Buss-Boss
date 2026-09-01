@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V10.0</title>
+<title>School Transportation Tycoon — Tycoon Web V10.1</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V10.0</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V10.1</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -1432,6 +1432,18 @@ function render(){
  renderDistrictV8();renderPeopleV8();renderShopV8();renderBoardV8();renderTycoon();
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(b.dataset.view).classList.add('active')});
+
+function dispatchStageFromTime(){
+ let m=Number(state.simMinutes||315);
+ if(m<345)return 0;      // pre-trip / parked
+ if(m<390)return 1;      // HS AM out
+ if(m<450)return 2;      // Elem AM out
+ if(m<780)return 3;      // school day / most route buses back
+ if(m<900)return 4;      // PM prep / parked
+ if(m<960)return 5;      // HS PM out
+ if(m<1035)return 6;     // Elem PM out
+ return 7;               // returned / parked
+}
 function busParkedToday(b){
   let s=dispatchStageFromTime();
   if(!b.route)return true;
@@ -1446,7 +1458,7 @@ function busCardHTML(b,spaceNo){
     <button class="parked-bus" onclick="selectBus(${b.id})">
       <div class="bus-roof"><span class="bus-number">BUS ${b.id}</span><span class="status ${statusClass(b.status)}">${b.status}</span></div>
       <div class="bus-window-row"><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="bus-meta"><b>${b.year} ${b.model}</b><br>${b.miles.toLocaleString()} miles<br>${b.route?'Route '+b.route:'No regular route'} • Fuel ${b.fuel}%${b.wheelchairLift?'<br>♿ Wheelchair lift equipped':''}</div>
+      <div class="bus-meta"><b>${b.year||'—'} ${b.model||'School Bus'}</b><br>${Number(b.miles||0).toLocaleString()} miles<br>${b.route?'Route '+b.route:'No regular route'} • Fuel ${Number(b.fuel??100)}%${b.wheelchairLift?'<br>♿ Wheelchair lift equipped':''}</div>
       <span class="bus-purpose">${b.designation|| (b.route?'Regular Route':'Spare')}</span>
     </button>
   </div>`;
@@ -1481,6 +1493,41 @@ function selectBus(id,scroll=true){
  if($('selectedDetails'))$('selectedDetails').innerHTML=selectedFleetCard(b);
  if($('selectedActions'))$('selectedActions').innerHTML=`<button class="btn" onclick="fuelBus(${b.id})">Fuel</button><button class="btn" onclick="maintainBus(${b.id})">Maintenance</button><button class="btn" onclick="openBusFile(${b.id})">Bus File</button><button class="btn" onclick="goView('shop')">Repair Shop</button>`;
  if(scroll&&$('selectedTitle'))$('selectedTitle').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function fuelBus(id){
+ ensureUXData();syncBudgets();
+ let b=state.buses.find(x=>Number(x.id)===Number(id));if(!b)return;
+ if(Number(b.fuel??100)>=100)return alert(`Bus ${id} is already full.`);
+ let type=b.fuelType||'Diesel';
+ let pct=Number(b.fuel??0);
+ let tank=type==='Propane'?70:type==='Gasoline'?60:type==='Electric'?220:75;
+ let units=Math.max(1,Math.round(((100-pct)/100)*tank*10)/10);
+ let price=v10FuelPriceForBus?Number(v10FuelPriceForBus(b)):Number(state.fuelPrices?.[type]||state.fuelPrices?.Diesel||3.4);
+ let cost=Math.round(units*price*100)/100;
+ if(state.operatingBudget<cost)return alert('Not enough operating funds.');
+ state.operatingBudget-=cost;b.fuel=100;syncBudgets();
+ let driver=b.driver||state.routes.find(r=>Number(r.bus)===Number(b.id))?.driver||'Garage staff';
+ state.v10.fuelCard.transactions.unshift({date:state.gameDate,bus:b.id,driver,amount:cost,detail:type==='Electric'?`${units} kWh manual charge`:`${units} gal ${type} manual fuel`});
+ state.v10.fuelCard.totalSpend=Number(state.v10.fuelCard.totalSpend||0)+cost;
+ b.history=b.history||[];b.history.push({year:state.year,date:state.gameDate,event:`Bus manually fueled/charged to 100% • ${money(cost)}`});
+ log(`Bus ${id} fueled/charged to 100%. Fleet card charged ${money(cost)}.`);
+ autosaveGame();render();
+}
+function maintainBus(id){
+ ensureUXData();syncBudgets();
+ let b=state.buses.find(x=>Number(x.id)===Number(id));if(!b)return;
+ let cost=650;
+ if(state.operatingBudget<cost)return alert('Not enough operating funds.');
+ state.operatingBudget-=cost;syncBudgets();
+ b.condition=Math.min(100,Number(b.condition||80)+12);
+ b.status=b.route?'Ready':'Spare';
+ b.nextPM=Math.ceil((Number(b.miles||0)+5000)/5000)*5000;
+ b.inspection=b.inspection||'Current';
+ b.repairSpend=Number(b.repairSpend||0)+cost;
+ b.history=b.history||[];b.history.push({year:state.year,date:state.gameDate,event:'Garage preventive maintenance completed',cost});
+ log(`Bus ${id} serviced in the garage. Cost ${money(cost)}.`);
+ autosaveGame();render();
 }
 function facility(name){openModal(name, name==='Maintenance Shop'?'You can service buses, track preventive maintenance, inspections, tires, batteries, brakes, and shop capacity here.':name==='Driver Lounge'?'Drivers clock in here. Call-offs, substitutes, morale, seniority, and trip sign-ups appear in this room.':name==='Director Office'?'Your office contains budget, staffing, school board, route, weather, incident, and annual planning tools.':'This facility is part of your transportation center and will affect daily operations.')}
 function editStops(){openModal('Edit Route '+selectedRoute,'Stop editor concept: add, remove, reorder, or transfer stops between routes. Every change recalculates student load, mileage and run time.')}
@@ -1574,6 +1621,8 @@ function advanceDay(){
  // Complete today's routes/trips, then move to the next real school day.
  addDailyRouteMileage();
  processTripsForCurrentDate();
+ autoFuelLowBusesV10();
+ progressDevelopmentsV10();
  autoFuelLowBusesV10();
  progressDevelopmentsV10();
  state.day++;
@@ -2642,7 +2691,9 @@ function annualReview(){
  openModal('Annual Transportation Performance Review',`<div class="today-grid"><div class="alert"><b>Overall Score</b><div class="big-kpi">${score}</div></div><div class="alert"><b>On-Time</b><div class="big-kpi">${state.dailyStats.onTime}%</div></div><div class="alert"><b>Route Coverage</b><div class="big-kpi">${Math.round(covered)}%</div></div></div><div class="alert">${score>=90?'🏆 Excellent transportation performance.':score>=80?'👍 Solid year with opportunities for improvement.':'⚠️ Improvement plan recommended for next year.'}</div>`)
 }
 function selectedFleetCard(b){
- return `<div class="bus-silhouette"><b style="font-size:24px">BUS ${b.id}</b><div class="windows"><i></i><i></i><i></i><i></i><i></i><i></i></div><b>${b.year} ${b.model}</b></div><div class="detail" style="margin-top:10px"><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Bus Age</span><b>${busAge(b)} years</b></div><div class="kv"><span>Route</span><b>${b.route||'—'}</b></div><div class="kv"><span>Driver</span><b>${b.driver||'—'}</b></div><div class="kv"><span>Next PM</span><b>${b.nextPM.toLocaleString()} mi</b></div><div class="kv"><span>Inspection</span><b>${b.inspection}</b></div><div class="kv"><span>Purpose</span><b>${b.designation}</b></div></div>`;
+ ensureUXData();
+ let nextPM=Number(b.nextPM||Math.ceil((Number(b.miles||0)+5000)/5000)*5000);
+ return `<div class="bus-silhouette"><b style="font-size:24px">BUS ${b.id}</b><div class="windows"><i></i><i></i><i></i><i></i><i></i><i></i></div><b>${b.year||'—'} ${b.model||'School Bus'}</b></div><div class="detail" style="margin-top:10px"><div class="kv"><span>Mileage</span><b>${Number(b.miles||0).toLocaleString()}</b></div><div class="kv"><span>Bus Age</span><b>${busAge(b)} years</b></div><div class="kv"><span>Route</span><b>${b.route||'—'}</b></div><div class="kv"><span>Driver</span><b>${b.driver||'—'}</b></div><div class="kv"><span>Fuel</span><b>${Number(b.fuel??100)}%</b></div><div class="kv"><span>Condition</span><b>${Number(b.condition||80)}%</b></div><div class="kv"><span>Next PM</span><b>${nextPM.toLocaleString()} mi</b></div><div class="kv"><span>Inspection</span><b>${b.inspection||'Current'}</b></div><div class="kv"><span>Purpose</span><b>${b.designation||'Spare'}</b></div></div>`;
 }
 
 function deskApp(name){
