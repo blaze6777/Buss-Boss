@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V10.2</title>
+<title>School Transportation Tycoon — Tycoon Web V10.3</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V10.2</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V10.3</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -547,7 +547,7 @@ button,.btn,select,input{touch-action:manipulation}
 <div class="actions" style="margin-bottom:12px"><button class="btn primary" onclick="openRouteBidding()">Run Seniority Route Bidding</button></div>
     <div class="section-head">
       <div><h2>Summer Driver & Bus Assignment Board</h2><div class="small">Choose a driver, click <b>Apply</b>, then choose the bus. Permanent and temporary assignments are separate.</div></div>
-      <div class="actions"><button class="btn" onclick="autoAssignYearV102()">Auto-Assign</button><button class="btn" onclick="renderAssignments()">Refresh Board</button><button class="btn primary" onclick="finalizeAssignments()">Finalize School Year</button></div>
+      <div class="actions"><button class="btn" onclick="autoAssignYearV102()">Auto-Assign</button><button class="btn" onclick="renderAssignments()">Refresh Board</button><button class="btn" onclick="summerAssignmentDiagnosticV103()">Board Check</button><button class="btn primary" onclick="finalizeAssignments()">Finalize School Year</button></div>
     </div>
     <div class="grid2">
       <div class="panel" style="overflow:auto">
@@ -710,8 +710,10 @@ function ensureRealCalendar(){
 }
 
 function goView(id){
- let b=document.querySelector(`[data-view="${id}"]`);
- if(b){b.click();window.scrollTo({top:0,behavior:'smooth'})}
+ const b=document.querySelector(`[data-view="${id}"]`);
+ if(typeof activateViewV103==='function')activateViewV103(id,b);
+ else if(b)b.click();
+ window.scrollTo({top:0,behavior:'smooth'});
 }
 function notify(text,type='info'){
  ensureUXData();state.notifications.unshift({id:Date.now()+Math.random(),text,type,date:formatGameDate(),read:false});
@@ -2938,54 +2940,139 @@ advanceDay = function(){
  }
  render()
 }
-const legacyRenderV93 = render;
-function safeRenderCall(name,fn){
- try{ if(typeof fn==='function') fn(); }
- catch(err){ console.error('Render error in '+name,err); }
+
+function summerAssignmentDiagnosticV103(){
+ try{
+   ensureAssignmentFields();ensureUXData();renderAssignments();
+   const rows=$('assignmentBody')?$('assignmentBody').querySelectorAll('tr').length:0;
+   const routes=(state.routes||[]).length;
+   openModal('Summer Assignment Board Check',`
+     <div class="alert ${rows===routes&&rows>0?'priority-green':'priority-yellow'}">
+       <b>${rows===routes&&rows>0?'✅ Assignment board is rendering':'⚠ Assignment board needs attention'}</b>
+       <div class="small">Rendered route rows: ${rows} of ${routes}<br>Drivers: ${(state.staff||[]).length} • Buses: ${(state.buses||[]).length}</div>
+     </div>
+   `);
+ }catch(err){
+   console.error(err);
+   openModal('Summer Assignment Board Error',`<div class="alert priority-yellow"><b>${err.name}</b><div class="small">${String(err.message||err)}</div></div>`);
+ }
 }
+const legacyRenderV93 = render;
+
+function getRendererByName(name){
+ const fn=window[name];
+ return typeof fn==='function'?fn:null;
+}
+function safeRenderCall(name,fn){
+ try{
+   if(typeof fn==='function')fn();
+ }catch(err){
+   console.error('Render error in '+name,err);
+ }
+}
+function safeRenderName(label,name){
+ const fn=getRendererByName(name);
+ if(fn)safeRenderCall(label,fn);
+}
+
 render = function(){
- try{ensureV4Data()}catch(err){console.error('ensureV4Data',err)}
- try{ensureUXData()}catch(err){console.error('ensureUXData',err)}
- try{ensureCalendarData()}catch(err){console.error('ensureCalendarData',err)}
- try{ensureRealCalendar()}catch(err){console.error('ensureRealCalendar',err)}
+ try{if(typeof ensureV4Data==='function')ensureV4Data()}catch(err){console.error('ensureV4Data',err)}
+ try{if(typeof ensureUXData==='function')ensureUXData()}catch(err){console.error('ensureUXData',err)}
+ try{if(typeof ensureCalendarData==='function')ensureCalendarData()}catch(err){console.error('ensureCalendarData',err)}
+ try{if(typeof ensureRealCalendar==='function')ensureRealCalendar()}catch(err){console.error('ensureRealCalendar',err)}
  try{
    if($('budget'))$('budget').textContent=money(state.budget||state.operatingBudget||0);
-   if($('busCount'))$('busCount').textContent=state.buses.length;
-   if($('driverCount'))$('driverCount').textContent=state.staff.length;
+   if($('busCount'))$('busCount').textContent=(state.buses||[]).length;
+   if($('driverCount'))$('driverCount').textContent=(state.staff||[]).length;
    if($('boardScore'))$('boardScore').textContent=state.board;
    if($('clockText'))$('clockText').textContent=formatGameDate()+' • '+minsToTime(state.simMinutes||315)+' • School Year '+state.year;
  }catch(err){console.error('header render',err)}
+
  [
-  ['Garage',renderBuses],['Alerts',renderAlerts],['Routes',renderRoutes],['Applicants',renderApplicants],
-  ['Staff',renderStaff],['Trips',renderTrips],['Fleet',renderFleet],['Dispatch',renderDispatch],
-  ['Reports',renderReports],['Log',renderLog],['Inbox',renderInbox],['Facilities',renderFacilities],
-  ['History',renderHistory],['Summer Assignments',renderAssignments],['Training',renderTraining],
-  ['Operations',renderOperations],['Today',renderToday],['Calendar',renderCalendarUX],
-  ['Students',renderStudents],['Director Desk',renderDesk],['Department',renderDepartment],
-  ['District',renderDistrictV8],['People',renderPeopleV8],['Shop',renderShopV8],
-  ['Board',renderBoardV8],['Tycoon HQ',renderTycoon],['District Growth Overlay',renderV10DistrictExtras]
- ].forEach(x=>safeRenderCall(x[0],x[1]));
+  ['Garage','renderBuses'],
+  ['Alerts','renderAlerts'],
+  ['Routes','renderRoutes'],
+  ['Applicants','renderApplicants'],
+  ['Staff','renderStaff'],
+  ['Trips','renderTrips'],
+  ['Fleet','renderFleet'],
+  ['Dispatch','renderDispatch'],
+  ['Reports','renderReports'],
+  ['Log','renderLog'],
+  ['Inbox','renderInbox'],
+  ['Facilities','renderFacilities'],
+  ['History','renderHistory'],
+  ['Summer Assignments','renderAssignments'],
+  ['Training','renderTraining'],
+  ['Operations','renderOperations'],
+  ['Today','renderToday'],
+  ['Calendar','renderCalendarUX'],
+  ['Students','renderStudents'],
+  ['Director Desk','renderDesk'],
+  ['Department','renderDepartment'],
+  ['District','renderDistrictV8'],
+  ['People','renderPeopleV8'],
+  ['Shop','renderShopV8'],
+  ['Board','renderBoardV8'],
+  ['Tycoon HQ','renderTycoon'],
+  ['District Growth Overlay','renderV10DistrictExtras']
+ ].forEach(x=>safeRenderName(x[0],x[1]));
+};
+
+function activateViewV103(id,clickedButton=null){
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+ document.querySelectorAll('[data-view]').forEach(b=>b.classList.remove('active'));
+ const target=document.getElementById(id);
+ if(target)target.classList.add('active');
+ const navBtn=clickedButton||document.querySelector(`.nav [data-view="${id}"]`);
+ if(navBtn)navBtn.classList.add('active');
+
+ const renderMap={
+   assignments:'renderAssignments',
+   tycoon:'renderTycoon',
+   training:'renderTraining',
+   operations:'renderOperations',
+   today:'renderToday',
+   calendar:'renderCalendarUX',
+   students:'renderStudents',
+   department:'renderDepartment',
+   district:'renderDistrictV8',
+   people:'renderPeopleV8',
+   shop:'renderShopV8',
+   boardroom:'renderBoardV8',
+   fleet:'renderFleet',
+   routes:'renderRoutes',
+   staffing:'renderStaff',
+   trips:'renderTrips',
+   dispatch:'renderDispatch',
+   garage:'renderBuses',
+   facilities:'renderFacilities',
+   history:'renderHistory',
+   inbox:'renderInbox',
+   reports:'renderReports',
+   desk:'renderDesk'
+ };
+ const renderer=renderMap[id];
+ if(renderer)safeRenderName('view '+id,renderer);
+
+ // Summer Assignments always gets a direct render after navigation.
+ if(id==='assignments'&&typeof renderAssignments==='function'){
+   safeRenderCall('Summer Assignments direct refresh',renderAssignments);
+ }
 }
-render();
+
+document.querySelectorAll('.nav [data-view]').forEach(btn=>{
+ btn.onclick=null;
+});
 
 document.addEventListener('click',function(e){
  const btn=e.target.closest('[data-view]');
  if(!btn)return;
- const id=btn.getAttribute('data-view');
- document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
- document.querySelectorAll('[data-view]').forEach(b=>b.classList.remove('active'));
- const target=document.getElementById(id);
- if(target){target.classList.add('active');btn.classList.add('active');}
- const map={
-  assignments:renderAssignments,tycoon:renderTycoon,training:renderTraining,operations:renderOperations,
-  today:renderToday,calendar:renderCalendarUX,students:renderStudents,department:renderDepartment,
-  district:renderDistrictV8,people:renderPeopleV8,shop:renderShopV8,boardroom:renderBoardV8,
-  fleet:renderFleet,routes:renderRoutes,staffing:renderStaff,trips:renderTrips,dispatch:renderDispatch,
-  garage:renderBuses,facilities:renderFacilities,history:renderHistory,inbox:renderInbox,reports:renderReports,desk:renderDesk
- };
- if(map[id])safeRenderCall('view '+id,map[id]);
+ e.preventDefault();
+ activateViewV103(btn.getAttribute('data-view'),btn);
 });
 
+render();
 </script>
 </body>
 </html>
