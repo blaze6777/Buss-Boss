@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V11.1</title>
+<title>School Transportation Tycoon — Tycoon Web V11.2</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V11.1</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V11.2</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -790,16 +790,87 @@ function nextScheduledSchoolDateV11(fromDate){
  let d=new Date(fromDate+'T00:00:00Z');do{d.setUTCDate(d.getUTCDate()+1)}while(!isScheduledSchoolDayV11(isoDateUTC(d)));return isoDateUTC(d);
 }
 function advanceToNextSchoolDayV11(){state.gameDate=nextScheduledSchoolDateV11(state.gameDate)}
+
+function validWeatherClosureDatesV112(year,month,startDay,endDay){
+ let dates=[];
+ for(let day=startDay;day<=endDay;day++){
+   let d=new Date(Date.UTC(year,month-1,day));
+   let iso=isoDateUTC(d);
+   if(d.getUTCDay()===0||d.getUTCDay()===6)continue;
+   // Exclude normal holiday/break dates, but do not treat planned weather closures
+   // as calendar holidays so the game can actually reach them.
+   let normalEvents=schoolCalendarEventsV11(month===12?year:year-1);
+   if(normalEvents.some(e=>e.date===iso))continue;
+   dates.push(iso);
+ }
+ return dates;
+}
+function ensureWeatherClosureScheduleV112(){
+ ensureRealCalendar();
+ state.v11=state.v11||{};
+ let startYear=schoolYearStartYearV11();
+
+ if(state.v11.weatherClosureSchoolYear===startYear &&
+    Array.isArray(state.v11.weatherClosureSchedule) &&
+    state.v11.weatherClosureSchedule.length===2){
+   return state.v11.weatherClosureSchedule;
+ }
+
+ // Exactly two closures: one before winter break in December,
+ // and one after winter break in January.
+ let dec=validWeatherClosureDatesV112(startYear,12,1,18);
+ let jan=validWeatherClosureDatesV112(startYear+1,1,4,31);
+
+ // Stable pseudo-random selection based on school year, so save/load does
+ // not move the closure days around.
+ let decIndex=Math.abs((startYear*17+11)%Math.max(1,dec.length));
+ let janIndex=Math.abs((startYear*23+7)%Math.max(1,jan.length));
+
+ state.v11.weatherClosureSchedule=[
+   {date:dec[decIndex]||`${startYear}-12-10`,month:'December',used:false},
+   {date:jan[janIndex]||`${startYear+1}-01-15`,month:'January',used:false}
+ ];
+ state.v11.weatherClosureSchoolYear=startYear;
+ return state.v11.weatherClosureSchedule;
+}
+function upcomingWeatherClosuresV112(){
+ return ensureWeatherClosureScheduleV112().filter(x=>!x.used);
+}
 function maybeSnowClosureV11(){
- ensureUXData();refreshSchoolCalendarV11();let w=state.weather||{},snow=/Snow/i.test(w.condition||''),cold=/Extreme Cold/i.test(w.condition||'');
- if(!snow&&!cold)return false;
- let chance=snow?.42:.26;if(String(w.roads||'').toLowerCase().includes('snow'))chance+=.25;if(Number(w.temp||40)<=5)chance+=.20;
- if(Math.random()>=Math.min(.88,chance))return false;
- let label=formatGameDate();state.v11.snowDays++;state.v11.makeupDays++;
- state.news.unshift({text:`School closed ${label} for ${snow?'snow/road conditions':'extreme cold'}. A makeup day was added.`,tone:'warn'});
- log(`${label} canceled for weather. Makeup day added.`);
- state.gameDate=nextScheduledSchoolDateV11(state.gameDate);autosaveGame();render();
- openModal('❄️ School Closed',`<div class="alert priority-yellow"><b>${snow?'Snow Day':'Cold Weather Closure'}</b><div class="small">Routes did not operate. This does not count toward the 180 instructional days. One makeup day was added.</div></div><div class="kv"><span>Weather closures</span><b>${state.v11.snowDays}</b></div><div class="kv"><span>Makeup days owed</span><b>${state.v11.makeupDays}</b></div>`);
+ ensureUXData();refreshSchoolCalendarV11();
+ let schedule=ensureWeatherClosureScheduleV112();
+ let closure=schedule.find(x=>x.date===state.gameDate&&!x.used);
+ if(!closure)return false;
+
+ let label=formatGameDate();
+ closure.used=true;
+ state.v11.snowDays=Number(state.v11.snowDays||0)+1;
+ state.v11.makeupDays=Number(state.v11.makeupDays||0)+1;
+
+ // Give the closure believable winter conditions without allowing
+ // weather forecasts to trigger extra cancellations.
+ state.weather=closure.month==='December'
+   ?{condition:'Snow',temp:27,roads:'Snow covered'}
+   :{condition:'Snow / Ice',temp:21,roads:'Snow and ice covered'};
+
+ state.news.unshift({
+   text:`School closed ${label} for winter weather. A makeup day was added.`,
+   tone:'warn'
+ });
+ log(`${label} canceled for winter weather. Makeup day added.`);
+
+ state.gameDate=nextScheduledSchoolDateV11(state.gameDate);
+ autosaveGame();render();
+
+ openModal('❄️ School Closed',`
+   <div class="alert priority-yellow">
+     <b>Winter Weather Closure</b>
+     <div class="small">Routes did not operate. This is one of the district’s two scheduled weather closures for this school year.</div>
+   </div>
+   <div class="kv"><span>Weather closures this year</span><b>${state.v11.snowDays}</b></div>
+   <div class="kv"><span>Makeup days owed</span><b>${state.v11.makeupDays}</b></div>
+   <div class="kv"><span>Remaining planned closures</span><b>${upcomingWeatherClosuresV112().length}</b></div>
+ `);
  return true;
 }
 function ensureRealCalendar(){
@@ -2802,7 +2873,7 @@ function yearEnd(){
    let y=m?Number(m[1])+1:2027;
    state.year=`${y}-${String(y+1).slice(-2)}`;
  }
- state.day=0;state.schoolDay=0;state.v11.makeupDays=0;ensureFleetPlanV11();
+ state.day=0;state.schoolDay=0;state.v11.makeupDays=0;state.v11.weatherClosureSchedule=[];state.v11.weatherClosureSchoolYear=null;ensureFleetPlanV11();
  summerPlanning();
  let depHTML=departures.length
    ? `<div class="alert"><b>Staffing Changes</b>${departures.map(d=>`<div style="margin-top:7px">${d.type==='Retired'?'🎉':'📄'} <b>${d.name}</b> — ${d.type}${d.type==='Retired'?` at age ${d.age} after ${d.years} years of service`:''}. ${d.route?'Route '+d.route+' is now vacant.':''}</div>`).join('')}</div>`
@@ -2947,6 +3018,8 @@ function ensureUXData(){
  state.v11.fleetTargetMiles=Number(state.v11.fleetTargetMiles||180000);
  state.v11.driverBidHistory=state.v11.driverBidHistory||[];
  state.v11.careerMoves=state.v11.careerMoves||[];
+ state.v11.weatherClosureSchedule=state.v11.weatherClosureSchedule||[];
+ state.v11.weatherClosureSchoolYear=state.v11.weatherClosureSchoolYear??null;
  state.buses.forEach(b=>{
    b.history=b.history||[];
    if(!b.purchaseYear)b.purchaseYear=Number(b.year||String(state.gameDate).slice(0,4));
@@ -3203,7 +3276,8 @@ function renderCalendarUX(){
  let start=parseGameDate(),days=[];for(let i=0;i<14;i++){let d=new Date(start);d.setUTCDate(d.getUTCDate()+i);days.push(isoDateUTC(d))}
  $('visualCalendar').innerHTML=days.map(date=>{let d=new Date(date+'T00:00:00Z'),ev=schoolCalendarEventV11(date),abs=state.absences.filter(a=>a.isoDate===date),trips=state.trips.filter(t=>t.isoDate===date&&t.status!=='Denied');return `<div class="cal-day ${date===state.gameDate?'priority-green':''}"><b>${new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric'}).format(d)}</b>${date===state.gameDate?'<span class="chip">TODAY</span>':''}${ev?`<span class="chip">🏫 ${ev.name}</span>`:''}${abs.map(a=>`<span class="chip">👤 ${a.driver} out</span>`).join('')}${trips.map(t=>`<span class="chip">🚌 ${t.destination} • ${t.status}</span>`).join('')}</div>`}).join('');
  $('absenceList').innerHTML=state.absences.length?state.absences.map((a,i)=>`<div class="alert"><b>${a.driver}</b> — ${a.isoDate||'Scheduled'}: ${a.reason}<button class="btn" style="float:right;padding:4px 7px" onclick="state.absences.splice(${i},1);autosaveGame();render()">Remove</button></div>`).join(''):'<div class="small">No scheduled driver absences.</div>';
- $('inspectionCalendar').innerHTML=`<div class="alert"><b>School Calendar</b><div class="small">Weather closures: ${state.v11.snowDays||0} • Makeup days: ${state.v11.makeupDays||0}</div></div>`+state.buses.slice().sort((a,b)=>Number(a.nextPM||0)-Number(b.nextPM||0)).slice(0,7).map(b=>`<div class="alert"><b>Bus ${b.id}</b> — PM at ${Number(b.nextPM||0).toLocaleString()} miles<div class="small">Current ${Number(b.miles||0).toLocaleString()} • Inspection ${b.inspection||'Current'}</div></div>`).join('');
+ ensureWeatherClosureScheduleV112();
+ $('inspectionCalendar').innerHTML=`<div class="alert"><b>School Calendar</b><div class="small">Weather closures used: ${state.v11.snowDays||0} • Remaining this year: ${upcomingWeatherClosuresV112().length} • Makeup days: ${state.v11.makeupDays||0}</div></div>`+state.buses.slice().sort((a,b)=>Number(a.nextPM||0)-Number(b.nextPM||0)).slice(0,7).map(b=>`<div class="alert"><b>Bus ${b.id}</b> — PM at ${Number(b.nextPM||0).toLocaleString()} miles<div class="small">Current ${Number(b.miles||0).toLocaleString()} • Inspection ${b.inspection||'Current'}</div></div>`).join('');
 }
 function addScheduledAbsence(){
  ensureUXData();openModal('Schedule Driver Absence',`<label>Driver</label><select id="absDriver" style="width:100%;padding:9px">${state.staff.map(s=>`<option>${s.name}</option>`).join('')}</select><label>Day</label><input id="absDay" type="number" min="${state.day+1}" value="${state.day+1}" style="width:100%;padding:9px"><label>Reason</label><select id="absReason" style="width:100%;padding:9px"><option>Vacation</option><option>Sick Leave</option><option>FMLA / Leave</option><option>Training</option><option>Personal Day</option></select><div class="actions"><button class="btn primary" onclick="confirmAbsence()">Schedule</button></div>`)
