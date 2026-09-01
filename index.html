@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V10.3</title>
+<title>School Transportation Tycoon — Tycoon Web V10.4</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V10.3</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V10.4</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -497,7 +497,7 @@ button,.btn,select,input{touch-action:manipulation}
         <div class="kv"><span>Fleet readiness</span><b id="fleetReady">89%</b></div>
         <div class="kv"><span>Approved trips</span><b id="approvedTrips">0</b></div>
       </div></div>
-      <aside class="panel"><div class="section-head"><h2>Save Game</h2></div><div class="actions"><button class="btn primary" onclick="saveGame()">Save</button><button class="btn" onclick="loadGame()">Load</button><button class="btn" onclick="resetGame()">New Game</button><button class="btn" onclick="summerPlanning()">Summer Mode</button><button class="btn" onclick="yearEnd()">End School Year</button></div><div class="small" style="margin-top:10px">Saves locally in this browser.</div></aside>
+      <aside class="panel"><div class="section-head"><h2>Save Game</h2></div><div class="actions"><button class="btn" onclick="runSystemCheckV104()">System Check</button><button class="btn primary" onclick="saveGame()">Save</button><button class="btn" onclick="loadGame()">Load</button><button class="btn" onclick="resetGame()">New Game</button><button class="btn" onclick="summerPlanning()">Summer Mode</button><button class="btn" onclick="yearEnd()">End School Year</button></div><div class="small" style="margin-top:10px">Saves locally in this browser.</div></aside>
     </div>
     <div class="panel" style="margin-top:12px"><h2 style="margin-top:0">Activity Log</h2><div id="log" class="log"></div></div>
   </section>
@@ -505,7 +505,7 @@ button,.btn,select,input{touch-action:manipulation}
   <section id="desk" class="view"><div class="actions" style="margin-bottom:12px"><button class="btn" onclick="exportSaveFile()">Export Save File</button><button class="btn" onclick="importSaveFile()">Import Save File</button><button class="btn" onclick="openRecognitionBanquet()">Recognition Banquet</button><button class="btn" onclick="openSummerOperations()">Summer Operations</button></div>
     <div class="grid2">
       <div class="panel">
-        <div class="section-head"><div><h2>Director’s Office</h2><div class="small">Run the department from your desk.</div></div><button class="btn" onclick="advanceDay()">Advance Day</button></div>
+        <div class="section-head"><div><h2>Director’s Office</h2><div class="small">Run the department from your desk.</div></div><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button></div>
         <div class="facility-grid">
           <button class="facility" onclick="deskApp('Routing')">🗺️<b> Routing</b><div class="small">Stops, loads, maps</div></button>
           <button class="facility" onclick="deskApp('Students')">🎒<b> Students</b><div class="small">Riders & households</div></button>
@@ -1435,6 +1435,147 @@ function render(){
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(b.dataset.view).classList.add('active')});
 
+
+/* V10.4 RESTORED CORE UI/ACTIONS */
+function renderAlerts(){
+ let a=[];state.buses.filter(b=>b.status==='Inspection Due').forEach(b=>a.push(`⚠ Bus ${b.id} inspection due`));state.routes.filter(r=>!r.driver).forEach(r=>a.push(`👤 Route ${r.id} uncovered`));let spare=state.buses.find(b=>b.status==='Spare');if(spare)a.push(`🚌 Bus ${spare.id} available as spare`);let pending=state.trips.filter(t=>t.status==='Pending').length;if(pending)a.push(`📄 ${pending} trip request${pending>1?'s':''} pending`);$('alerts').innerHTML=(a.length?a:['✅ No active alerts']).map(x=>`<div class="alert">${x}</div>`).join('')
+}
+
+function routeHTML(r){
+ if(r.specialNeeds)return `<div class="timeline"><span class="node">🚌 Garage</span><span class="arrow">→</span><span class="node">🏠 ${r.stops} door-to-door stops</span><span class="arrow">→</span><span class="node">♿ ${r.school}</span><span class="arrow">→</span><span class="node">🅿️ Garage</span></div>`;
+ return `<div class="timeline"><span class="node">🚌 Garage</span><span class="arrow">→</span><span class="node">🏠 ${r.hsStops} HS stops</span><span class="arrow">→</span><span class="node">🎓 High School</span><span class="arrow">→</span><span class="node">🏠 ${r.elemStops} Elem stops</span><span class="arrow">→</span><span class="node">🏫 ${r.elem}</span><span class="arrow">→</span><span class="node">🅿️ Garage</span></div>`;
+}
+
+function renderMapStops(){
+ let pts=[[24,40],[31,34],[38,29],[63,31],[70,25],[72,42],[29,61],[35,68],[63,64],[72,69],[24,28],[21,55],[37,56],[67,55]];
+ $('mapStops').innerHTML=pts.map((p,i)=>`<div class="stop" title="Bus stop" style="left:${p[0]}%;top:${p[1]}%"></div>`).join('')
+}
+
+function selectRoute(id){
+ selectedRoute=id;let r=state.routes.find(x=>x.id===id);if(!r)return;
+ $('routeTitle').textContent=(r.specialNeeds?'Special Needs Route ':'Route ')+id;
+ $('routeDetail').innerHTML=r.specialNeeds
+ ?`${routeHTML(r)}<div class="kv"><span>Driver</span><b>${r.driver||'UNASSIGNED'}</b></div><div class="kv"><span>Bus</span><b>${r.bus}</b></div><div class="kv"><span>Riders</span><b>${r.students}</b></div><div class="kv"><span>Wheelchair riders</span><b>${r.wheelchairs}</b></div><div class="kv"><span>Aide/Monitor</span><b>${r.aide?'Assigned':'Not assigned'}</b></div><div class="kv"><span>Service</span><b>${r.doorToDoor?'Door-to-door':'Community stops'}</b></div><div class="kv"><span>Runtime</span><b>${r.time} min</b></div><div class="kv"><span>Miles</span><b>${r.miles}</b></div>`
+ :`${routeHTML(r)}<div class="kv"><span>Driver</span><b>${r.driver||'UNASSIGNED'}</b></div><div class="kv"><span>Bus</span><b>${r.bus}</b></div><div class="kv"><span>HS run</span><b>${r.hsStudents} students • ${r.hsTime} min</b></div><div class="kv"><span>Elementary</span><b>${r.elem} • ${r.elemStudents} students • ${r.elemTime} min</b></div><div class="kv"><span>AM miles</span><b>${r.hsMiles+r.elemMiles}</b></div><div class="kv"><span>Daily route miles</span><b>${routeDailyMiles(r)}</b></div>`;
+}
+
+function renderRoutes(){
+ $('routeCards').innerHTML=state.routes.map(r=>`<button class="card" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>${r.specialNeeds?'♿ Special Needs Route':'Route'} ${r.id}</b><div class="small">Bus ${r.bus} • ${r.driver||'No driver'}</div><div style="margin:9px 0">${routeHTML(r)}</div><div class="small">${r.specialNeeds?`${r.students} riders • ${r.wheelchairs} wheelchair riders • ${routeDailyMiles(r)} mi/day`:`HS ${r.hsStudents}/72 • Elementary ${r.elemStudents}/72 • ${routeDailyMiles(r)} mi/day`}</div></button>`).join('');
+ renderMapStops();selectRoute(selectedRoute,false)
+}
+
+function selectApplicant(i){selectedApplicant=i;let a=state.applicants[i];$('candidateName').textContent=a.name;$('candidateDetail').innerHTML=[['Age',a.age],['Experience',a.exp],['CDL',a.cdl],['Driving record',a.record],['Availability',a.availability],['Score',a.score+'/100'],['Status',a.status]].map(x=>`<div class="kv"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');$('candidateActions').innerHTML=(a.status==='Hired'||a.status==='Rejected')?'':`<button class="btn" onclick="interview(${i})">Interview</button><button class="btn primary" onclick="hire(${i})">Hire</button><button class="btn" onclick="reject(${i})">Reject</button>`}
+
+function renderApplicants(){
+ $('applicantGrid').innerHTML=state.applicants.map((a,i)=>`<button class="card" onclick="selectApplicant(${i})"><span class="status ${a.status==='Hired'?'good':a.status==='Rejected'?'bad':'warn'}">${a.status}</span><b>${a.name}</b><div class="small">${a.exp}</div><div style="margin-top:8px"><span class="candidate-score">${a.score}</span><span class="small"> /100</span></div><div class="small">${a.cdl}</div></button>`).join('');
+ if(state.applicants.length)selectApplicant(Math.min(selectedApplicant,state.applicants.length-1),false)
+}
+
+function renderStaff(){$('staffGrid').innerHTML=state.staff.map(s=>`<button class="card" onclick="openDriverFile('${s.name}')"><span class="badge">${s.status}</span><b>${s.name}</b><div class="small">Age ${s.age} • ${s.years} years service</div><div class="small">Route ${s.route||'Unassigned'} • Morale ${s.morale}%</div><div class="small">Safety ${s.safetyScore||95}% • Attendance ${s.attendance||98}%</div></button>`).join('')}
+
+function generateApplicant(){let names=['Rachel Turner','Brandon Cole','Denise Warren','Michael Stone','Heather Young','Caleb Foster'];let n=names[Math.floor(Math.random()*names.length)];state.applicants.unshift({name:n,age:25+Math.floor(Math.random()*38),exp:Math.random()>.4?'Previous CDL driving':'Entry-level candidate',cdl:Math.random()>.35?'Class B + P/S':'Needs school bus endorsement',record:Math.random()>.2?'Clean':'1 minor citation',availability:Math.random()>.25?'Full-time':'Substitute only',score:65+Math.floor(Math.random()*31),status:'New'});log(`New driver application received from ${n}.`);render()}
+
+function interview(i){let a=state.applicants[i];let delta=Math.floor(Math.random()*9)-2;a.score=Math.max(40,Math.min(100,a.score+delta));a.status='Interviewed';log(`${a.name} interviewed. Score ${delta>=0?'+':''}${delta}.`);render()}
+
+function hire(i){let a=state.applicants[i];if(state.budget<8500)return alert('Not enough hiring budget.');a.status='Hired';state.budget-=8500;state.staff.push({name:a.name,age:a.age,years:0,cdl:a.cdl,status:a.availability.includes('Substitute')?'Substitute':'Regular',route:null,morale:85,trip:true});log(`${a.name} hired. Onboarding cost $8,500.`);render()}
+
+function reject(i){state.applicants[i].status='Rejected';log(`${state.applicants[i].name} rejected.`);render()}
+
+function renderTrips(){
+ $('tripGrid').innerHTML=state.trips.map(t=>`<div class="card"><span class="trip-status ${t.status.toLowerCase()}">${t.status}</span><b>${t.school}</b><div>${t.type}</div><div class="small">${t.date} • ${t.depart}–${t.return}</div><div class="small">📍 ${t.destination} • ${t.passengers} passengers • ${t.tripMiles||destinationTripMiles(t.destination)} round-trip miles</div>${t.status==='Approved'?`<div class="small" style="margin-top:7px">Bus ${t.bus} • ${t.driver}</div>`:''}<div class="actions">${t.status==='Pending'?`<button class="btn primary" onclick="approveTrip(${t.id})">Approve</button><button class="btn" onclick="denyTrip(${t.id})">Deny</button>`:''}</div></div>`).join('')
+}
+
+function generateTrip(){
+ ensureRealCalendar();
+ let opts=[['Edgewood Middle School','Girls Basketball','Fort Wayne','42'],['Lincoln Elementary','Kindergarten Zoo Trip','Fort Wayne Children’s Zoo','69'],['Warsaw High School','Band Competition','Indianapolis','58'],['Harrison Elementary','4th Grade History Trip','State Museum','71'],['Warsaw High School','Academic Team','South Bend','24']];
+ let o=opts[Math.floor(Math.random()*opts.length)],id=Math.max(0,...state.trips.map(t=>t.id))+1;
+ let d=parseGameDate();d.setUTCDate(d.getUTCDate()+5+Math.floor(Math.random()*16));
+ while(d.getUTCDay()===0||d.getUTCDay()===6)d.setUTCDate(d.getUTCDate()+1);
+ let iso=isoDateUTC(d),label=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'short',day:'numeric'}).format(d);
+ state.trips.push({id,school:o[0],type:o[1],destination:o[2],date:label,isoDate:iso,depart:'8:30 AM',return:'4:30 PM',passengers:+o[3],buses:1,status:'Pending',driver:null,bus:null,tripMiles:destinationTripMiles(o[2]),mileageApplied:false});
+ log(`New trip request: ${o[1]} on ${label}.`);
+ render();
+}
+
+function approveTrip(id){let t=state.trips.find(x=>x.id===id);let bus=state.buses.find(b=>b.designation==='Trip Bus'&&b.status!=='Maintenance')||state.buses.find(b=>b.designation==='Spare'&&b.status!=='Maintenance')||state.buses.find(b=>b.status==='Ready'&&!b.route);let driver=state.staff.find(s=>s.trip&&s.status==='Substitute'&&!s.route);if(!driver)driver=state.staff.find(s=>s.trip&&s.status==='Regular');if(!bus)bus=state.buses.find(b=>b.status==='Ready');if(!bus||!driver){alert('No suitable bus or trip driver is currently available.');return}t.status='Approved';t.bus=bus.id;t.driver=driver.name;t.tripMiles=t.tripMiles||destinationTripMiles(t.destination);normalizeTripDates();state.budget-=Math.round(180+t.passengers*1.2);log(`${t.type} trip approved: Bus ${bus.id}, ${driver.name}. Estimated round-trip mileage: ${t.tripMiles}.`);render()}
+
+function denyTrip(id){let t=state.trips.find(x=>x.id===id);t.status='Denied';state.parents=Math.max(50,state.parents-1);log(`${t.type} trip denied.`);render()}
+
+function renderFleet(){ensureV4Data();$('fleetBody').innerHTML=state.buses.map(b=>`<tr><td><button class="btn" onclick="openBusFile(${b.id})"><b>${b.id}</b></button></td><td>${b.year} ${b.model}</td><td>${b.miles.toLocaleString()}</td><td>${b.fuel}%</td><td>${b.route||b.designation}</td><td><span class="status ${statusClass(b.status)}">${b.status}</span></td><td>${b.condition}%<div class="small">Repairs ${money(b.repairSpend||0)}</div></td></tr>`).join('')}
+
+function buyBus(){openBusPurchase()}
+
+function openBusPurchase(){
+ openModal('Purchase New Bus',`
+   <div class="detail">
+     <div><label>Bus number</label><input id="newBusNumber" type="number" min="1" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px" placeholder="e.g. 61"></div>
+     <div><label>Bus Type</label><select id="newBusType" onchange="updateBusPurchaseOptions()" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
+       <option value="standard">Standard School Bus</option>
+       <option value="special">Special Needs / Wheelchair Bus</option>
+     </select></div>
+     <div><label>Designation</label><select id="newBusDesignation" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
+       <option>Regular Route</option><option>Spare</option><option>Trip Bus</option><option>Special Ed</option><option>Maintenance Reserve</option>
+     </select></div>
+     <div><label>Model</label><select id="newBusModel" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
+       <option>Blue Bird Vision</option><option>Thomas C2</option><option>IC CE</option>
+     </select></div>
+     <div><label>Fuel / Power</label><select id="newBusFuel" onchange="updateBusPurchaseOptions()" style="width:100%;padding:9px"><option>Diesel</option><option>Gasoline</option><option>Propane</option><option>Electric</option></select></div>
+     <div><label>Capacity</label><select id="newBusCapacity" style="width:100%;padding:9px"><option value="72">72 Passenger</option><option value="66">66 Passenger</option><option value="54">54 Passenger</option></select></div>
+     <div><label><input id="newBusAC" type="checkbox" onchange="updateBusPurchaseOptions()"> Air Conditioning (+$8,500)</label></div>
+     <div><label><input id="newBusCameras" type="checkbox" checked onchange="updateBusPurchaseOptions()"> Full Camera System (+$5,500)</label></div>
+     <div><label><input id="newBusGPS" type="checkbox" checked onchange="updateBusPurchaseOptions()"> GPS / Parent Tracking (+$3,500)</label></div>
+     <div id="specialBusInfo" class="alert" style="display:none">♿ Wheelchair lift • 4 wheelchair positions • 24-passenger flexible capacity • tie-down equipment</div>
+     <div class="alert">Purchase price: <b id="purchasePrice">$112,000</b></div>
+   </div>
+   <div class="actions"><button class="btn primary" onclick="confirmBusPurchase()">Purchase Bus</button></div>`)
+}
+
+function updateBusPurchaseOptions(){
+ let special=$('newBusType').value==='special',model=$('newBusModel'),des=$('newBusDesignation'),fuel=$('newBusFuel')?$('newBusFuel').value:'Diesel';
+ if(special){
+   model.innerHTML='<option>Thomas Minotour Special Needs</option><option>Blue Bird Micro Bird Special Needs</option><option>IC CE Special Needs</option>';
+   des.value='Special Ed';$('specialBusInfo').style.display='block';
+ }else{
+   if(!['Blue Bird Vision','Thomas C2','IC CE'].includes(model.value))model.innerHTML='<option>Blue Bird Vision</option><option>Thomas C2</option><option>IC CE</option>';
+   $('specialBusInfo').style.display='none';
+ }
+ let price=special?138000:112000;
+ if(fuel==='Propane')price+=6500;if(fuel==='Electric')price+=95000;
+ if($('newBusAC')&&$('newBusAC').checked)price+=8500;
+ if($('newBusCameras')&&$('newBusCameras').checked)price+=5500;
+ if($('newBusGPS')&&$('newBusGPS').checked)price+=3500;
+ $('purchasePrice').textContent=money(price);
+}
+
+function confirmBusPurchase(){
+ let special=$('newBusType').value==='special',fuel=$('newBusFuel')?$('newBusFuel').value:'Diesel';
+ let price=special?138000:112000;if(fuel==='Propane')price+=6500;if(fuel==='Electric')price+=95000;
+ let ac=$('newBusAC')&&$('newBusAC').checked,cameras=$('newBusCameras')&&$('newBusCameras').checked,gps=$('newBusGPS')&&$('newBusGPS').checked;
+ if(ac)price+=8500;if(cameras)price+=5500;if(gps)price+=3500;
+ syncBudgets();if(state.operatingBudget<price)return alert('Not enough budget.');
+ let id=Number($('newBusNumber').value),designation=$('newBusDesignation').value,model=$('newBusModel').value,capacity=special?24:Number($('newBusCapacity').value||72);
+ if(!id||id<1)return alert('Enter a valid bus number.');
+ if(state.buses.some(b=>b.id===id))return alert('That bus number already exists.');
+ let gameYear=Number(String(state.gameDate||'2026-08-24').slice(0,4))||2026;
+ state.operatingBudget-=price;syncBudgets();
+ state.buses.push({id,year:gameYear,model,miles:0,route:null,driver:null,status:designation==='Regular Route'?'Ready':'Spare',fuel:100,capacity,condition:100,designation,temporaryRoute:null,wheelchairLift:special,wheelchairPositions:special?4:0,fuelType:fuel,airConditioning:ac,cameras,gps,purchasePrice:price,repairSpend:0,breakdowns:0,history:[{year:state.year,event:`Purchased new for ${money(price)} • ${fuel}${ac?' • AC':''}${cameras?' • cameras':''}${gps?' • GPS':''}`}],liveStatus:'Parked / Pre-Trip'});
+ state.news.unshift({text:`Transportation purchased Bus ${id}, a new ${fuel} ${model}.`,tone:'good'});notify(`New Bus ${id} added to fleet.`,'decision');log(`Purchased Bus ${id} for ${money(price)}.`);closeModal();render()
+}
+
+function renderDispatch(){
+ ensureCalendarData();ensureUXData();
+ let covered=state.routes.filter(r=>routeCoverage(r).ok).length;
+ $('dispatchTimeline').innerHTML=`
+  <div class="alert priority-green">1. Driver check-in & pre-trip</div>
+  <div class="alert priority-green">2. Morning routes</div>
+  <div class="alert priority-green">3. Midday trips / maintenance</div>
+  <div class="alert priority-green">4. Afternoon routes</div>
+  <div class="alert priority-green">5. Return, fuel & shutdown</div>
+  <div class="small" style="margin-top:8px">These steps are now processed together when you run the transportation day.</div>`;
+ $('readiness').innerHTML=`<div class="kv"><span>Date</span><b>${formatGameDate()}</b></div><div class="kv"><span>Routes ready</span><b>${covered}/${state.routes.length}</b></div><div class="kv"><span>Spare buses</span><b>${state.buses.filter(b=>b.designation==='Spare'&&b.status!=='Maintenance').length}</b></div><div class="kv"><span>Substitute drivers</span><b>${state.staff.filter(s=>s.status==='Substitute'&&!s.route).length}</b></div><div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Full Day</button></div>`;
+}
+
+function startDispatch(){runTransportationDay()}
 function dispatchStageFromTime(){
  let m=Number(state.simMinutes||315);
  if(m<345)return 0;      // pre-trip / parked
@@ -2957,6 +3098,55 @@ function summerAssignmentDiagnosticV103(){
    openModal('Summer Assignment Board Error',`<div class="alert priority-yellow"><b>${err.name}</b><div class="small">${String(err.message||err)}</div></div>`);
  }
 }
+
+/* V10.4 operating-budget compatibility */
+function hireV104(i){
+ ensureUXData();syncBudgets();
+ let a=state.applicants?.[Number(i)];if(!a||a.status==='Hired')return;
+ let bonus=Number(state.v10?.laborMarket?.signingBonus||0),cost=8500+bonus;
+ if(state.operatingBudget<cost)return alert(`Hiring requires ${money(cost)} in operating funds.`);
+ a.status='Hired';state.operatingBudget-=cost;syncBudgets();
+ state.staff.push({name:a.name,age:a.age,years:0,cdl:a.cdl,status:String(a.availability||'').includes('Substitute')?'Substitute':'Regular',route:null,morale:85,trip:true,safetyScore:95,attendance:98,history:[{year:state.year,date:state.gameDate,event:'Hired into transportation'}]});
+ log(`${a.name} hired. Onboarding${bonus?' + signing bonus':''} cost ${money(cost)}.`);autosaveGame();render();
+}
+function approveTripV104(id){
+ ensureUXData();syncBudgets();
+ let t=state.trips.find(x=>Number(x.id)===Number(id));if(!t)return;
+ let bus=state.buses.find(b=>b.designation==='Trip Bus'&&b.status!=='Maintenance')||state.buses.find(b=>b.designation==='Spare'&&b.status!=='Maintenance')||state.buses.find(b=>b.status==='Ready'&&!b.route);
+ let driver=state.staff.find(s=>s.trip&&s.status==='Substitute'&&!s.route)||state.staff.find(s=>s.trip&&s.status==='Regular');
+ if(!bus||!driver)return alert('No suitable bus or trip driver is currently available.');
+ let cost=Math.round(180+Number(t.passengers||0)*1.2);
+ if(state.operatingBudget<cost)return alert('Not enough operating funds to approve this trip.');
+ state.operatingBudget-=cost;syncBudgets();t.status='Approved';t.bus=bus.id;t.driver=driver.name;t.tripMiles=t.tripMiles||destinationTripMiles(t.destination);normalizeTripDates();
+ log(`${t.type} trip approved: Bus ${bus.id}, ${driver.name}.`);autosaveGame();render();
+}
+/* Point legacy buttons at V10 versions without rewriting saved UI state. */
+hire=hireV104;
+approveTrip=approveTripV104;
+
+function runSystemCheckV104(show=true){
+ let out=[];const add=(name,ok,detail='')=>out.push({name,ok:!!ok,detail});
+ const funcs=['renderBuses','renderAlerts','renderRoutes','renderApplicants','renderStaff','renderTrips','renderFleet','renderDispatch','renderAssignments','renderTraining','renderOperations','renderToday','renderCalendarUX','renderStudents','renderDepartment','renderDistrictV8','renderPeopleV8','renderShopV8','renderBoardV8','renderTycoon','generateApplicant','generateTrip','openBusPurchase','runTransportationDay'];
+ funcs.forEach(n=>add('Function '+n,typeof window[n]==='function',typeof window[n]==='function'?'Ready':'Missing'));
+ const views=['today','garage','routes','department','inbox','facilities','history','tycoon','district','people','shop','boardroom','staffing','trips','fleet','dispatch','operations','reports','desk','students','assignments','calendar','training'];
+ views.forEach(id=>add('View '+id,!!$(id),$(id)?'Found':'Missing'));
+ const tests=[
+  ['Applicants',()=>{renderApplicants();return [$('applicantGrid')?.children.length>0,`${$('applicantGrid')?.children.length||0} cards`]}],
+  ['Drivers',()=>{renderStaff();return [$('staffGrid')?.children.length>0,`${$('staffGrid')?.children.length||0} cards`]}],
+  ['Routes',()=>{renderRoutes();return [$('routeCards')?.children.length>0,`${$('routeCards')?.children.length||0} cards`]}],
+  ['Trips',()=>{renderTrips();return [!!$('tripGrid'),`${$('tripGrid')?.children.length||0} cards`]}],
+  ['Fleet',()=>{renderFleet();return [$('fleetBody')?.children.length>0,`${$('fleetBody')?.children.length||0} rows`]}],
+  ['Dispatch',()=>{renderDispatch();return [$('dispatchTimeline')?.children.length>0,'rendered']}],
+  ['Garage',()=>{renderBuses();return [(($('parkingRowTop')?.children.length||0)+($('parkingRowBottom')?.children.length||0))>0,'parking rendered']}],
+  ['Summer Assignments',()=>{renderAssignments();let n=$('assignmentBody')?.querySelectorAll('tr').length||0;return [n===(state.routes||[]).length,`${n}/${state.routes.length} rows`]}],
+  ['Training',()=>{renderTraining();return [!!$('trainingDriverGrid'),'rendered']}],
+  ['Tycoon HQ',()=>{renderTycoon();return [!!$('tycoonKpis'),'rendered']}]
+ ];
+ tests.forEach(([name,fn])=>{try{let [ok,d]=fn();add(name,ok,d)}catch(e){add(name,false,e.message)}});
+ state.v10=state.v10||{};state.v10.lastSystemCheck={date:state.gameDate,passed:out.filter(x=>x.ok).length,total:out.length};
+ if(show)openModal('🧪 V10.4 System Check',`<div class="alert ${out.every(x=>x.ok)?'priority-green':'priority-yellow'}"><b>${out.filter(x=>x.ok).length}/${out.length} checks passed</b></div>${out.map(x=>`<div class="kv"><span>${x.ok?'✅':'❌'} ${x.name}</span><b class="small">${x.detail}</b></div>`).join('')}`);
+ return out;
+}
 const legacyRenderV93 = render;
 
 function getRendererByName(name){
@@ -3054,6 +3244,10 @@ function activateViewV103(id,clickedButton=null){
  };
  const renderer=renderMap[id];
  if(renderer)safeRenderName('view '+id,renderer);
+ if(id==='staffing'){
+   safeRenderName('Applicants direct','renderApplicants');
+   safeRenderName('Drivers direct','renderStaff');
+ }
 
  // Summer Assignments always gets a direct render after navigation.
  if(id==='assignments'&&typeof renderAssignments==='function'){
