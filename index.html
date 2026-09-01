@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V11.0</title>
+<title>School Transportation Tycoon — Tycoon Web V11.1</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V11.0</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V11.1</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -497,7 +497,7 @@ button,.btn,select,input{touch-action:manipulation}
         <div class="kv"><span>Fleet readiness</span><b id="fleetReady">89%</b></div>
         <div class="kv"><span>Approved trips</span><b id="approvedTrips">0</b></div>
       </div></div>
-      <aside class="panel"><div class="section-head"><h2>Save Game</h2></div><div class="actions"><button class="btn" onclick="runSystemCheckV104()">System Check</button><button class="btn primary" onclick="saveGame()">Save</button><button class="btn" onclick="loadGame()">Load</button><button class="btn" onclick="resetGame()">New Game</button><button class="btn" onclick="summerPlanning()">Summer Mode</button><button class="btn" onclick="yearEnd()">End School Year</button></div><div class="small" style="margin-top:10px">Saves locally in this browser.</div></aside>
+      <aside class="panel"><div class="section-head"><h2>Save Game</h2></div><div class="actions"><button class="btn" onclick="runButtonAuditV111()">Full Button Audit</button><button class="btn" onclick="runSystemCheckV104()">System Check</button><button class="btn primary" onclick="saveGame()">Save</button><button class="btn" onclick="loadGame()">Load</button><button class="btn" onclick="resetGame()">New Game</button><button class="btn" onclick="summerPlanning()">Summer Mode</button><button class="btn" onclick="yearEnd()">End School Year</button></div><div class="small" style="margin-top:10px">Saves locally in this browser.</div></aside>
     </div>
     <div class="grid2" style="margin-top:12px"><div class="panel"><div class="section-head"><h2>Daily Operations Reports</h2><button class="btn" onclick="openDailyReportHistoryV11()">Report History</button></div><div id="dailyReportPreviewV11"></div></div><div class="panel"><h2>Career & Fleet Planning</h2><div class="actions"><button class="btn" onclick="openCareerLadderV11()">Career Ladder</button><button class="btn" onclick="openInternalApplicationsV105()">Internal Applicants</button><button class="btn" onclick="openFleetReplacementPlanV11()">Fleet Replacement Plan</button></div></div></div><div class="panel" style="margin-top:12px"><h2 style="margin-top:0">Activity Log</h2><div id="log" class="log"></div></div>
   </section>
@@ -678,6 +678,70 @@ const $=id=>document.getElementById(id);
 function log(msg){state.log=state.log||[];state.log.unshift(msg);renderLog()}
 function money(n){return '$'+Math.round(n).toLocaleString()}
 function statusClass(s){return /Ready|Spare|Approved/.test(s)?'good':/Due|Pending/.test(s)?'warn':/Maintenance|Denied|Called/.test(s)?'bad':''}
+
+/* ===== V11.1 SHARED UI / GAME FOUNDATION RESTORE =====
+   These functions are intentionally centralized here because most screens
+   depend on them. Losing one of these can make many otherwise-working buttons
+   appear dead.
+*/
+function renderLog(){$('log').innerHTML=(state.log||[]).map(x=>`<div class="log-entry">${x}</div>`).join('')||'<div class="small">No activity yet.</div>'}
+
+function saveGame(){localStorage.setItem('transportDirectorSave',JSON.stringify(state));log('Game saved locally.');render()}
+
+function loadGame(){let s=localStorage.getItem('transportDirectorSave');if(!s)return alert('No save found.');state=JSON.parse(s);log('Saved game loaded.');render()}
+
+function resetGame(){if(confirm('Start a new transportation district?')){state=JSON.parse(JSON.stringify(initial));render()}}
+
+function openModal(title,body){
+ const overlay=$('modalOverlay'),titleEl=$('modalTitle'),bodyEl=$('modalBody');
+ if(!overlay||!titleEl||!bodyEl){
+   console.error('Modal shell is missing from the page.');
+   return;
+ }
+ titleEl.textContent=title||'Details';
+ bodyEl.innerHTML=`<p>${body??''}</p>`;
+ overlay.classList.add('show');
+}
+
+function closeModal(){
+ const overlay=$('modalOverlay');
+ if(overlay)overlay.classList.remove('show');
+}
+
+function ensureAssignmentFields(){
+ state.buses=state.buses||[];
+ state.routes=state.routes||[];
+ state.buses.forEach(b=>{
+   if(!b.designation)b.designation=b.route?'Regular Route':'Spare';
+   if(!('temporaryRoute' in b))b.temporaryRoute=null;
+ });
+ state.routes.forEach(r=>{
+   if(!('temporaryBus' in r))r.temporaryBus=null;
+   if(!('temporaryDriver' in r))r.temporaryDriver=null;
+ });
+}
+
+function openBusFile(id){ensureV4Data();let b=state.buses.find(x=>x.id===id);if(!b)return;let annual=Math.round((b.repairSpend||0)/Math.max(1,busAge(b)||1));openModal('Bus File — '+b.id,`<div class="detail"><div class="kv"><span>Vehicle</span><b>${b.year} ${b.model}</b></div><div class="kv"><span>Bus Age</span><b>${busAge(b)} years</b></div><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Purpose</span><b>${b.designation}</b></div><div class="kv"><span>Power</span><b>${b.fuelType||'Diesel'}</b></div><div class="kv"><span>Technology</span><b>${b.cameras?'Cameras • ':''}${b.gps?'GPS • ':''}${b.airConditioning?'A/C':''}</b></div><div class="kv"><span>Condition</span><b>${b.condition}%</b></div><div class="kv"><span>Total Repair Spend</span><b>${money(b.repairSpend||0)}</b></div><div class="kv"><span>Average / Year</span><b>${money(annual)}</b></div><div class="kv"><span>Breakdowns</span><b>${b.breakdowns||0}</b></div></div><h3>History</h3>${(b.history||[]).map(h=>`<div class="alert">Year ${h.year}: ${h.event}${h.cost?' • '+money(h.cost):''}</div>`).join('')||'<div class="small">No archived history yet.</div>'}<div class="actions"><button class="btn" onclick="replacementDecision(${b.id})">Replacement Review</button><button class="btn" onclick="retireBus(${b.id})">Retire / Dispose Bus</button></div>`)}
+
+function retireBus(id){
+ let b=state.buses.find(x=>x.id===id);if(!b)return;
+ let assigned=state.routes.find(r=>Number(r.bus)===Number(id)||Number(r.temporaryBus)===Number(id));
+ let pendingTrip=state.trips.find(t=>Number(t.bus)===Number(id)&&t.status==='Approved'&&!t.mileageApplied);
+ let age=busAge(b);
+ let estimatedValue=Math.max(1500,Math.round((b.purchasePrice||112000)*Math.max(.04,.34-age*.018)*(Math.max(35,b.condition||70)/100)/500)*500);
+ openModal('Retire / Dispose Bus '+id,`
+   <div class="alert"><b>${b.year} ${b.model}</b><div class="small">${b.miles.toLocaleString()} miles • ${b.condition}% condition • ${age} years old</div></div>
+   ${assigned?`<div class="alert priority-red">⚠️ Bus ${id} is currently assigned to Route ${assigned.id}. Assign another bus before disposal.</div>`:''}
+   ${pendingTrip?`<div class="alert priority-red">⚠️ Bus ${id} has an approved trip assignment. Reassign that trip before disposal.</div>`:''}
+   <div class="detail">
+    <div class="kv"><span>Estimated trade / auction value</span><b>${money(estimatedValue)}</b></div>
+    <div class="kv"><span>Disposition</span><b>Removed permanently from active fleet</b></div>
+   </div>
+   <div class="actions">
+    <button class="btn primary" ${assigned||pendingTrip?'disabled':''} onclick="confirmRetireBus(${id},${estimatedValue})">Dispose Bus • ${money(estimatedValue)}</button>
+    <button class="btn" onclick="closeModal()">Keep Bus</button>
+   </div>`);
+}
 function parseGameDate(){
  ensureRealCalendar();
  let [y,m,d]=state.gameDate.split('-').map(Number);
@@ -3318,6 +3382,90 @@ function approveTripV104(id){
 hire=hireV104;
 approveTrip=approveTripV104;
 
+
+function runButtonAuditV111(show=true){
+ let results=[];
+ const add=(name,ok,detail='')=>results.push({name,ok:!!ok,detail});
+
+ const coreFns=[
+  'openModal','closeModal','renderLog','saveGame','loadGame','resetGame',
+  'ensureAssignmentFields','openBusFile','retireBus','render',
+  'activateViewV103','goView'
+ ];
+ coreFns.forEach(n=>add('Core: '+n,typeof window[n]==='function',typeof window[n]==='function'?'Ready':'MISSING'));
+
+ const viewTests=[
+  ['Today','today','renderToday'],
+  ['Garage','garage','renderBuses'],
+  ['Routes','routes','renderRoutes'],
+  ['Department','department','renderDepartment'],
+  ['Inbox','inbox','renderInbox'],
+  ['Facilities','facilities','renderFacilities'],
+  ['History','history','renderHistory'],
+  ['Tycoon HQ','tycoon','renderTycoon'],
+  ['District','district','renderDistrictV8'],
+  ['People','people','renderPeopleV8'],
+  ['Repair Shop','shop','renderShopV8'],
+  ['Board','boardroom','renderBoardV8'],
+  ['Drivers & Applicants','staffing','renderStaff'],
+  ['Trips','trips','renderTrips'],
+  ['Fleet','fleet','renderFleet'],
+  ['Dispatch','dispatch','renderDispatch'],
+  ['Operations','operations','renderOperations'],
+  ['Reports','reports','renderReports'],
+  ['Director Desk','desk','renderDesk'],
+  ['Students','students','renderStudents'],
+  ['Summer Assignments','assignments','renderAssignments'],
+  ['Calendar','calendar','renderCalendarUX'],
+  ['Training','training','renderTraining']
+ ];
+
+ viewTests.forEach(([label,id,renderer])=>{
+   try{
+     const view=$(id),fn=window[renderer];
+     if(!view){add(label,false,'Missing view');return}
+     if(typeof fn!=='function'){add(label,false,'Missing '+renderer);return}
+     fn();
+     add(label,true,'Render successful');
+   }catch(e){
+     add(label,false,e.name+': '+e.message);
+   }
+ });
+
+ // Explicitly verify the high-risk screens have their expected controls/data.
+ try{
+   ensureAssignmentFields();renderAssignments();
+   let rows=$('assignmentBody')?.querySelectorAll('tr').length||0;
+   add('Summer assignment rows',rows===(state.routes||[]).length,`${rows}/${(state.routes||[]).length}`);
+ }catch(e){add('Summer assignment rows',false,e.message)}
+
+ try{
+   renderDepartment();
+   add('Department staff cards',($('departmentStaffGrid')?.children.length||0)>0,`${$('departmentStaffGrid')?.children.length||0} cards`);
+ }catch(e){add('Department staff cards',false,e.message)}
+
+ try{
+   renderFacilities();
+   add('Facilities screen',!!$('facilityGrid')||!!$('facilities'),$('facilityGrid')?'Facility grid found':'Facilities view found');
+ }catch(e){add('Facilities screen',false,e.message)}
+
+ try{
+   renderStaff();renderApplicants();
+   add('Drivers grid',($('staffGrid')?.children.length||0)>0,`${$('staffGrid')?.children.length||0} drivers`);
+   add('Applicant grid',($('applicantGrid')?.children.length||0)>0,`${$('applicantGrid')?.children.length||0} applicants`);
+ }catch(e){add('Staffing grids',false,e.message)}
+
+ state.v11=state.v11||{};
+ state.v11.lastButtonAudit={date:state.gameDate,passed:results.filter(x=>x.ok).length,total:results.length,results};
+
+ if(show){
+   openModal('🔧 V11.1 Full Button & Screen Audit',
+     `<div class="alert ${results.every(x=>x.ok)?'priority-green':'priority-yellow'}"><b>${results.filter(x=>x.ok).length}/${results.length} checks passed</b><div class="small">Core modal/save functions plus every main game screen were checked.</div></div>`+
+     results.map(x=>`<div class="kv"><span>${x.ok?'✅':'❌'} ${x.name}</span><b class="small">${x.detail}</b></div>`).join('')
+   );
+ }
+ return results;
+}
 function runSystemCheckV104(show=true){
  let out=[];const add=(name,ok,detail='')=>out.push({name,ok:!!ok,detail});
  const funcs=['renderBuses','renderAlerts','renderRoutes','renderApplicants','renderStaff','renderTrips','renderFleet','renderDispatch','renderAssignments','renderTraining','renderOperations','renderToday','renderCalendarUX','renderStudents','renderDepartment','renderDistrictV8','renderPeopleV8','renderShopV8','renderBoardV8','renderTycoon','generateApplicant','generateTrip','openBusPurchase','runTransportationDay'];
