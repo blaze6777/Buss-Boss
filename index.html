@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V11.4</title>
+<title>School Transportation Tycoon — Tycoon Web V11.5</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V11.4</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V11.5</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -544,7 +544,7 @@ button,.btn,select,input{touch-action:manipulation}
 
 
   <section id="assignments" class="view">
-<div class="actions" style="margin-bottom:12px"><button class="btn primary" onclick="openRouteBidding()">Run Preference + Seniority Route Bidding</button><button class="btn" onclick="openCareerLadderV11()">Career Ladder</button></div>
+<div class="actions" style="margin-bottom:12px"><button class="btn primary" onclick="openRouteBidding()">Run Preference + Seniority Route Bidding</button><button class="btn" onclick="openCareerLadderV11()">Career Ladder</button></div><div class="alert priority-green" style="margin-top:12px"><b>Ready for Opening Day?</b><div class="small">Finish summer hiring, training, and route/bus assignments, then begin the next school year.</div><button class="btn primary" onclick="confirmStartNewSchoolYearV115()">🏫 Start New School Year</button></div>
     <div class="section-head">
       <div><h2>Summer Driver & Bus Assignment Board</h2><div class="small">Choose a driver, click <b>Apply</b>, then choose the bus. Permanent and temporary assignments are separate.</div></div>
       <div class="actions"><button class="btn" onclick="autoAssignYearV102()">Auto-Assign</button><button class="btn" onclick="renderAssignments()">Refresh Board</button><button class="btn" onclick="summerAssignmentDiagnosticV103()">Board Check</button><button class="btn primary" onclick="finalizeAssignments()">Finalize School Year</button></div>
@@ -3064,6 +3064,33 @@ function busAge(b){
  return Math.max(0,gameYear-Number(b.year||gameYear));
 }
 
+
+function summerReadinessV115(){
+ ensureAssignmentFields();ensureV4Data();
+ let uncovered=(state.routes||[]).filter(r=>!r.driver||!r.bus);
+ return {uncovered,missingDrivers:uncovered.filter(r=>!r.driver),missingBuses:uncovered.filter(r=>!r.bus),ready:uncovered.length===0};
+}
+function startNewSchoolYearV115(){
+ ensureAssignmentFields();ensureV4Data();ensureUXData();
+ let check=summerReadinessV115();
+ if(!check.ready&&!confirm(`${check.uncovered.length} route(s) still need a permanent driver or bus. Start anyway? You can cover them from the Command Center.`))return;
+ /* The prior year-completion routine already advanced the year, funded it,
+    archived trips, progressed people/fleet/growth, and entered summer.
+    This action only exits summer planning, so existing gameplay is preserved. */
+ state.summerMode=false;state.season='School Year';state.summerDay=0;state.summerDaysRemaining=0;
+ state.simMinutes=315;state.dispatchStep=0;
+ state.buses.forEach(b=>b.liveStatus='Parked / Pre-Trip');
+ reconcileTemporaryCoverage();
+ log(`Opening Day ${state.year}: the new school year has started.`);
+ notify(`School year ${state.year} is underway. Review opening-day coverage.`,'decision');
+ autosaveGame();render();
+ document.querySelector('[data-view="today"]')?.click();
+ openModal('🏫 New School Year Started',`<div class="alert priority-green"><b>Welcome to the ${state.year} school year.</b><div class="small">Summer assignments, annual budget, fleet, staff history, archived trips, and district growth were preserved.</div></div><div class="kv"><span>Routes</span><b>${state.routes.length}</b></div><div class="kv"><span>Operating Budget</span><b>${money(state.operatingBudget||0)}</b></div><div class="kv"><span>Opening-Day Coverage</span><b>${state.routes.filter(r=>routeCoverage(r).ok).length}/${state.routes.length}</b></div>`);
+}
+function confirmStartNewSchoolYearV115(){
+ let c=summerReadinessV115();
+ openModal('🏫 Start New School Year',`<div class="alert ${c.ready?'priority-green':'priority-yellow'}"><b>${c.ready?'Summer planning is ready':'Some assignments still need attention'}</b><div class="small">${c.ready?'All routes have permanent driver and bus assignments.':'You can still start, but uncovered routes will need daily coverage.'}</div></div><div class="kv"><span>Routes needing driver</span><b>${c.missingDrivers.length}</b></div><div class="kv"><span>Routes needing bus</span><b>${c.missingBuses.length}</b></div><div class="kv"><span>Operating budget</span><b>${money(state.operatingBudget||0)}</b></div><div class="actions"><button class="btn primary" onclick="startNewSchoolYearV115()">Start ${state.year} School Year</button><button class="btn" onclick="closeModal()">Keep Planning</button></div>`);
+}
 function summerPlanning(){ensureCalendarData();state.season='Summer';state.simMinutes=480;state.summerDaysRemaining=42;state.routes.forEach(r=>{r.temporaryBus=null;r.temporaryDriver=null});state.news.unshift({text:'Summer planning opens: inspections, hiring, training and route assignments are underway.',tone:'good'});log('Summer transportation planning started. 42 days until Opening Day.');render()}
 function openingDay(){ensureCalendarData();state.season='School';state.simMinutes=315;state.day=0;state.schoolDay=0;state.news.unshift({text:'Opening day transportation operations begin.',tone:'good'});log(`Opening Day begins at 5:15 AM for School Year ${state.year}.`);render()}
 
@@ -3170,7 +3197,7 @@ function yearEnd(){
    <div class="alert priority-green"><b>New School-Year Budget</b><br>${money(newBudgetV113.totalAvailable)} is available for ${state.year}: ${money(newBudgetV113.allocation)} new appropriation${newBudgetV113.carryover?` plus ${money(newBudgetV113.carryover)} carryover`:''}.</div>
    <div class="alert"><b>Trips Reset</b><br>${archivedTripsV113} prior-year trip request${archivedTripsV113===1?' was':'s were'} archived. The active Trips page is clear for the new year.</div>
    <div class="alert"><b>Summer Planning ${state.year}</b><br>Review vacancies, applicants, training, route assignments, fleet needs, and the new annual budget before Opening Day.</div>
-   <div class="actions"><button class="btn" onclick="openSchoolYearBudgetV113()">View Annual Budget</button><button class="btn" onclick="openTripArchiveV113()">View Trip Archive</button></div>
+   <div class="actions"><button class="btn primary" onclick="closeModal();goView('assignments')">Go to Summer Assignments</button><button class="btn" onclick="openSchoolYearBudgetV113()">View Annual Budget</button><button class="btn" onclick="openTripArchiveV113()">View Trip Archive</button></div>
  `);
 }
 
