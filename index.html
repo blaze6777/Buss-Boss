@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V11.5</title>
+<title>School Transportation Tycoon — Tycoon Web V11.6</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V11.5</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V11.6</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -310,7 +310,7 @@ button,.btn,select,input{touch-action:manipulation}
   <section id="routes" class="view">
     <div class="route-layout">
       <div class="panel">
-        <div class="section-head"><div><h2>Visual Route Planner</h2><div class="small">Each regular route runs high school, then elementary in the AM.</div></div><button class="btn" onclick="autoBalance()">Auto-Balance</button></div>
+        <div class="section-head"><div><h2>Visual Route Planner</h2><div class="small">Each regular route runs high school, then elementary in the AM.</div><div class="actions" style="margin:0 0 12px"><button class="btn" onclick="openRouteRepairV116()">🛠️ Check Duplicate Routes</button><button class="btn" onclick="openClosedRoutesV116()">🗄️ Closed Routes</button></div></div><button class="btn" onclick="autoBalance()">Auto-Balance</button></div>
         <div class="map" id="routeMap">
           <div class="road h" style="left:4%;top:48%;width:92%"></div>
           <div class="road v" style="left:48%;top:5%;height:90%"></div>
@@ -1682,6 +1682,37 @@ function addDevelopmentV10(){
  closeModal();openDevelopmentPipelineV10();render()
 }
 
+
+function routeKeyV116(r){return String(r?.id??'').trim();}
+function duplicateActiveRoutesV116(){let seen=new Map(),dupes=[];(state.routes||[]).forEach((r,i)=>{let k=routeKeyV116(r);if(seen.has(k))dupes.push({id:k,first:seen.get(k),duplicate:i,route:r});else seen.set(k,i)});return dupes;}
+function closeRouteV116(routeId,routeIndex=null,reason='Closed by Transportation Director'){
+ ensureUXData();ensureAssignmentFields();
+ let idx=routeIndex==null?(state.routes||[]).findIndex(r=>String(r.id)===String(routeId)):Number(routeIndex);if(idx<0||idx>=state.routes.length)return;
+ let r=state.routes[idx],snapshot=JSON.parse(JSON.stringify(r)),bus=state.buses.find(b=>Number(b.id)===Number(r.bus)),driver=state.staff.find(s=>s.name===r.driver);
+ if(bus){if(bus.driver===r.driver)bus.driver=null;if(bus.route===r.id)bus.route=null;if(bus.designation==='Regular Route')bus.designation='Spare';if(bus.status==='Route')bus.status='Spare'}
+ if(driver&&driver.route===r.id)driver.route=null;
+ state.v11.closedRoutes.unshift({route:snapshot,closedDate:state.gameDate,closedYear:state.year,reason});state.v11.closedRoutes=state.v11.closedRoutes.slice(0,50);state.routes.splice(idx,1);
+ (state.v11.routeRecommendations||[]).forEach(x=>{if(String(x.suggestedRoute)===String(routeId)&&x.status==='Recommended')x.status='Closed/Duplicate'});
+ log(`Route ${routeId} closed. Driver and bus returned to the available pool.`);notify(`Route ${routeId} closed and archived.`,'decision');autosaveGame();closeModal();render();
+}
+function confirmCloseRouteV116(routeId,routeIndex=null){
+ let idx=routeIndex==null?(state.routes||[]).findIndex(r=>String(r.id)===String(routeId)):Number(routeIndex),r=state.routes[idx];if(!r)return;
+ let same=(state.routes||[]).filter(x=>String(x.id)===String(r.id)).length;
+ openModal(`Close Route ${r.id}`,`<div class="alert ${same>1?'priority-yellow':''}"><b>${same>1?'Duplicate route detected':'Close this active route?'}</b><div class="small">The route leaves daily operations but is preserved in Closed Routes. Its driver and bus become available.</div></div><div class="kv"><span>Driver</span><b>${r.driver||'Unassigned'}</b></div><div class="kv"><span>Bus</span><b>${r.bus?'Bus '+r.bus:'Unassigned'}</b></div><div class="actions"><button class="btn danger" onclick="closeRouteV116(${JSON.stringify(r.id)},${idx},${JSON.stringify(same>1?'Duplicate route cleanup':'Closed by Transportation Director')})">Close & Archive Route</button><button class="btn" onclick="closeModal()">Cancel</button></div>`);
+}
+function openClosedRoutesV116(){ensureUXData();let a=state.v11.closedRoutes||[];openModal('🗄️ Closed Routes',a.length?a.map((x,i)=>`<div class="project-card"><b>Route ${x.route.id}</b><div class="small">${x.reason} • ${x.closedDate||x.closedYear}<br>Former driver: ${x.route.driver||'—'} • Bus: ${x.route.bus||'—'}</div><div class="actions"><button class="btn" onclick="reopenRouteV116(${i})">Reopen Route</button></div></div>`).join(''):'<div class="alert priority-green">No routes have been closed.</div>');}
+function reopenRouteV116(index){
+ let x=state.v11.closedRoutes?.[Number(index)];if(!x)return;if((state.routes||[]).some(r=>String(r.id)===String(x.route.id))){alert(`Route ${x.route.id} is already active. Reopening it would create a duplicate.`);return}
+ let r=JSON.parse(JSON.stringify(x.route));if(r.driver&&(state.routes||[]).some(q=>q.driver===r.driver))r.driver=null;if(r.bus&&(state.routes||[]).some(q=>Number(q.bus)===Number(r.bus)))r.bus=null;r.temporaryDriver=null;r.temporaryBus=null;
+ state.routes.push(r);state.v11.closedRoutes.splice(Number(index),1);log(`Route ${r.id} reopened from archive.`);notify(`Route ${r.id} reopened.`,'decision');autosaveGame();closeModal();render();
+}
+function repairDuplicateRoutesV116(){
+ let dupes=duplicateActiveRoutesV116();if(!dupes.length){alert('No duplicate active route numbers were found.');return}
+ [...dupes].sort((a,b)=>b.duplicate-a.duplicate).forEach(d=>closeRouteV116(d.id,d.duplicate,'Automatic duplicate-route repair'));
+ autosaveGame();render();alert(`${dupes.length} duplicate route${dupes.length===1?' was':'s were'} archived. The first copy of each route was kept.`);
+}
+function openRouteRepairV116(){let d=duplicateActiveRoutesV116();openModal('🛠️ Route Repair',d.length?`<div class="alert priority-yellow"><b>${d.length} duplicate route${d.length===1?'':'s'} detected.</b><div class="small">Repair keeps the first active copy and archives later copies. Drivers and buses from removed copies are released.</div></div><div class="actions"><button class="btn primary" onclick="repairDuplicateRoutesV116()">Repair Duplicate Routes</button><button class="btn" onclick="closeModal()">Cancel</button></div>`:'<div class="alert priority-green">✅ No duplicate active route numbers detected.</div>');}
+function nextRouteIdV116(){let used=new Set((state.routes||[]).map(r=>Number(r.id)).filter(Number.isFinite));(state.v11?.closedRoutes||[]).forEach(x=>{let n=Number(x.route?.id);if(Number.isFinite(n))used.add(n)});let n=Math.max(0,...used)+1;while(used.has(n))n++;return n;}
 function routeStudentLoadV114(r){
  if(r.specialNeeds)return Number(r.students||0);
  return Math.max(Number(r.hsStudents||0),Number(r.elemStudents||0));
@@ -1709,12 +1740,7 @@ function neighborhoodDistanceToRouteV114(dev,r){
  let pseudoX=15+(idx*19)%70,pseudoY=12+(idx*27)%72;
  return Math.hypot(Number(n.x||50)-pseudoX,Number(n.y||50)-pseudoY);
 }
-function nextRouteIdV114(){
- let ids=(state.routes||[]).map(r=>Number(r.id)||0);
- let id=Math.max(0,...ids)+1;
- while(ids.includes(id))id++;
- return id;
-}
+function nextRouteIdV114(){return nextRouteIdV116();}
 function distributeDevelopmentRidersV114(dev,newRiders){
  let remaining=Math.max(0,Number(newRiders||0));
  let assignments=[];
@@ -1772,7 +1798,7 @@ function approveRouteRecommendationV114(id){
  let rec=state.v11.routeRecommendations.find(x=>Number(x.id)===Number(id));
  if(!rec||rec.status!=='Recommended')return;
  let dev=state.v10.developments?.find(d=>d.name===rec.development)||{name:rec.development};
- let idNum=Number(rec.suggestedRoute);
+ let idNum=Number(rec.suggestedRoute);if((state.routes||[]).some(r=>Number(r.id)===idNum)){idNum=nextRouteIdV116();rec.suggestedRoute=idNum;}
  let riders=Number(rec.riders||0);
  let hs=Math.round(riders*.46),el=riders-hs;
  let schools=['Lincoln Elementary','Jefferson Elementary','Harrison Elementary'];
@@ -1916,6 +1942,11 @@ function renderRoutes(){
  
  $('routeCards').innerHTML=state.routes.map(r=>`<button class="card" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>${r.specialNeeds?'♿ Special Needs Route':'Route'} ${r.id}</b><div class="small">Bus ${r.bus} • ${r.driver||'No driver'}</div><div style="margin:9px 0">${routeHTML(r)}</div><div class="small">${r.specialNeeds?`${r.students} riders • ${r.wheelchairs} wheelchair riders • ${routeDailyMiles(r)} mi/day`:`HS ${r.hsStudents}/72 • Elementary ${r.elemStudents}/72 • ${routeDailyMiles(r)} mi/day`}</div></button>`).join('');
  renderMapStops();selectRoute(selectedRoute,false)
+
+ if($('routeDetail')){
+   let dupes=duplicateActiveRoutesV116();
+   $('routeDetail').innerHTML=`<div class="panel"><h3>Route Management</h3>${dupes.length?`<div class="alert priority-yellow"><b>⚠ ${dupes.length} duplicate route number${dupes.length===1?'':'s'} detected.</b><button class="btn" onclick="openRouteRepairV116()">Repair Duplicates</button></div>`:''}<div class="actions" style="flex-wrap:wrap">${state.routes.map((r,i)=>`<button class="btn" onclick="confirmCloseRouteV116(${JSON.stringify(r.id)},${i})">Close Route ${r.id}</button>`).join('')}</div><div class="small" style="margin-top:8px">Closing archives the route and releases its driver/bus. It can be reopened later.</div></div>`;
+ }
 }
 
 function selectApplicant(i){selectedApplicant=i;let a=state.applicants[i];$('candidateName').textContent=a.name;$('candidateDetail').innerHTML=[['Age',a.age],['Experience',a.exp],['CDL',a.cdl],['Driving record',a.record],['Availability',a.availability],['Score',a.score+'/100'],['Status',a.status]].map(x=>`<div class="kv"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');$('candidateActions').innerHTML=(a.status==='Hired'||a.status==='Rejected')?'':`<button class="btn" onclick="interview(${i})">Interview</button><button class="btn primary" onclick="hire(${i})">Hire</button><button class="btn" onclick="reject(${i})">Reject</button>`}
@@ -3341,6 +3372,7 @@ function ensureUXData(){
  state.v11.currentSchoolYearBudget=state.v11.currentSchoolYearBudget||null;
  state.v11.developmentRoutingHistory=state.v11.developmentRoutingHistory||[];
  state.v11.routeRecommendations=state.v11.routeRecommendations||[];
+ state.v11.closedRoutes=state.v11.closedRoutes||[];
  state.buses.forEach(b=>{
    b.history=b.history||[];
    if(!b.purchaseYear)b.purchaseYear=Number(b.year||String(state.gameDate).slice(0,4));
