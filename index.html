@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V11.2</title>
+<title>School Transportation Tycoon — Tycoon Web V11.4</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V11.2</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V11.4</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -413,7 +413,7 @@ button,.btn,select,input{touch-action:manipulation}
  </div>
 </section>
 <section id="district" class="view">
- <div class="section-head"><div><h2>🏙️ Persistent District & Live Route Map</h2><div class="small">Neighborhoods, schools, construction, railroad crossings, growth zones and buses evolve over time.</div></div><div class="actions"><button class="btn primary" onclick="animateDistrictDay()">Preview Bus Movement</button><button class="btn" onclick="openBoundaryPlannerV10()">Boundary Planner</button><button class="btn" onclick="openDevelopmentPipelineV10()">Development Pipeline</button></div></div>
+ <div class="section-head"><div><h2>🏙️ Persistent District & Live Route Map</h2><div class="small">Neighborhoods, schools, construction, railroad crossings, growth zones and buses evolve over time.</div><div class="actions" style="margin:0 0 12px"><button class="btn" onclick="openRouteGrowthRecommendationsV114()">Route Recommendations</button><button class="btn" onclick="openDevelopmentRoutingHistoryV114()">Development Routing History</button></div></div><div class="actions"><button class="btn primary" onclick="animateDistrictDay()">Preview Bus Movement</button><button class="btn" onclick="openBoundaryPlannerV10()">Boundary Planner</button><button class="btn" onclick="openDevelopmentPipelineV10()">Development Pipeline</button></div></div>
  <div class="today-grid" id="districtKpis"></div>
  <div class="panel"><div id="districtMapV8" class="district-map-v8"></div></div>
  <div class="grid2" style="margin-top:12px"><div class="panel"><h2 style="margin-top:0">Neighborhood Growth</h2><div id="neighborhoodPanel"></div></div><div class="panel"><h2 style="margin-top:0">Roads, Traffic & Construction</h2><div id="roadPanel"></div></div></div>
@@ -476,10 +476,10 @@ button,.btn,select,input{touch-action:manipulation}
     <div class="ops-grid">
       <div class="ops-card"><div class="small">SIMULATION CLOCK</div><div class="big-time" id="simClock">5:15 AM</div><div class="small" id="simPhase">Pre-Trip</div><div class="progress" style="margin:10px 0"><i id="dayProgress" style="width:0%"></i></div><div class="actions"><button class="btn primary" onclick="advanceTime()">Advance Time</button><button class="btn" onclick="runToNextPhase()">Next Phase</button></div></div>
       <div class="ops-card"><div class="small">TODAY'S OPERATIONS</div><h2 id="opsHeadline" style="margin:5px 0">Morning setup</h2><div id="opsSummary" class="detail"></div><div class="actions"><button class="btn" onclick="openWeatherCenter()">Weather</button><button class="btn" onclick="randomOperationalEvent()">Incoming Event</button></div></div>
-      <div class="ops-card"><div class="small">QUICK MANAGEMENT</div><div class="actions"><button class="btn" onclick="openMaintenanceCenter()">Work Orders</button><button class="btn" onclick="openBoardRequests()">Board Requests</button><button class="btn" onclick="openRecognition()">Recognition</button><button class="btn" onclick="openDistrictGrowth()">District Growth</button></div></div>
+      <div class="ops-card"><div class="small">QUICK MANAGEMENT</div><div class="actions"><button class="btn" onclick="openMaintenanceCenter()">Work Orders</button><button class="btn" onclick="openBoardRequests()">Board Requests</button><button class="btn" onclick="openRecognition()">Recognition</button><button class="btn" onclick="openDistrictGrowth()">District Growth</button><button class="btn" onclick="openRouteGrowthRecommendationsV114()">Growth Route Needs</button></div></div>
     </div>
     <div class="grid2" style="margin-top:12px">
-      <div class="panel"><div class="section-head"><h2>Department Budget</h2><button class="btn" onclick="openBudgetDetail()">Full Budget</button></div><div id="budgetDetailMini" class="budget-grid"></div></div>
+      <div class="panel"><div class="section-head"><h2>Department Budget</h2><button class="btn" onclick="openBudgetDetail()">Full Budget</button><button class="btn" onclick="openSchoolYearBudgetV113()">School-Year Budget</button></div><div id="budgetDetailMini" class="budget-grid"></div></div>
       <aside class="panel"><div class="section-head"><h2>News & Reputation</h2><span class="badge" id="reputationBadge">Good</span></div><div id="newsFeed"></div></aside>
     </div>
     <div class="grid2" style="margin-top:12px">
@@ -499,7 +499,7 @@ button,.btn,select,input{touch-action:manipulation}
       </div></div>
       <aside class="panel"><div class="section-head"><h2>Save Game</h2></div><div class="actions"><button class="btn" onclick="runButtonAuditV111()">Full Button Audit</button><button class="btn" onclick="runSystemCheckV104()">System Check</button><button class="btn primary" onclick="saveGame()">Save</button><button class="btn" onclick="loadGame()">Load</button><button class="btn" onclick="resetGame()">New Game</button><button class="btn" onclick="summerPlanning()">Summer Mode</button><button class="btn" onclick="yearEnd()">End School Year</button></div><div class="small" style="margin-top:10px">Saves locally in this browser.</div></aside>
     </div>
-    <div class="grid2" style="margin-top:12px"><div class="panel"><div class="section-head"><h2>Daily Operations Reports</h2><button class="btn" onclick="openDailyReportHistoryV11()">Report History</button></div><div id="dailyReportPreviewV11"></div></div><div class="panel"><h2>Career & Fleet Planning</h2><div class="actions"><button class="btn" onclick="openCareerLadderV11()">Career Ladder</button><button class="btn" onclick="openInternalApplicationsV105()">Internal Applicants</button><button class="btn" onclick="openFleetReplacementPlanV11()">Fleet Replacement Plan</button></div></div></div><div class="panel" style="margin-top:12px"><h2 style="margin-top:0">Activity Log</h2><div id="log" class="log"></div></div>
+    <div class="grid2" style="margin-top:12px"><div class="panel"><div class="section-head"><h2>Daily Operations Reports</h2><button class="btn" onclick="openDailyReportHistoryV11()">Report History</button></div><div id="dailyReportPreviewV11"></div></div><div class="panel"><h2>Career & Fleet Planning</h2><div class="actions"><button class="btn" onclick="openCareerLadderV11()">Career Ladder</button><button class="btn" onclick="openInternalApplicationsV105()">Internal Applicants</button><button class="btn" onclick="openFleetReplacementPlanV11()">Fleet Replacement Plan</button><button class="btn" onclick="openSchoolYearBudgetV113()">Annual Budget</button></div></div></div><div class="panel" style="margin-top:12px"><h2 style="margin-top:0">Activity Log</h2><div id="log" class="log"></div></div>
   </section>
 
   <section id="desk" class="view"><div class="actions" style="margin-bottom:12px"><button class="btn" onclick="exportSaveFile()">Export Save File</button><button class="btn" onclick="importSaveFile()">Import Save File</button><button class="btn" onclick="openRecognitionBanquet()">Recognition Banquet</button><button class="btn" onclick="openSummerOperations()">Summer Operations</button></div>
@@ -1297,6 +1297,91 @@ function planForExpansion(i){
  let p=state.districtExpansionQueue[i];if(!p)return;
  openModal('Plan for '+p.name,`<div class="alert">${p.type}<br>Expected impact in ${p.years} year(s): +${p.riders} riders and approximately ${p.routes} route(s).</div><div class="actions"><button class="btn" onclick="p=state.districtExpansionQueue[${i}];p.planned=true;state.directorGoals.push({text:'Prepare for ${p.name} growth',done:false});closeModal();render()">Add Strategic Goal</button><button class="btn" onclick="openConstructionMode()">Expand Facilities</button><button class="btn" onclick="goView('fleet');closeModal()">Review Fleet</button></div>`)
 }
+
+function calculateSchoolYearBudgetV113(){
+ ensureUXData();syncBudgets();
+ let projected=Math.max(1,Number(estimateAnnualExpenses()||0));
+ let routes=(state.routes||[]).length,buses=(state.buses||[]).length;
+ let riders=Number(state.tycoon?.transportRiders||state.students?.length||0);
+ let support=(state.supportStaff||[]).filter(s=>s.status==='Active').length;
+
+ // The district funds expected operations plus an 8% contingency.
+ // A size-based floor prevents a growing department from receiving
+ // an unrealistically small appropriation.
+ let expenseBased=Math.round(projected*1.08);
+ let sizeFloor=Math.round(
+   360000 +
+   routes*24000 +
+   buses*7500 +
+   support*11000 +
+   riders*35
+ );
+ let allocation=Math.max(650000,expenseBased,sizeFloor);
+
+ // District permits a modest positive carryover, capped at 12% of
+ // the new appropriation. Deficits do not roll into the new year.
+ let priorBalance=Number(state.operatingBudget||0);
+ let carryover=Math.max(0,Math.min(priorBalance,Math.round(allocation*.12)));
+ let totalAvailable=allocation+carryover;
+
+ return {allocation,carryover,totalAvailable,projected,priorBalance,routes,buses,riders,support};
+}
+function fundNewSchoolYearV113(){
+ ensureUXData();syncBudgets();
+ let b=calculateSchoolYearBudgetV113();
+
+ state.operatingBudget=b.totalAvailable;
+ syncBudgets();
+
+ let record={
+   year:state.year,
+   date:state.gameDate,
+   allocation:b.allocation,
+   carryover:b.carryover,
+   totalAvailable:b.totalAvailable,
+   projectedExpenses:b.projected,
+   priorBalance:b.priorBalance,
+   routes:b.routes,
+   buses:b.buses,
+   riders:b.riders,
+   supportStaff:b.support
+ };
+ state.v11.currentSchoolYearBudget=record;
+ state.v11.annualBudgetHistory.unshift(record);
+ state.v11.annualBudgetHistory=state.v11.annualBudgetHistory.slice(0,20);
+
+ log(`School year ${state.year} operating budget approved: ${money(b.allocation)}${b.carryover?` + ${money(b.carryover)} carryover`:''}.`);
+ notify(`New school-year operating budget: ${money(b.totalAvailable)} available.`,'decision');
+ return record;
+}
+function openSchoolYearBudgetV113(){
+ ensureUXData();syncBudgets();
+ let b=state.v11.currentSchoolYearBudget;
+ if(!b){
+   let calc=calculateSchoolYearBudgetV113();
+   return openModal('💵 School-Year Transportation Budget',`
+     <div class="alert"><b>Next annual appropriation estimate</b><div class="small">The district funds projected operating expenses plus contingency, with a size-based minimum.</div></div>
+     <div class="detail">
+       <div class="kv"><span>Projected expenses</span><b>${money(calc.projected)}</b></div>
+       <div class="kv"><span>Estimated district allocation</span><b>${money(calc.allocation)}</b></div>
+       <div class="kv"><span>Eligible positive carryover</span><b>${money(calc.carryover)}</b></div>
+       <div class="kv"><span>Estimated total available</span><b>${money(calc.totalAvailable)}</b></div>
+     </div>
+   `);
+ }
+ openModal(`💵 School-Year Budget — ${b.year}`,`
+   <div class="alert priority-green"><b>${money(b.totalAvailable)} available at the start of the school year</b><div class="small">Deficits from the prior year do not carry forward. Positive carryover is limited to 12% of the new appropriation.</div></div>
+   <div class="detail">
+     <div class="kv"><span>New district appropriation</span><b>${money(b.allocation)}</b></div>
+     <div class="kv"><span>Positive carryover</span><b>${money(b.carryover)}</b></div>
+     <div class="kv"><span>Projected annual expenses</span><b>${money(b.projectedExpenses)}</b></div>
+     <div class="kv"><span>Routes / Buses</span><b>${b.routes} / ${b.buses}</b></div>
+     <div class="kv"><span>Transportation riders</span><b>${Number(b.riders||0).toLocaleString()}</b></div>
+   </div>
+   <h3>Budget History</h3>
+   ${(state.v11.annualBudgetHistory||[]).slice(0,6).map(x=>`<div class="kv"><span>${x.year}</span><b>${money(x.totalAvailable)}</b></div>`).join('')}
+ `);
+}
 function annualTycoonFinance(){
  syncBudgets();updateTycoonRatings();
  let rev=estimateAnnualRevenue(),exp=estimateAnnualExpenses(),result=rev-exp;
@@ -1326,6 +1411,8 @@ function growDistrictAnnually(){
  });
  state.districtExpansionQueue=state.districtExpansionQueue.filter(p=>p.years>0);
  generateExpansionIfNeeded();
+
+ (state.v10?.developments||[]).filter(d=>d.status!=='Completed').forEach(d=>developmentAnnualPhaseV114(d));
 }
 function checkTycoonMilestones(){
  let t=state.tycoonMilestones,ti=tycoonTierInfo();
@@ -1591,23 +1678,177 @@ function openDevelopmentPipelineV10(){
 function addDevelopmentV10(){
  let names=['Willow Creek','Heritage Crossing','Oak Valley','Copper Ridge','Eastgate Flats','Fox Run South'];
  let name=names.find(n=>!state.v10.developments.some(x=>x.name===n))||('Growth Area '+(state.v10.developments.length+1));
- state.v10.developments.push({name,type:Math.random()<.6?'Subdivision':'Apartments',homes:120+Math.floor(Math.random()*320),riders:60+Math.floor(Math.random()*220),years:1+Math.floor(Math.random()*4),x:10+Math.floor(Math.random()*78),y:12+Math.floor(Math.random()*70),status:'Approved'});
+ state.v10.developments.push({name,type:Math.random()<.6?'Subdivision':'Apartments',homes:120+Math.floor(Math.random()*320),riders:60+Math.floor(Math.random()*220),years:1+Math.floor(Math.random()*4),x:10+Math.floor(Math.random()*78),y:12+Math.floor(Math.random()*70),status:'Approved',routing:{ridersAdded:0,phase:0}});
  closeModal();openDevelopmentPipelineV10();render()
 }
-function progressDevelopmentsV10(){
- state.v10.developments.forEach(p=>{if(p.days==null)p.days=p.years*180;p.days--;p.years=Math.max(0,Math.ceil(p.days/180))});
- let ready=state.v10.developments.filter(p=>p.days<=0);
- ready.forEach(p=>{
-   if(!state.neighborhoods.some(n=>n.name===p.name)){
-     state.neighborhoods.push({name:p.name,growth:2+Math.floor(Math.random()*4),riders:p.riders,x:p.x,y:p.y});
-     state.v10.boundaries[p.name]={school:'Lincoln Elementary',route:state.routes[0]?.id||null};
-     state.tycoon.transportRiders+=p.riders;
-     state.news.unshift({text:`${p.name} is now occupied and adds ${p.riders} transportation riders.`,tone:'warn'});
-     notify(`${p.name} now affects route planning.`,'urgent');
+
+function routeStudentLoadV114(r){
+ if(r.specialNeeds)return Number(r.students||0);
+ return Math.max(Number(r.hsStudents||0),Number(r.elemStudents||0));
+}
+function routeCapacityV114(r){
+ if(r.specialNeeds)return 20;
+ let bus=state.buses.find(b=>Number(b.id)===Number(r.temporaryBus||r.bus));
+ return Number(bus?.capacity||72);
+}
+function routeOneWayMilesV114(r){
+ if(r.specialNeeds)return Number(r.miles||0);
+ return Number(r.hsMiles||0)+Number(r.elemMiles||0);
+}
+function routeCanAbsorbV114(r,additional){
+ let cap=routeCapacityV114(r);
+ let load=routeStudentLoadV114(r);
+ let projected=load+additional;
+ let projectedMiles=routeOneWayMilesV114(r)+(additional>0?Math.ceil(additional/12)*2:0);
+ return projected<=Math.floor(cap*.92)&&projectedMiles<=72;
+}
+function neighborhoodDistanceToRouteV114(dev,r){
+ let n=state.neighborhoods?.find(x=>x.name===dev.name);
+ if(!n)return Math.abs(Number(r.id||0)%17);
+ let idx=Math.max(0,state.routes.indexOf(r));
+ let pseudoX=15+(idx*19)%70,pseudoY=12+(idx*27)%72;
+ return Math.hypot(Number(n.x||50)-pseudoX,Number(n.y||50)-pseudoY);
+}
+function nextRouteIdV114(){
+ let ids=(state.routes||[]).map(r=>Number(r.id)||0);
+ let id=Math.max(0,...ids)+1;
+ while(ids.includes(id))id++;
+ return id;
+}
+function distributeDevelopmentRidersV114(dev,newRiders){
+ let remaining=Math.max(0,Number(newRiders||0));
+ let assignments=[];
+ let candidates=(state.routes||[])
+   .filter(r=>!r.specialNeeds)
+   .sort((a,b)=>neighborhoodDistanceToRouteV114(dev,a)-neighborhoodDistanceToRouteV114(dev,b));
+
+ for(let r of candidates){
+   if(remaining<=0)break;
+   let cap=routeCapacityV114(r),load=routeStudentLoadV114(r);
+   let space=Math.max(0,Math.floor(cap*.92)-load);
+   if(space<=0)continue;
+   let chunk=Math.min(remaining,space,24);
+   if(!routeCanAbsorbV114(r,chunk))continue;
+
+   let stops=Math.max(1,Math.ceil(chunk/8));
+   if(r.specialNeeds){
+     r.students=Number(r.students||0)+chunk;
+     r.stops=Number(r.stops||0)+stops;
+     r.miles=Number(r.miles||0)+stops*1.5;
+   }else{
+     // Split riders roughly between HS and elementary loads so route capacity grows realistically.
+     let hsAdd=Math.round(chunk*.46),elAdd=chunk-hsAdd;
+     r.hsStudents=Number(r.hsStudents||0)+hsAdd;
+     r.elemStudents=Number(r.elemStudents||0)+elAdd;
+     r.hsStops=Number(r.hsStops||0)+Math.max(1,Math.ceil(hsAdd/8));
+     r.elemStops=Number(r.elemStops||0)+Math.max(1,Math.ceil(elAdd/8));
+     r.hsMiles=Number(r.hsMiles||0)+Math.max(1,Math.ceil(hsAdd/10))*1.5;
+     r.elemMiles=Number(r.elemMiles||0)+Math.max(1,Math.ceil(elAdd/10))*1.5;
+     r.hsTime=Number(r.hsTime||40)+Math.ceil(hsAdd/8)*3;
+     r.elemTime=Number(r.elemTime||40)+Math.ceil(elAdd/8)*3;
    }
+
+   assignments.push({route:r.id,riders:chunk,stops});
+   remaining-=chunk;
+ }
+
+ return {assignments,remaining};
+}
+function recommendNewRouteV114(dev,riders){
+ let rec={
+   id:Date.now()+Math.floor(Math.random()*1000),
+   development:dev.name,
+   riders:Number(riders||0),
+   suggestedRoute:nextRouteIdV114(),
+   status:'Recommended',
+   created:state.gameDate,
+   reason:`Existing routes cannot reasonably absorb ${riders} additional riders without exceeding capacity or route-length targets.`
+ };
+ state.v11.routeRecommendations.push(rec);
+ notify(`New Route ${rec.suggestedRoute} recommended for ${dev.name} (${rec.riders} riders).`,'decision');
+ return rec;
+}
+function approveRouteRecommendationV114(id){
+ let rec=state.v11.routeRecommendations.find(x=>Number(x.id)===Number(id));
+ if(!rec||rec.status!=='Recommended')return;
+ let dev=state.v10.developments?.find(d=>d.name===rec.development)||{name:rec.development};
+ let idNum=Number(rec.suggestedRoute);
+ let riders=Number(rec.riders||0);
+ let hs=Math.round(riders*.46),el=riders-hs;
+ let schools=['Lincoln Elementary','Jefferson Elementary','Harrison Elementary'];
+ let elem=schools[idNum%schools.length];
+
+ state.routes.push({
+   id:idNum,bus:null,driver:null,
+   hsStudents:hs,hsStops:Math.max(4,Math.ceil(hs/7)),hsMiles:Math.max(14,Math.ceil(hs/4)),hsTime:40+Math.ceil(hs/8)*3,
+   elem,elemStudents:el,elemStops:Math.max(4,Math.ceil(el/7)),elemMiles:Math.max(13,Math.ceil(el/4)),elemTime:38+Math.ceil(el/8)*3,
+   sourceDevelopment:rec.development
  });
- state.v10.developments=state.v10.developments.filter(p=>p.days>0);
- if(state.v10.developments.length<2&&Math.random()<.03)addDevelopmentSilentV10();
+ rec.status='Approved';rec.approvedDate=state.gameDate;
+ log(`Route ${idNum} created for ${rec.development}. It needs a driver and bus assignment.`);
+ notify(`Route ${idNum} created. Assign a driver and bus before service begins.`,'decision');
+ autosaveGame();closeModal();render();openRouteGrowthRecommendationsV114();
+}
+function dismissRouteRecommendationV114(id){
+ let rec=state.v11.routeRecommendations.find(x=>Number(x.id)===Number(id));if(!rec)return;
+ rec.status='Deferred';rec.deferredDate=state.gameDate;autosaveGame();render();openRouteGrowthRecommendationsV114();
+}
+function openRouteGrowthRecommendationsV114(){
+ let recs=(state.v11?.routeRecommendations||[]).filter(r=>r.status==='Recommended');
+ openModal('🏘️ Growth & Route Recommendations',
+   recs.length?recs.map(r=>`<div class="project-card"><span class="badge">NEW ROUTE</span><b>${r.development}</b><div class="small">${r.riders} riders cannot be absorbed by current routes.<br>Suggested: <b>Route ${r.suggestedRoute}</b></div><div class="actions"><button class="btn primary" onclick="approveRouteRecommendationV114(${r.id})">Create Route ${r.suggestedRoute}</button><button class="btn" onclick="dismissRouteRecommendationV114(${r.id})">Defer</button></div></div>`).join(''):
+   '<div class="alert priority-green">No new routes are currently needed.</div>'
+ );
+}
+function processDevelopmentRidersV114(dev,newRiders){
+ let result=distributeDevelopmentRidersV114(dev,newRiders);
+ let rec=null;
+ if(result.remaining>0)rec=recommendNewRouteV114(dev,result.remaining);
+
+ let record={
+   date:state.gameDate,year:state.year,development:dev.name,
+   addedRiders:newRiders,assignments:result.assignments,
+   unassigned:result.remaining,recommendation:rec?.suggestedRoute||null
+ };
+ state.v11.developmentRoutingHistory.unshift(record);
+ state.v11.developmentRoutingHistory=state.v11.developmentRoutingHistory.slice(0,40);
+
+ let absorbed=result.assignments.reduce((a,x)=>a+x.riders,0);
+ let msg=`${dev.name}: +${newRiders} riders. ${absorbed} added to existing route${result.assignments.length===1?'':'s'}`;
+ if(result.remaining>0)msg+=`; Route ${rec.suggestedRoute} recommended for ${result.remaining} remaining riders.`;
+ log(msg+'.');notify(msg+'.','decision');
+ return record;
+}
+function developmentAnnualPhaseV114(dev){
+ dev.routing=dev.routing||{ridersAdded:0,phase:0};
+ let total=Math.max(0,Number(dev.riders||0));
+ let years=Math.max(1,Number(dev.years||1));
+ let targetPhase=Math.min(years,Number(dev.routing.phase||0)+1);
+ let targetAdded=Math.round(total*(targetPhase/years));
+ let increment=Math.max(0,targetAdded-Number(dev.routing.ridersAdded||0));
+ if(increment>0){
+   processDevelopmentRidersV114(dev,increment);
+   dev.routing.ridersAdded+=increment;
+ }
+ dev.routing.phase=targetPhase;
+ if(dev.routing.phase>=years)dev.status='Completed';
+ return increment;
+}
+function openDevelopmentRoutingHistoryV114(){
+ let h=state.v11?.developmentRoutingHistory||[];
+ openModal('🗺️ Development Routing History',
+   h.length?h.slice(0,20).map(x=>`<div class="project-card"><b>${x.development}</b><div class="small">${x.date} • +${x.addedRiders} riders<br>${x.assignments.map(a=>`Route ${a.route}: +${a.riders}`).join(' • ')||'No existing route capacity'}${x.unassigned?`<br>New route recommended for ${x.unassigned} riders`:''}</div></div>`).join(''):
+   '<div class="alert">No developments have affected routes yet.</div>'
+ );
+}
+function progressDevelopmentsV10(){
+ ensureUXData();
+ (state.v10.developments||[]).forEach(d=>{
+   if(d.status==='Completed')return;
+   d.routing=d.routing||{ridersAdded:0,phase:0};
+   // Development advances once per annual progression, not every school day.
+   // Daily calls simply leave the phase unchanged.
+ });
 }
 function addDevelopmentSilentV10(){
  let names=['Willow Creek','Heritage Crossing','Oak Valley','Copper Ridge','Eastgate Flats','Fox Run South','Prairie View'];
@@ -1670,6 +1911,9 @@ function selectRoute(id){
 }
 
 function renderRoutes(){
+ let growthRecs=(state.v11?.routeRecommendations||[]).filter(x=>x.status==='Recommended');
+ if(growthRecs.length&&$('routeCards'))$('routeCards').insertAdjacentHTML('beforebegin',`<div class="alert priority-yellow" id="growthRouteAlertV114"><b>${growthRecs.length} growth route recommendation${growthRecs.length===1?'':'s'}</b><div class="small">New neighborhoods have created rider demand that current routes cannot absorb.</div><button class="btn" onclick="openRouteGrowthRecommendationsV114()">Review</button></div>`);
+ 
  $('routeCards').innerHTML=state.routes.map(r=>`<button class="card" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>${r.specialNeeds?'♿ Special Needs Route':'Route'} ${r.id}</b><div class="small">Bus ${r.bus} • ${r.driver||'No driver'}</div><div style="margin:9px 0">${routeHTML(r)}</div><div class="small">${r.specialNeeds?`${r.students} riders • ${r.wheelchairs} wheelchair riders • ${routeDailyMiles(r)} mi/day`:`HS ${r.hsStudents}/72 • Elementary ${r.elemStudents}/72 • ${routeDailyMiles(r)} mi/day`}</div></button>`).join('');
  renderMapStops();selectRoute(selectedRoute,false)
 }
@@ -1694,7 +1938,7 @@ function reject(i){state.applicants[i].status='Rejected';log(`${state.applicants
 function renderTrips(){
  if(!$('tripGrid'))return;ensureUXData();autoApprovePendingTripsV105();
  let mode=state.v10?.autoApproveTrips!==false;
- $('tripGrid').innerHTML=`<div class="alert ${mode?'priority-green':'priority-yellow'}" style="grid-column:1/-1"><b>${mode?'✅ Trip Auto-Approval ON':'⏸️ Trip Auto-Approval OFF'}</b><div class="small">${mode?'New requests automatically receive an available trip/spare bus and trip-qualified driver when budget allows.':'Requests remain pending for manual approval.'}</div><div class="actions"><button class="btn" onclick="toggleAutoApproveTripsV105()">${mode?'Turn Off':'Turn On'}</button></div></div>`+(state.trips||[]).map(t=>`<div class="card"><span class="trip-status ${String(t.status||'Pending').toLowerCase()}">${t.status||'Pending'}</span><b>${t.school}</b><div>${t.type}</div><div class="small">${t.date} • ${t.depart}–${t.return}</div><div class="small">📍 ${t.destination} • ${t.passengers} passengers • ${t.tripMiles||destinationTripMiles(t.destination)} round-trip miles</div>${t.status==='Approved'?`<div class="small" style="margin-top:7px">Bus ${t.bus} • ${t.driver}${t.autoApproved?' • ⚡ Auto-approved':''}</div>`:''}${t.status==='Pending'&&t.autoApprovalNote?`<div class="small" style="margin-top:7px">⏳ ${t.autoApprovalNote}</div>`:''}<div class="actions">${t.status==='Pending'?`<button class="btn primary" onclick="approveTrip(${t.id})">Approve Now</button><button class="btn" onclick="denyTrip(${t.id})">Deny</button>`:''}</div></div>`).join('');
+ $('tripGrid').innerHTML=`<div class="alert ${mode?'priority-green':'priority-yellow'}" style="grid-column:1/-1"><b>${mode?'✅ Trip Auto-Approval ON':'⏸️ Trip Auto-Approval OFF'}</b><div class="small">${mode?'New requests automatically receive an available trip/spare bus and trip-qualified driver when budget allows.':'Requests remain pending for manual approval.'}</div><div class="actions"><button class="btn" onclick="toggleAutoApproveTripsV105()">${mode?'Turn Off':'Turn On'}</button><button class="btn" onclick="openTripArchiveV113()">Prior-Year Archive</button></div></div>`+(state.trips||[]).map(t=>`<div class="card"><span class="trip-status ${String(t.status||'Pending').toLowerCase()}">${t.status||'Pending'}</span><b>${t.school}</b><div>${t.type}</div><div class="small">${t.date} • ${t.depart}–${t.return}</div><div class="small">📍 ${t.destination} • ${t.passengers} passengers • ${t.tripMiles||destinationTripMiles(t.destination)} round-trip miles</div>${t.status==='Approved'?`<div class="small" style="margin-top:7px">Bus ${t.bus} • ${t.driver}${t.autoApproved?' • ⚡ Auto-approved':''}</div>`:''}${t.status==='Pending'&&t.autoApprovalNote?`<div class="small" style="margin-top:7px">⏳ ${t.autoApprovalNote}</div>`:''}<div class="actions">${t.status==='Pending'?`<button class="btn primary" onclick="approveTrip(${t.id})">Approve Now</button><button class="btn" onclick="denyTrip(${t.id})">Deny</button>`:''}</div></div>`).join('');
 }
 
 
@@ -2822,8 +3066,49 @@ function busAge(b){
 
 function summerPlanning(){ensureCalendarData();state.season='Summer';state.simMinutes=480;state.summerDaysRemaining=42;state.routes.forEach(r=>{r.temporaryBus=null;r.temporaryDriver=null});state.news.unshift({text:'Summer planning opens: inspections, hiring, training and route assignments are underway.',tone:'good'});log('Summer transportation planning started. 42 days until Opening Day.');render()}
 function openingDay(){ensureCalendarData();state.season='School';state.simMinutes=315;state.day=0;state.schoolDay=0;state.news.unshift({text:'Opening day transportation operations begin.',tone:'good'});log(`Opening Day begins at 5:15 AM for School Year ${state.year}.`);render()}
+
+function archiveTripsForYearV113(){
+ ensureUXData();
+ let trips=(state.trips||[]).map(t=>({...t,archivedSchoolYear:state.year,archivedDate:state.gameDate}));
+ if(trips.length){
+   state.v11.tripArchive.unshift({
+     year:state.year,
+     count:trips.length,
+     completed:trips.filter(t=>t.status==='Completed').length,
+     approved:trips.filter(t=>t.status==='Approved').length,
+     denied:trips.filter(t=>t.status==='Denied').length,
+     trips
+   });
+   state.v11.tripArchive=state.v11.tripArchive.slice(0,10);
+ }
+ state.trips=[];
+ return trips.length;
+}
+function openTripArchiveV113(){
+ let years=state.v11?.tripArchive||[];
+ openModal('🗃️ Trip History by School Year',
+   years.length?years.map((y,yi)=>`
+     <div class="project-card">
+       <b>${y.year}</b>
+       <div class="small">${y.count} total trips • ${y.completed} completed • ${y.denied} denied</div>
+       <button class="btn" onclick="openTripArchiveYearV113(${yi})">View Trips</button>
+     </div>`).join(''):
+     '<div class="alert">No prior school-year trips have been archived yet.</div>'
+ );
+}
+function openTripArchiveYearV113(index){
+ let y=state.v11?.tripArchive?.[Number(index)];if(!y)return;
+ openModal(`🚌 Trip Archive — ${y.year}`,
+   (y.trips||[]).map(t=>`
+     <div class="project-card">
+       <span class="trip-status ${String(t.status||'Completed').toLowerCase()}">${t.status}</span>
+       <b>${t.school} — ${t.type}</b>
+       <div class="small">${t.date||t.isoDate||''} • ${t.destination}<br>${t.driver?`${t.driver} • Bus ${t.bus}`:'No final assignment'}</div>
+     </div>`).join('') || '<div class="small">No trips recorded.</div>'
+ );
+}
 function yearEnd(){
- ensureV4Data();annualDepartmentProgression();annualTycoonFinance();growDistrictAnnually();annualV10Systems();state.tycoon.yearsManaged=(state.tycoon.yearsManaged||0)+1;
+ ensureV4Data();let archivedTripsV113=archiveTripsForYearV113();annualDepartmentProgression();annualTycoonFinance();growDistrictAnnually();annualV10Systems();state.tycoon.yearsManaged=(state.tycoon.yearsManaged||0)+1;
  state.formerStaff=state.formerStaff||[];
  let departures=[];
  let returning=[];
@@ -2874,6 +3159,7 @@ function yearEnd(){
    state.year=`${y}-${String(y+1).slice(-2)}`;
  }
  state.day=0;state.schoolDay=0;state.v11.makeupDays=0;state.v11.weatherClosureSchedule=[];state.v11.weatherClosureSchoolYear=null;ensureFleetPlanV11();
+ let newBudgetV113=fundNewSchoolYearV113();
  summerPlanning();
  let depHTML=departures.length
    ? `<div class="alert"><b>Staffing Changes</b>${departures.map(d=>`<div style="margin-top:7px">${d.type==='Retired'?'🎉':'📄'} <b>${d.name}</b> — ${d.type}${d.type==='Retired'?` at age ${d.age} after ${d.years} years of service`:''}. ${d.route?'Route '+d.route+' is now vacant.':''}</div>`).join('')}</div>`
@@ -2881,7 +3167,10 @@ function yearEnd(){
  openModal('School Year Complete',`
    <div class="alert">Students advanced grades, seniors graduated, new riders entered, buses gained mileage, and returning drivers gained a year of seniority.</div>
    ${depHTML}
-   <div class="alert"><b>Summer Planning ${state.year}</b><br>Review vacancies, applicants, training, and route assignments before Opening Day.</div>
+   <div class="alert priority-green"><b>New School-Year Budget</b><br>${money(newBudgetV113.totalAvailable)} is available for ${state.year}: ${money(newBudgetV113.allocation)} new appropriation${newBudgetV113.carryover?` plus ${money(newBudgetV113.carryover)} carryover`:''}.</div>
+   <div class="alert"><b>Trips Reset</b><br>${archivedTripsV113} prior-year trip request${archivedTripsV113===1?' was':'s were'} archived. The active Trips page is clear for the new year.</div>
+   <div class="alert"><b>Summer Planning ${state.year}</b><br>Review vacancies, applicants, training, route assignments, fleet needs, and the new annual budget before Opening Day.</div>
+   <div class="actions"><button class="btn" onclick="openSchoolYearBudgetV113()">View Annual Budget</button><button class="btn" onclick="openTripArchiveV113()">View Trip Archive</button></div>
  `);
 }
 
@@ -2984,7 +3273,7 @@ function ensureUXData(){
  state.v10=state.v10||{};
  state.v10.developments=state.v10.developments||[
   {name:'Prairie Ridge Phase II',type:'Subdivision',homes:286,riders:173,years:2,x:82,y:28,status:'Approved'},
-  {name:'Northgate Apartments',type:'Apartments',homes:144,riders:76,years:1,x:22,y:77,status:'Under Construction'}
+  {name:'Northgate Apartments',type:'Apartments',homes:144,riders:76,years:1,x:22,y:77,status:'Under Construction',routing:{ridersAdded:0,phase:0}}
  ];
  state.v10.laborMarket=state.v10.laborMarket||{rating:'Tight',unemployment:3.6,applicantMultiplier:.72,signingBonus:0,lastUpdate:state.gameDate};
  state.v10.contract=state.v10.contract||{expiresIn:2,guaranteedHours:4,attendanceBonus:300,trainingPaid:true,lastAgreement:'Current agreement'};
@@ -3020,6 +3309,11 @@ function ensureUXData(){
  state.v11.careerMoves=state.v11.careerMoves||[];
  state.v11.weatherClosureSchedule=state.v11.weatherClosureSchedule||[];
  state.v11.weatherClosureSchoolYear=state.v11.weatherClosureSchoolYear??null;
+ state.v11.annualBudgetHistory=state.v11.annualBudgetHistory||[];
+ state.v11.tripArchive=state.v11.tripArchive||[];
+ state.v11.currentSchoolYearBudget=state.v11.currentSchoolYearBudget||null;
+ state.v11.developmentRoutingHistory=state.v11.developmentRoutingHistory||[];
+ state.v11.routeRecommendations=state.v11.routeRecommendations||[];
  state.buses.forEach(b=>{
    b.history=b.history||[];
    if(!b.purchaseYear)b.purchaseYear=Number(b.year||String(state.gameDate).slice(0,4));
