@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V10.1</title>
+<title>School Transportation Tycoon — Tycoon Web V10.2</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -186,7 +186,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V10.1</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V10.2</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -547,7 +547,7 @@ button,.btn,select,input{touch-action:manipulation}
 <div class="actions" style="margin-bottom:12px"><button class="btn primary" onclick="openRouteBidding()">Run Seniority Route Bidding</button></div>
     <div class="section-head">
       <div><h2>Summer Driver & Bus Assignment Board</h2><div class="small">Choose a driver, click <b>Apply</b>, then choose the bus. Permanent and temporary assignments are separate.</div></div>
-      <div class="actions"><button class="btn" onclick="autoAssignYear()">Auto-Assign</button><button class="btn primary" onclick="finalizeAssignments()">Finalize School Year</button></div>
+      <div class="actions"><button class="btn" onclick="autoAssignYearV102()">Auto-Assign</button><button class="btn" onclick="renderAssignments()">Refresh Board</button><button class="btn primary" onclick="finalizeAssignments()">Finalize School Year</button></div>
     </div>
     <div class="grid2">
       <div class="panel" style="overflow:auto">
@@ -1674,43 +1674,169 @@ function ensureAssignmentFields(){
  state.routes.forEach(r=>{ if(!('temporaryBus' in r))r.temporaryBus=null; if(!('temporaryDriver' in r))r.temporaryDriver=null; });
 }
 function renderAssignments(){
- if(!$('assignmentBody'))return; ensureAssignmentFields();
- const driverOptions=state.staff.filter(s=>s.status!=='Former').map(s=>`<option value="${s.name}">${s.name} — ${s.years} yr${s.years===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('');
- const busOptions=state.buses.map(b=>`<option value="${b.id}">Bus ${b.id} — ${b.year} • ${b.designation}</option>`).join('');
- $('assignmentBody').innerHTML=state.routes.map(r=>`
-   <tr>
-     <td><b>Route ${r.id}</b></td>
-     <td>
-       <select id="driverSelect_${r.id}" style="min-width:170px">
-         <option value="">Unassigned</option>${state.staff.map(s=>`<option value="${s.name}" ${r.driver===s.name?'selected':''}>${s.name} — ${s.years} yr${s.years===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('')}
-       </select>
-       <button class="btn" style="padding:6px 9px;margin-left:4px" onclick="applyDriverSelection(${r.id})">Apply</button>
-     </td>
-     <td><select onchange="assignBusToRoute(${r.id},Number(this.value))" style="min-width:150px">
-       <option value="">Unassigned</option>${state.buses.map(b=>`<option value="${b.id}" ${r.bus===b.id?'selected':''}>Bus ${b.id} — ${b.year}${r.specialNeeds&&!b.wheelchairLift?' ⚠ no lift':''}</option>`).join('')}
-     </select></td>
-     <td>${(()=>{let b=state.buses.find(x=>x.id===r.bus);return b?`<select onchange="setBusDesignation(${b.id},this.value)">${['Regular Route','Spare','Trip Bus','Special Ed','Maintenance Reserve'].map(d=>`<option ${b.designation===d?'selected':''}>${d}</option>`).join('')}</select>`:'—'})()}</td>
-     <td><select onchange="setTemporaryBus(${r.id},this.value)" style="min-width:150px">
-       <option value="">Use permanent Bus ${r.bus||'—'}</option>${state.buses.filter(b=>b.id!==r.bus).map(b=>`<option value="${b.id}" ${String(r.temporaryBus)===String(b.id)?'selected':''}>Bus ${b.id} — ${b.year}</option>`).join('')}
-     </select></td>
-     <td><select onchange="setTemporaryDriver(${r.id},this.value)" style="min-width:170px">
-       <option value="">None</option>${state.staff.filter(s=>s.name!==r.driver).map(s=>`<option value="${s.name}" ${r.temporaryDriver===s.name?'selected':''}>${s.name} — ${s.years} yr${s.years===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('')}
-     </select></td>
-   </tr>`).join('');
- const unassignedBuses=state.buses.filter(b=>!b.route);
- $('specialtyFleet').innerHTML=unassignedBuses.map(b=>`<div class="card"><span class="badge">${b.designation}</span><b>Bus ${b.id}</b><div class="small">${b.year} ${b.model}</div><div class="small">Status: ${b.status}</div><div class="actions"><select onchange="setBusDesignation(${b.id},this.value)">${['Regular Route','Spare','Trip Bus','Special Ed','Maintenance Reserve'].map(d=>`<option ${b.designation===d?'selected':''}>${d}</option>`).join('')}</select></div></div>`).join('')||'<div class="small">Every bus is currently assigned to a regular route.</div>';
- $('assignmentSummary').innerHTML=`
-   <div class="kv"><span>Regular route buses</span><b>${state.buses.filter(b=>b.designation==='Regular Route').length}</b></div>
-   <div class="kv"><span>Spare buses</span><b>${state.buses.filter(b=>b.designation==='Spare').length}</b></div>
-   <div class="kv"><span>Trip buses</span><b>${state.buses.filter(b=>b.designation==='Trip Bus').length}</b></div>
-   <div class="kv"><span>Special Ed buses</span><b>${state.buses.filter(b=>b.designation==='Special Ed').length}</b></div>
-   <div class="kv"><span>Substitute drivers</span><b>${state.staff.filter(s=>s.status==='Substitute').length}</b></div>`;
- const missingDriver=state.routes.filter(r=>!r.driver),missingBus=state.routes.filter(r=>!r.bus);
- if($('assignmentReadiness'))$('assignmentReadiness').innerHTML=(missingDriver.length||missingBus.length)
-   ?`<div class="alert"><b>Opening Day Readiness</b><div class="small">${missingDriver.length} route(s) need a permanent driver • ${missingBus.length} route(s) need a permanent bus.</div></div>`
-   :`<div class="alert priority-green"><b>✅ Opening Day Ready</b><div class="small">Every route has a permanent driver and bus assignment.</div></div>`;
+ if(!$('assignmentBody'))return;
+ ensureAssignmentFields();ensureUXData();
+
+ const staff=(state.staff||[]).filter(s=>s.status!=='Former');
+ const buses=(state.buses||[]);
+ const routes=(state.routes||[]);
+
+ $('assignmentBody').innerHTML=routes.map(r=>{
+   const routeId=Number(r.id);
+   const driverOptions=staff.map(s=>`<option value="${String(s.name).replace(/"/g,'&quot;')}" ${r.driver===s.name?'selected':''}>${s.name} — ${Number(s.years||0)} yr${Number(s.years||0)===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('');
+   const busOptions=buses.map(b=>{
+     const incompatible=r.specialNeeds&&!b.wheelchairLift;
+     return `<option value="${b.id}" ${Number(r.bus)===Number(b.id)?'selected':''} ${incompatible?'disabled':''}>Bus ${b.id} — ${b.year||'—'}${incompatible?' ⚠ no lift':''}</option>`;
+   }).join('');
+   const tempBusOptions=buses.filter(b=>Number(b.id)!==Number(r.bus)).map(b=>`<option value="${b.id}" ${Number(r.temporaryBus)===Number(b.id)?'selected':''}>Bus ${b.id} — ${b.year||'—'}</option>`).join('');
+   const tempDriverOptions=staff.filter(s=>s.name!==r.driver).map(s=>`<option value="${String(s.name).replace(/"/g,'&quot;')}" ${r.temporaryDriver===s.name?'selected':''}>${s.name} — ${Number(s.years||0)} yr${Number(s.years||0)===1?'':'s'}${s.status==='Substitute'?' (Sub)':''}</option>`).join('');
+   let assignedBus=buses.find(b=>Number(b.id)===Number(r.bus));
+
+   return `<tr>
+    <td><b>Route ${routeId}</b>${r.specialNeeds?'<div class="small">♿ Special Needs</div>':''}</td>
+    <td>
+      <select id="driverSelect_${routeId}" style="min-width:175px"><option value="">Unassigned</option>${driverOptions}</select>
+      <button class="btn" style="padding:6px 9px;margin-left:4px" onclick="applyDriverSelectionV102(${routeId})">Apply</button>
+    </td>
+    <td>
+      <select id="busSelect_${routeId}" onchange="applyBusSelectionV102(${routeId})" style="min-width:160px">
+       <option value="">Unassigned</option>${busOptions}
+      </select>
+    </td>
+    <td>${assignedBus?`<select onchange="setBusDesignationV102(${assignedBus.id},this.value)">${['Regular Route','Spare','Trip Bus','Special Ed','Maintenance Reserve'].map(d=>`<option ${assignedBus.designation===d?'selected':''}>${d}</option>`).join('')}</select>`:'—'}</td>
+    <td><select onchange="setTemporaryBusV102(${routeId},this.value)" style="min-width:155px"><option value="">Use permanent Bus ${r.bus||'—'}</option>${tempBusOptions}</select></td>
+    <td><select onchange="setTemporaryDriverV102(${routeId},this.value)" style="min-width:175px"><option value="">None</option>${tempDriverOptions}</select></td>
+   </tr>`;
+ }).join('');
+
+ const assignedBusIds=new Set(routes.map(r=>Number(r.bus)).filter(Boolean));
+ const available=buses.filter(b=>!assignedBusIds.has(Number(b.id)));
+ if($('specialtyFleet'))$('specialtyFleet').innerHTML=available.length?available.map(b=>`<div class="card"><span class="badge">${b.designation||'Spare'}</span><b>Bus ${b.id}</b><div class="small">${b.year||'—'} ${b.model||'School Bus'}</div><div class="small">Status: ${b.status||'Spare'}${b.wheelchairLift?' • ♿ Lift':''}</div><div class="actions"><select onchange="setBusDesignationV102(${b.id},this.value)">${['Regular Route','Spare','Trip Bus','Special Ed','Maintenance Reserve'].map(d=>`<option ${(b.designation||'Spare')===d?'selected':''}>${d}</option>`).join('')}</select></div></div>`).join(''):'<div class="small">Every bus is assigned to a permanent route.</div>';
+
+ const missingDriver=routes.filter(r=>!r.driver);
+ const missingBus=routes.filter(r=>!r.bus);
+ const duplicateDrivers=staff.filter(s=>routes.filter(r=>r.driver===s.name).length>1);
+ const duplicateBuses=buses.filter(b=>routes.filter(r=>Number(r.bus)===Number(b.id)).length>1);
+ const specialProblems=routes.filter(r=>r.specialNeeds&&r.bus&&!buses.find(b=>Number(b.id)===Number(r.bus)&&b.wheelchairLift));
+
+ if($('assignmentSummary'))$('assignmentSummary').innerHTML=`
+  <div class="kv"><span>Routes</span><b>${routes.length}</b></div>
+  <div class="kv"><span>Regular route buses</span><b>${buses.filter(b=>b.designation==='Regular Route').length}</b></div>
+  <div class="kv"><span>Spare buses</span><b>${buses.filter(b=>b.designation==='Spare').length}</b></div>
+  <div class="kv"><span>Trip buses</span><b>${buses.filter(b=>b.designation==='Trip Bus').length}</b></div>
+  <div class="kv"><span>Special Ed buses</span><b>${buses.filter(b=>b.designation==='Special Ed').length}</b></div>
+  <div class="kv"><span>Substitute drivers</span><b>${staff.filter(s=>s.status==='Substitute').length}</b></div>`;
+
+ if($('assignmentReadiness')){
+   let issues=[];
+   if(missingDriver.length)issues.push(`${missingDriver.length} route(s) need a permanent driver`);
+   if(missingBus.length)issues.push(`${missingBus.length} route(s) need a permanent bus`);
+   if(duplicateDrivers.length)issues.push(`${duplicateDrivers.length} duplicate driver assignment(s)`);
+   if(duplicateBuses.length)issues.push(`${duplicateBuses.length} duplicate bus assignment(s)`);
+   if(specialProblems.length)issues.push(`${specialProblems.length} special-needs route(s) lack a lift bus`);
+   $('assignmentReadiness').innerHTML=issues.length
+    ?`<div class="alert priority-yellow"><b>Opening Day Readiness</b><div class="small">${issues.join('<br>')}</div></div>`
+    :`<div class="alert priority-green"><b>✅ Opening Day Ready</b><div class="small">Every route has a valid permanent driver and bus assignment.</div></div>`;
+ }
 }
 
+
+function applyDriverSelectionV102(routeId){
+ const el=$('driverSelect_'+Number(routeId));
+ if(!el)return alert('Driver selector could not be found.');
+ assignDriverToRouteV102(Number(routeId),el.value||null);
+}
+function assignDriverToRouteV102(routeId,name){
+ ensureAssignmentFields();
+ let r=state.routes.find(x=>Number(x.id)===Number(routeId));if(!r)return alert('Route not found.');
+ let oldName=r.driver;
+ if(name){
+   state.routes.forEach(other=>{if(Number(other.id)!==Number(routeId)&&other.driver===name)other.driver=null});
+   state.staff.forEach(s=>{if(s.name===name)s.route=routeId});
+ }
+ if(oldName&&oldName!==name){
+   let old=state.staff.find(s=>s.name===oldName);if(old&&Number(old.route)===Number(routeId))old.route=null;
+ }
+ r.driver=name||null;
+ let b=state.buses.find(x=>Number(x.id)===Number(r.bus));if(b)b.driver=r.driver;
+ log(`Route ${routeId} permanent driver set to ${name||'unassigned'}.`);
+ autosaveGame();renderAssignments();render();
+}
+function applyBusSelectionV102(routeId){
+ const el=$('busSelect_'+Number(routeId));if(!el)return alert('Bus selector could not be found.');
+ assignBusToRouteV102(Number(routeId),el.value?Number(el.value):null);
+}
+function assignBusToRouteV102(routeId,busId){
+ ensureAssignmentFields();
+ let r=state.routes.find(x=>Number(x.id)===Number(routeId));if(!r)return alert('Route not found.');
+ if(busId){
+   let candidate=state.buses.find(x=>Number(x.id)===Number(busId));if(!candidate)return alert('Bus not found.');
+   if(r.specialNeeds&&!candidate.wheelchairLift)return alert(`Route ${routeId} requires a wheelchair-lift-equipped bus.`);
+   state.routes.forEach(other=>{if(Number(other.id)!==Number(routeId)&&Number(other.bus)===Number(busId)){other.bus=null;other.temporaryBus=null}});
+ }
+ let previousId=Number(r.bus)||null;
+ if(previousId&&previousId!==busId){
+   let previous=state.buses.find(b=>Number(b.id)===previousId);
+   if(previous){previous.route=null;previous.driver=null;if(previous.designation==='Regular Route'||previous.designation==='Special Ed')previous.designation='Spare';previous.status='Spare'}
+ }
+ r.bus=busId||null;r.temporaryBus=null;
+ if(busId){
+   let b=state.buses.find(x=>Number(x.id)===Number(busId));
+   b.route=routeId;b.driver=r.driver||null;b.designation=r.specialNeeds?'Special Ed':'Regular Route';b.status='Ready';
+   state.buses.forEach(x=>{if(Number(x.id)!==Number(busId)&&Number(x.route)===Number(routeId)){x.route=null;x.driver=null;if(x.designation==='Regular Route'||x.designation==='Special Ed')x.designation='Spare'}});
+ }
+ log(`Route ${routeId} permanent bus set to ${busId?'Bus '+busId:'unassigned'}.`);
+ autosaveGame();renderAssignments();render();
+}
+function setBusDesignationV102(busId,value){
+ let b=state.buses.find(x=>Number(x.id)===Number(busId));if(!b)return;
+ b.designation=value;
+ if(['Spare','Trip Bus','Maintenance Reserve'].includes(value)&&b.route){
+   let r=state.routes.find(x=>Number(x.id)===Number(b.route));
+   if(r&&Number(r.bus)===Number(b.id))r.bus=null;
+   b.route=null;b.driver=null;b.status='Spare';
+ }
+ autosaveGame();log(`Bus ${busId} designated ${value}.`);renderAssignments();render();
+}
+function setTemporaryBusV102(routeId,value){
+ let r=state.routes.find(x=>Number(x.id)===Number(routeId));if(!r)return;
+ let id=value?Number(value):null;
+ if(id&&r.specialNeeds){
+   let b=state.buses.find(x=>Number(x.id)===id);
+   if(b&&!b.wheelchairLift){alert(`Route ${routeId} requires a lift-equipped temporary bus.`);renderAssignments();return;}
+ }
+ r.temporaryBus=id;autosaveGame();log(`Route ${routeId} temporary bus ${id?'set to Bus '+id:'cleared'}.`);renderAssignments();
+}
+function setTemporaryDriverV102(routeId,name){
+ let r=state.routes.find(x=>Number(x.id)===Number(routeId));if(!r)return;
+ r.temporaryDriver=name||null;autosaveGame();log(`Route ${routeId} temporary driver ${name?'set to '+name:'cleared'}.`);renderAssignments();
+}
+function autoAssignYearV102(){
+ ensureAssignmentFields();
+ let routes=[...state.routes];
+ let usedBuses=new Set(),usedDrivers=new Set();
+
+ // Special-needs routes first so accessible buses are protected.
+ routes.sort((a,b)=>(b.specialNeeds?1:0)-(a.specialNeeds?1:0)).forEach(r=>{
+   if(!r.bus|| (r.specialNeeds&&!state.buses.find(b=>Number(b.id)===Number(r.bus)&&b.wheelchairLift))){
+     let bus=state.buses.find(b=>!usedBuses.has(Number(b.id))&&(!r.specialNeeds||b.wheelchairLift)&&!['Maintenance','Inspection Due'].includes(b.status));
+     if(bus){r.bus=bus.id;bus.route=r.id;bus.driver=r.driver||null;bus.designation=r.specialNeeds?'Special Ed':'Regular Route';bus.status='Ready';usedBuses.add(Number(bus.id))}
+   }else usedBuses.add(Number(r.bus));
+
+   if(!r.driver){
+     let driver=state.staff.find(s=>!usedDrivers.has(s.name)&&s.status!=='Former'&&s.status!=='Called Off'&&s.status!=='Substitute');
+     if(driver){r.driver=driver.name;driver.route=r.id;usedDrivers.add(driver.name);let b=state.buses.find(x=>Number(x.id)===Number(r.bus));if(b)b.driver=driver.name}
+   }else usedDrivers.add(r.driver);
+ });
+
+ // Repair bookkeeping after auto-assign.
+ state.buses.forEach(b=>{
+   let r=state.routes.find(x=>Number(x.bus)===Number(b.id));
+   if(r){b.route=r.id;b.driver=r.driver||null;b.designation=r.specialNeeds?'Special Ed':'Regular Route';if(b.status!=='Maintenance'&&b.status!=='Inspection Due')b.status='Ready'}
+   else if(!['Maintenance','Inspection Due'].includes(b.status)){b.route=null;b.driver=null;if(b.designation==='Regular Route'||b.designation==='Special Ed')b.designation='Spare';b.status='Spare'}
+ });
+ autosaveGame();log('Summer assignment board auto-filled with valid available buses and regular drivers.');render();
+}
 function applyDriverSelection(routeId){
  const el=document.getElementById('driverSelect_'+routeId);
  if(!el)return alert('Driver selector could not be found.');
@@ -1839,14 +1965,24 @@ function assignDriverSilent(routeId,name){
 }
 function finalizeAssignments(){
  ensureAssignmentFields();
- let issues=[];
- state.routes.forEach(r=>{if(!r.bus)issues.push(`Route ${r.id} has no bus`);if(!r.driver)issues.push(`Route ${r.id} has no driver`)});
- if(issues.length){openModal('Cannot Finalize',issues.map(x=>`<div class="alert">${x}</div>`).join(''));return}
+ let issues=[],seenDrivers=new Set(),seenBuses=new Set();
+ state.routes.forEach(r=>{
+   if(!r.driver)issues.push(`Route ${r.id} has no driver`);
+   if(!r.bus)issues.push(`Route ${r.id} has no bus`);
+   if(r.driver&&seenDrivers.has(r.driver))issues.push(`${r.driver} is assigned to more than one route`);
+   if(r.bus&&seenBuses.has(Number(r.bus)))issues.push(`Bus ${r.bus} is assigned to more than one route`);
+   if(r.driver)seenDrivers.add(r.driver);if(r.bus)seenBuses.add(Number(r.bus));
+   if(r.specialNeeds&&r.bus){
+     let b=state.buses.find(x=>Number(x.id)===Number(r.bus));if(!b?.wheelchairLift)issues.push(`Route ${r.id} requires a lift-equipped bus`);
+   }
+ });
+ if(issues.length){openModal('Cannot Finalize Assignments',issues.map(x=>`<div class="alert priority-yellow">${x}</div>`).join(''));return}
  state.assignmentHistory=state.assignmentHistory||[];
- state.assignmentHistory.push({year:state.year,routes:state.routes.map(r=>({route:r.id,bus:r.bus,driver:r.driver}))});
+ state.assignmentHistory.push({year:state.year,date:state.gameDate,routes:state.routes.map(r=>({route:r.id,bus:r.bus,driver:r.driver}))});
  state.staff.forEach(s=>{if(s.status==='Called Off')s.status=s.route?'Regular':'Substitute'});
  autosaveGame();log(`School Year ${state.year} driver and bus assignments finalized.`);
- openModal('Assignments Finalized',`Your regular route lineup has been locked in for School Year ${state.year}. Temporary substitute buses can still be used during daily operations.`);render()
+ openModal('Assignments Finalized',`<div class="alert priority-green"><b>Opening Day lineup saved.</b><div class="small">All permanent drivers and buses passed the assignment validation, including special-needs bus compatibility.</div></div>`);
+ render();
 }
 
 
