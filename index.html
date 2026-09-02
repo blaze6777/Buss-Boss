@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V11.6</title>
+<title>School Transportation Tycoon — Tycoon Web V12.1 — Real Warsaw Map</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -181,12 +181,51 @@ button,.btn,select,input{touch-action:manipulation}
 .v10-incident-stage{border-left:5px solid #a14b3d;padding:12px;background:#fff4f1;border-radius:10px;margin:8px 0}
 .v10-fuel-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:linear-gradient(135deg,#1f3b57,#2f567a);color:white}
 .v10-campus-item{display:inline-block;border:1px solid var(--line);border-radius:10px;padding:8px;margin:5px;background:var(--panel)}
+
+/* V12 Warsaw Visual World */
+.world12{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#dce9ce;box-shadow:0 10px 28px #00000014}
+.world12hud{display:flex;gap:8px;flex-wrap:wrap;padding:10px;background:#17324d;color:white;align-items:center}
+.world12hud span{background:#ffffff18;border:1px solid #ffffff25;padding:7px 10px;border-radius:999px;font-size:11px}
+.world12tabs{padding:10px;background:#f6f8f9;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.campus12{display:grid;grid-template-columns:1fr 1.8fr;gap:14px;padding:16px;background:linear-gradient(90deg,#b8d39c 0 6%,#596168 6% 94%,#b8d39c 94%)}
+.building12{background:#d9d0bf;border:4px solid #8d8374;border-radius:10px;padding:12px;box-shadow:0 7px 0 #0002}
+.rooms12{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.room12{background:#f7f0e4;border:2px solid #b9aa93;border-radius:8px;padding:9px;min-height:58px;cursor:pointer;transition:.15s}
+.room12:hover,.bus12:hover{transform:translateY(-2px)}
+.shop12{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.bay12{background:#d8dbdc;border:3px solid #72787b;border-radius:7px;padding:7px;min-height:72px;font-size:10px;cursor:pointer}
+.lot12{background:#4d555b;border:4px solid #687179;border-radius:12px;padding:10px}
+.spaces12{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.space12{border:2px solid #eeeecc;min-height:92px;border-radius:5px;padding:5px;position:relative}
+.spacenum12{position:absolute;right:4px;bottom:2px;color:#ffffff99;font-size:9px}
+.empty12{color:#ffffff99;font-size:10px;text-align:center;padding-top:27px}
+.bus12{height:61px;background:#f2c400;border:3px solid #222;border-radius:7px 15px 6px 6px;position:relative;cursor:pointer;box-shadow:0 4px 0 #0003;transition:.15s}
+.bus12:before{content:"";position:absolute;left:7px;right:16px;top:6px;height:15px;background:repeating-linear-gradient(90deg,#263743 0 11px,#8fc0d4 11px 21px);border:2px solid #222}
+.bus12:after{content:"";position:absolute;left:7px;right:7px;bottom:-8px;height:12px;background:radial-gradient(circle at 16% 50%,#222 0 6px,transparent 7px),radial-gradient(circle at 84% 50%,#222 0 6px,transparent 7px)}
+.busnum12{position:absolute;left:8px;top:31px;font-weight:1000;font-size:18px;color:#111}
+.busword12{position:absolute;right:6px;top:37px;font-size:7px;font-weight:900;color:#111}
+.map12{height:610px;background:#c6dba8;position:relative;overflow:hidden}
+.road12{position:absolute;background:#777f83;border:2px solid #e6dfa0}
+.road12.h{height:23px;left:-8%;right:-8%}.road12.v{width:23px;top:-8%;bottom:-8%}
+.lake12{position:absolute;background:#7fb9d3;border:4px solid #67a2bc;border-radius:50%}
+.place12{position:absolute;background:#d7b48c;border:3px solid #715c47;border-radius:7px;padding:5px 7px;font-size:9px;font-weight:800;box-shadow:0 3px 0 #0002;cursor:pointer;max-width:105px}
+.place12.transport{background:#f2c400;border-color:#6e5900}
+.mapbus12{position:absolute;background:#f2c400;border:2px solid #222;border-radius:5px;padding:2px 5px;font-weight:1000;font-size:9px;box-shadow:0 2px 0 #0003}
+.legend12{position:absolute;right:9px;bottom:9px;background:#ffffffe8;padding:8px;border-radius:8px;font-size:9px}
+@media(max-width:850px){.campus12{grid-template-columns:1fr}.map12{height:700px}.place12{font-size:8px;max-width:80px}}
+
+.realwarsaw12{position:relative;height:610px;background:#e4e9e3}
+.realwarsaw12 iframe{width:100%;height:100%;border:0;display:block}
+.mapbadge12{position:absolute;left:10px;top:10px;z-index:5;background:#17324deb;color:#fff;padding:9px 12px;border-radius:9px;box-shadow:0 3px 12px #0003;font-size:11px;pointer-events:none}
+.mapnote12{position:absolute;right:10px;bottom:10px;z-index:5;background:#fffffff0;padding:8px 10px;border-radius:8px;font-size:9px;box-shadow:0 3px 12px #0002}
+.schoolchips12{display:flex;gap:6px;flex-wrap:wrap;padding:9px;background:#f6f8f9;border-top:1px solid var(--line)}
+.schoolchips12 button{font-size:10px}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V11.6</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V12.1 — Real Warsaw Map</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -197,7 +236,8 @@ button,.btn,select,input{touch-action:manipulation}
   </div>
 
   <div class="nav">
-    <button class="active" data-view="today">Command Center</button>
+    <button class="active" data-view="world12">🚌 Visual World</button>
+    <button data-view="today">Command Center</button>
     <button data-view="garage">Garage</button>
     <button data-view="routes">Routes</button>
     <button data-view="district">District Map</button>
@@ -224,7 +264,12 @@ button,.btn,select,input{touch-action:manipulation}
 
   
 
-<section id="today" class="view active">
+
+<section id="world12" class="view active">
+ <div class="section-head"><div><h2>🚌 Warsaw Transportation World</h2><div class="small">A visual transportation department built on your existing simulation.</div></div></div>
+ <div id="world12body"></div>
+</section>
+<section id="today" class="view">
  <div class="section-head"><div><h2>Today — Transportation Command Center</h2><div class="small">Everything that needs your attention before buses roll.</div></div><div class="actions"><button class="btn" onclick="undoLastAction()">↶ Undo</button><button class="btn primary" onclick="autosaveGame()">Save Now</button></div></div>
  <div class="today-grid" id="todayKpis"></div><div class="app-launchpad" id="appLaunchpad">
   <button onclick="goView('inbox')">📥<b>Inbox</b><span id="launchInbox">0 new</span></button>
@@ -686,9 +731,61 @@ function statusClass(s){return /Ready|Spare|Approved/.test(s)?'good':/Due|Pendin
 */
 function renderLog(){$('log').innerHTML=(state.log||[]).map(x=>`<div class="log-entry">${x}</div>`).join('')||'<div class="small">No activity yet.</div>'}
 
-function saveGame(){localStorage.setItem('transportDirectorSave',JSON.stringify(state));log('Game saved locally.');render()}
 
-function loadGame(){let s=localStorage.getItem('transportDirectorSave');if(!s)return alert('No save found.');state=JSON.parse(s);log('Saved game loaded.');render()}
+function saveSnapshotInfoV117(raw){
+ try{
+   let s=JSON.parse(raw||'null');
+   if(!s)return null;
+   return {year:s.year,date:s.gameDate,buses:Array.isArray(s.buses)?s.buses.length:0,routes:Array.isArray(s.routes)?s.routes.length:0,budget:Number(s.operatingBudget||0)};
+ }catch(e){return null}
+}
+function openSaveStatusV117(){
+ let m=saveSnapshotInfoV117(localStorage.getItem('transportDirectorSave'));
+ let a=saveSnapshotInfoV117(localStorage.getItem('transportAutosave'));
+ let mt=Number(localStorage.getItem('transportDirectorSaveTime')||0),at=Number(localStorage.getItem('transportAutosaveTime')||0);
+ let fmt=t=>t?new Date(t).toLocaleString():'Legacy / unknown time';
+ let card=(label,x,t)=>x?`<div class="project-card"><b>${label}</b><div class="small">Saved: ${fmt(t)}<br>School year: ${x.year||'—'} • Date: ${x.date||'—'}<br>Fleet: <b>${x.buses} buses</b> • Routes: ${x.routes}<br>Operating budget: ${money(x.budget)}</div></div>`:`<div class="alert">${label}: none found.</div>`;
+ openModal('💾 Save Status',card('Manual Save',m,mt)+card('Autosave',a,at)+`<div class="alert priority-green"><b>Load behavior</b><div class="small">Load Game now restores the newest timestamped save. Pressing Save Game also updates the autosave copy so it cannot accidentally load an older state afterward.</div></div>`);
+}
+function saveGame(){
+ try{
+   let payload=JSON.stringify(state),ts=Date.now();
+   // Manual Save is authoritative: mirror it to autosave so Load can never restore an older state.
+   localStorage.setItem('transportDirectorSave',payload);
+   localStorage.setItem('transportDirectorSaveTime',String(ts));
+   localStorage.setItem('transportAutosave',payload);
+   localStorage.setItem('transportAutosaveTime',String(ts));
+   log('Game saved locally.');
+   render();
+   notify('Game saved — this is now your latest save.','decision');
+ }catch(e){alert('The game could not save. Your browser storage may be full or unavailable.');}
+}
+
+function loadGame(){
+ let manual=localStorage.getItem('transportDirectorSave');
+ let auto=localStorage.getItem('transportAutosave');
+ if(!manual&&!auto)return alert('No save found.');
+
+ let mt=Number(localStorage.getItem('transportDirectorSaveTime')||0);
+ let at=Number(localStorage.getItem('transportAutosaveTime')||0);
+ let source='Manual Save',raw=manual;
+
+ // New timestamped saves always load whichever state is newest.
+ // For legacy saves with no timestamps, prefer the manual Save button state.
+ if(auto&&((at>mt)||(manual==null))){
+   raw=auto;source='Autosave';
+ }
+
+ try{
+   let loaded=JSON.parse(raw);
+   if(!loaded||!Array.isArray(loaded.buses))throw new Error('Invalid save');
+   state=loaded;
+   ensureAssignmentFields();ensureV4Data();ensureUXData();
+   log(`${source} loaded.`);
+   render();
+   notify(`${source} loaded — ${state.buses.length} buses restored.`,'decision');
+ }catch(e){alert('That save could not be loaded. The current game was left unchanged.');}
+}
 
 function resetGame(){if(confirm('Start a new transportation district?')){state=JSON.parse(JSON.stringify(initial));render()}}
 
@@ -1896,6 +1993,45 @@ function renderV10DistrictExtras(){
    let d=document.createElement('div');d.className='map-place';d.style.left=p.x+'%';d.style.top=p.y+'%';d.innerHTML=`🏗️ ${p.name}<br><span class="small">${p.years} yr</span>`;$('districtMapV8').appendChild(d)
  });
 }
+
+/* V12 WARSAW VISUAL WORLD */
+function busWorldStatus12(b){
+ let assigned=state.routes.some(r=>Number(r.bus)===Number(b.id)||Number(r.temporaryBus)===Number(b.id));
+ let m=Number(state.simMinutes||315), st=String(b.status||'').toLowerCase();
+ if(st.includes('maint')||st.includes('repair')||Number(b.condition||100)<50)return 'shop';
+ if(assigned&&((m>=360&&m<=590)||(m>=850&&m<=1030)))return 'route';
+ return 'lot';
+}
+function busGraphic12(b){
+ return `<div class="bus12" onclick="openBusFile(${b.id})" title="${b.year||''} ${b.model||'School Bus'}"><div class="busnum12">${b.id}</div><div class="busword12">${b.wheelchairLift?'♿ ':''}SCHOOL BUS</div></div>`;
+}
+function room12(name){
+ let target={Director:'today',Dispatch:'dispatch',Drivers:'staffing',Training:'training',Shop:'shop'}[name]||'today';
+ openModal(`🏢 ${name}`,`<div class="alert">You are in the <b>${name}</b> area of the Transportation Center.</div><button class="btn primary" onclick="closeModal();goView('${target}')">Open ${name}</button>`);
+}
+function hud12(){
+ let ready=state.buses.filter(b=>Number(b.condition||100)>=50).length;
+ return `<span>📅 ${formatGameDate()}</span><span>🕐 ${minsToTime(state.simMinutes||315)}</span><span>💰 ${money(state.budget||0)}</span><span>🚌 ${ready}/${state.buses.length} Ready</span><span>👤 ${state.staff.length} Drivers</span>`;
+}
+function campus12(){
+ let shop=state.buses.filter(b=>busWorldStatus12(b)==='shop');
+ return `<div class="world12"><div class="world12hud">${hud12()}</div><div class="world12tabs"><button class="btn primary" onclick="renderWorld12('campus')">🏢 Transportation Campus</button><button class="btn" onclick="renderWorld12('map')">🗺️ Real Warsaw Map</button><button class="btn" onclick="runTransportationDay()">▶ Run Transportation Day</button></div><div class="campus12"><div><div class="building12"><b>WARSAW TRANSPORTATION CENTER</b><div class="small">Director • Dispatch • Drivers • Training</div><div class="rooms12"><div class="room12" onclick="room12('Director')">👔 <b>Director's Office</b><div class="small">Command Center & decisions</div></div><div class="room12" onclick="room12('Dispatch')">📻 <b>Dispatch</b><div class="small">Radio & route coverage</div></div><div class="room12" onclick="room12('Drivers')">👨‍✈️ <b>Driver Room</b><div class="small">Staff & assignments</div></div><div class="room12" onclick="room12('Training')">🎓 <b>Training Room</b><div class="small">CDL & in-service</div></div></div></div><div class="shop12">${[0,1,2].map(i=>`<div class="bay12" onclick="room12('Shop')"><b>SHOP BAY ${i+1}</b>${shop[i]?`<div style="margin-top:6px">${busGraphic12(shop[i])}</div>`:'<div class="small" style="margin-top:15px">Available</div>'}</div>`).join('')}</div></div><div class="lot12"><div style="color:white;font-weight:900;margin-bottom:8px">NUMBERED BUS LOT • Click any bus</div><div class="spaces12">${state.buses.map(b=>{let s=busWorldStatus12(b);return `<div class="space12">${s==='lot'?busGraphic12(b):`<div class="empty12">BUS ${b.id}<br>${s==='route'?'OUT ON ROUTE':'IN SHOP'}</div>`}<div class="spacenum12">SPACE ${b.id}</div></div>`}).join('')}</div></div></div></div>`;
+}
+function districtMap12(){
+ let osm='https://www.openstreetmap.org/export/embed.html?bbox=-85.920%2C41.205%2C-85.785%2C41.285&layer=mapnik&marker=41.261%2C-85.844';
+ let schools=['Warsaw Community High School','Edgewood Middle School','Lakeview Middle School','Lincoln Elementary','Washington Elementary','Eisenhower Elementary','Jefferson Elementary','Harrison Elementary','Madison Elementary','Leesburg Elementary'];
+ return `<div class="world12"><div class="world12hud">${hud12()}</div><div class="world12tabs"><button class="btn" onclick="renderWorld12('campus')">🏢 Transportation Campus</button><button class="btn primary" onclick="renderWorld12('map')">🗺️ REAL Warsaw Map</button><button class="btn" onclick="renderWorld12('gamemap')">🎮 Game Map</button><span class="small">Live OpenStreetMap view of Warsaw, Indiana.</span></div><div class="realwarsaw12"><div class="mapbadge12"><b>WARSAW, INDIANA</b><br>Real streets, roads, lakes & geography</div><iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="${osm}" title="Real Warsaw Indiana map"></iframe><div class="mapnote12">📍 Marker: Warsaw Community Schools Transportation area<br>Map data © OpenStreetMap contributors</div></div><div class="schoolchips12"><b style="padding:6px">WCS locations:</b>${schools.map(s=>`<button class="btn" onclick="openModal('${s}',\`<div class='alert'><b>${s}</b><br>This school is part of the Warsaw visual transportation world. Use the real Warsaw map above to explore the surrounding roads and geography.</div>\`)">${s}</button>`).join('')}</div></div>`;
+}
+function gameDistrictMap12(){
+ let p=[['Leesburg Elementary',19,9],['Madison Elementary',27,28],['Harrison Elementary',67,24],['Lincoln Elementary',58,43],['Washington Elementary',45,56],['Eisenhower Elementary',37,72],['Jefferson Elementary',67,76],['Edgewood Middle',44,67],['Lakeview Middle',61,58],['Warsaw Community HS',48,81]];
+ let mb=state.routes.slice(0,9).map((r,i)=>`<div class="mapbus12" style="left:${22+(i*9)%65}%;top:${30+(i*14)%53}%">🚌 ${r.bus||r.id}</div>`).join('');
+ return `<div class="world12"><div class="world12hud">${hud12()}</div><div class="world12tabs"><button class="btn" onclick="renderWorld12('campus')">🏢 Transportation Campus</button><button class="btn" onclick="renderWorld12('map')">🗺️ Real Warsaw Map</button><button class="btn primary" onclick="renderWorld12('gamemap')">🎮 Game Map</button></div><div class="map12"><div class="lake12" style="width:14%;height:21%;left:72%;top:11%"></div><div class="lake12" style="width:17%;height:24%;left:69%;top:63%"></div><div class="road12 h" style="top:43%;transform:rotate(-4deg)"></div><div class="road12 h" style="top:67%;transform:rotate(5deg)"></div><div class="road12 v" style="left:51%;transform:rotate(6deg)"></div><div class="road12 v" style="left:31%;transform:rotate(-7deg)"></div>${p.map(x=>`<div class="place12" style="left:${x[1]}%;top:${x[2]}%">🏫 ${x[0]}</div>`).join('')}<div class="place12 transport" style="left:54%;top:28%" onclick="renderWorld12('campus')">🚌 Transportation Center</div>${mb}<div class="legend12"><b>GAME OPERATIONS MAP</b><br>Use this view for animated gameplay.<br>Use Real Warsaw Map for actual geography.</div></div></div>`;
+}
+function renderWorld12(mode){
+ window.world12mode=mode||window.world12mode||'campus';
+ let e=$('world12body'); if(e)e.innerHTML=window.world12mode==='map'?districtMap12():(window.world12mode==='gamemap'?gameDistrictMap12():campus12());
+}
+
 function render(){
  ensureRealCalendar();
  $('budget').textContent=money(state.budget);$('busCount').textContent=state.buses.length;$('driverCount').textContent=state.staff.length;$('boardScore').textContent=state.board;
@@ -1909,6 +2045,7 @@ function render(){
  if(typeof renderStudents==='function')renderStudents();
  if(typeof renderDepartment==='function')renderDepartment();
  renderDistrictV8();renderPeopleV8();renderShopV8();renderBoardV8();renderTycoon();
+ if($('world12body'))renderWorld12(window.world12mode||'campus');
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(b.dataset.view).classList.add('active')});
 
@@ -2065,7 +2202,7 @@ function confirmBusPurchase(){
  let gameYear=Number(String(state.gameDate||'2026-08-24').slice(0,4))||2026;
  state.operatingBudget-=price;syncBudgets();
  state.buses.push({id,year:gameYear,model,miles:0,route:null,driver:null,status:designation==='Regular Route'?'Ready':'Spare',fuel:100,capacity,condition:100,designation,temporaryRoute:null,wheelchairLift:special,wheelchairPositions:special?4:0,fuelType:fuel,airConditioning:ac,cameras,gps,purchasePrice:price,repairSpend:0,breakdowns:0,history:[{year:state.year,event:`Purchased new for ${money(price)} • ${fuel}${ac?' • AC':''}${cameras?' • cameras':''}${gps?' • GPS':''}`}],liveStatus:'Parked / Pre-Trip'});
- state.news.unshift({text:`Transportation purchased Bus ${id}, a new ${fuel} ${model}.`,tone:'good'});notify(`New Bus ${id} added to fleet.`,'decision');log(`Purchased Bus ${id} for ${money(price)}.`);closeModal();render()
+ state.news.unshift({text:`Transportation purchased Bus ${id}, a new ${fuel} ${model}.`,tone:'good'});notify(`New Bus ${id} added to fleet.`,'decision');log(`Purchased Bus ${id} for ${money(price)}.`);autosaveGame();closeModal();render()
 }
 
 function renderDispatch(){
@@ -3395,7 +3532,14 @@ function undoLastAction(){
  ensureUXData();let u=state.undoStack.pop();if(!u)return alert('Nothing to undo yet.');
  let d=JSON.parse(u.data);state.routes=d.routes;state.buses=d.buses;state.staff=d.staff;state.budget=d.budget;state.trips=d.trips;state.absences=d.absences;log(`Undid: ${u.label}`);render()
 }
-function autosaveGame(){try{localStorage.setItem('transportAutosave',JSON.stringify(state));log('Game autosaved.')}catch(e){}}
+function autosaveGame(){
+ try{
+   let ts=Date.now();
+   localStorage.setItem('transportAutosave',JSON.stringify(state));
+   localStorage.setItem('transportAutosaveTime',String(ts));
+   log('Game autosaved.');
+ }catch(e){}
+}
 function saveSlot(n){try{localStorage.setItem('transportSave'+n,JSON.stringify(state));alert('Saved to Slot '+n)}catch(e){}}
 function loadSlot(n){let x=localStorage.getItem('transportSave'+n);if(!x)return alert('That save slot is empty.');state=JSON.parse(x);render()}
 function routeCoverage(r){
@@ -3639,7 +3783,16 @@ function confirmAbsence(){snapshotAction('Schedule absence');state.absences.push
 function saveManager(){
  openModal('Save Manager',`<div class="alert"><b>Autosave</b><div class="small">Updated after major management actions.</div><button class="btn" onclick="loadAutosave()">Load Autosave</button></div>${[1,2,3].map(n=>`<div class="alert"><b>Save Slot ${n}</b><div class="actions"><button class="btn primary" onclick="saveSlot(${n})">Save</button><button class="btn" onclick="loadSlot(${n})">Load</button></div></div>`).join('')}`)
 }
-function loadAutosave(){let x=localStorage.getItem('transportAutosave');if(!x)return alert('No autosave exists yet.');state=JSON.parse(x);closeModal();render()}
+function loadAutosave(){
+ let x=localStorage.getItem('transportAutosave');
+ if(!x)return alert('No autosave exists yet.');
+ try{
+   let loaded=JSON.parse(x);
+   if(!loaded||!Array.isArray(loaded.buses))throw new Error('Invalid autosave');
+   state=loaded;ensureAssignmentFields();ensureV4Data();ensureUXData();
+   closeModal();render();notify(`Autosave loaded — ${state.buses.length} buses restored.`,'decision');
+ }catch(e){alert('The autosave could not be loaded.');}
+}
 function districtPolicies(){
  ensureUXData();openModal('District Transportation Policies',`<div class="detail">
  <label><input type="checkbox" id="polBid" ${state.policies.seniorityBidding?'checked':''}> Seniority route bidding</label>
