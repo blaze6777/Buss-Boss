@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V12.1 — Real Warsaw Map</title>
+<title>School Transportation Tycoon — Tycoon Web V13.0 — Living Transportation Department</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -220,12 +220,65 @@ button,.btn,select,input{touch-action:manipulation}
 .mapnote12{position:absolute;right:10px;bottom:10px;z-index:5;background:#fffffff0;padding:8px 10px;border-radius:8px;font-size:9px;box-shadow:0 3px 12px #0002}
 .schoolchips12{display:flex;gap:6px;flex-wrap:wrap;padding:9px;background:#f6f8f9;border-top:1px solid var(--line)}
 .schoolchips12 button{font-size:10px}
+
+/* V13 Living Transportation Department */
+.v13-toolbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:9px;background:#10283d;color:white}
+.v13-toolbar .stat{padding:6px 9px;border-radius:999px;background:#ffffff16;border:1px solid #ffffff20;font-size:10px}
+.v13-clock{font-weight:900;font-size:14px}
+.v13-world{border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 10px 28px #0001;background:#dce7d0}
+.v13-campus{position:relative;min-height:650px;background:linear-gradient(#93c7e9 0 19%,#a8c98d 19% 100%);overflow:hidden}
+.v13-asphalt{position:absolute;left:4%;right:4%;top:27%;bottom:4%;background:#4f565c;border-radius:18px;border:5px solid #687178;box-shadow:inset 0 0 35px #0003}
+.v13-building{position:absolute;left:7%;top:31%;width:27%;height:28%;background:#d8cfbd;border:5px solid #887e6f;border-radius:9px;box-shadow:8px 10px 0 #0002;z-index:3}
+.v13-sign{background:#17324d;color:white;padding:7px;text-align:center;font-weight:900;font-size:11px}
+.v13-rooms{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:7px}
+.v13-room{background:#f7f0e4;border:2px solid #b6a68e;border-radius:6px;padding:7px;font-size:9px;cursor:pointer;min-height:45px}
+.v13-garage{position:absolute;left:7%;top:61%;width:27%;height:25%;display:grid;grid-template-columns:repeat(3,1fr);gap:5px;z-index:3}
+.v13-bay{background:#c8cccd;border:4px solid #72787a;border-radius:6px;padding:5px;font-size:8px;cursor:pointer;overflow:hidden}
+.v13-lot{position:absolute;left:38%;right:7%;top:31%;bottom:10%;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;z-index:2}
+.v13-space{border:2px solid #eee8b7;border-radius:4px;position:relative;min-height:88px;padding:4px}
+.v13-space-label{position:absolute;right:4px;bottom:2px;color:#ffffff88;font-size:8px}
+.v13-buswrap{position:relative;height:72px;cursor:pointer}
+.v13-bus-svg{width:100%;height:100%;filter:drop-shadow(0 4px 1px #0005)}
+.v13-bus-out{display:flex;height:100%;align-items:center;justify-content:center;text-align:center;color:#ffffff99;font-size:9px}
+.v13-fuel{position:absolute;left:37%;bottom:3%;background:#e8e8e8;border:3px solid #777;padding:7px;border-radius:6px;font-size:9px;z-index:3}
+.v13-wash{position:absolute;left:52%;bottom:3%;background:#a8d4e5;border:3px solid #5f8fa1;padding:7px;border-radius:6px;font-size:9px;z-index:3}
+.v13-employee-lot{position:absolute;left:7%;top:20%;width:27%;height:9%;background:#555c61;border:3px solid #777;border-radius:7px;display:flex;gap:4px;padding:5px}
+.v13-car{width:22px;height:10px;border-radius:4px;background:#d6d6d6;border:1px solid #222}
+.v13-weather{position:absolute;inset:0;pointer-events:none;z-index:9;overflow:hidden}
+.v13-snow:before{content:"•  *   •     *  •   *     •   *  •    *    •  *   •    *   •  *";position:absolute;left:0;right:0;top:0;color:white;font-size:28px;line-height:60px;letter-spacing:14px;opacity:.8;animation:v13fall 8s linear infinite}
+.v13-rain:before{content:"|||| ||| || |||| | ||| || |||| ||| | |||";position:absolute;left:0;right:0;top:-20px;color:#d8efff;font-size:20px;letter-spacing:11px;transform:rotate(12deg);opacity:.65;animation:v13fall 3s linear infinite}
+@keyframes v13fall{from{transform:translateY(-80px)}to{transform:translateY(700px)}}
+.v13-radio{position:absolute;left:38%;bottom:3%;right:7%;background:#10283de8;color:white;border-radius:9px;padding:8px 10px;font-size:9px;z-index:7;box-shadow:0 3px 12px #0004}
+.v13-radio b{color:#f2c400}
+.v13-map{height:650px;position:relative;background:#c5d9a7;overflow:hidden}
+.v13-map iframe{width:100%;height:100%;border:0}
+.v13-map-overlay{position:absolute;inset:0;pointer-events:none}
+.v13-mapbus{position:absolute;width:48px;height:24px;pointer-events:auto;cursor:pointer;transition:left .6s linear,top .6s linear}
+.v13-routebadge{position:absolute;left:10px;top:10px;background:#10283dea;color:white;padding:8px 10px;border-radius:8px;font-size:9px}
+.v13-profile{display:grid;grid-template-columns:minmax(230px,1fr) 1.2fr;gap:14px}
+.v13-bigbus{min-height:180px;background:#eef2f3;border-radius:12px;padding:10px;display:flex;align-items:center}
+.v13-specgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.v13-spec{padding:8px;background:#f5f7f8;border:1px solid var(--line);border-radius:7px;font-size:10px}
+.v13-condition{height:7px;background:#ddd;border-radius:9px;overflow:hidden}.v13-condition>div{height:100%;background:#5c9b61}
+.v13-history{max-height:210px;overflow:auto;border-left:3px solid #d8dee2;padding-left:10px}
+.v13-event{font-size:9px;margin:7px 0}
+.v13-builder{display:grid;grid-template-columns:1fr 1.2fr;gap:14px}
+.v13-optiongrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.v13-option{padding:8px;border:2px solid #d7dde0;border-radius:8px;cursor:pointer;background:#fff;font-size:10px}
+.v13-option.selected{border-color:#17324d;background:#eaf1f6}
+.v13-delivery{padding:12px;background:linear-gradient(135deg,#f8fbfc,#e9f0f3);border-radius:10px;border:1px solid var(--line)}
+.v13-daycard{padding:12px;border-radius:10px;background:#fff;border:1px solid var(--line);margin:8px 0}
+.v13-alert{border-left:5px solid #d59b25}
+.v13-good{border-left:5px solid #4e9361}
+.v13-worldnav{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:#f5f7f8}
+.v13-speed.active{background:#f2c400;color:#111}
+@media(max-width:850px){.v13-campus{min-height:900px}.v13-building,.v13-garage{left:5%;width:90%}.v13-building{top:23%;height:20%}.v13-garage{top:44%;height:16%}.v13-lot{left:5%;right:5%;top:62%;bottom:8%;grid-template-columns:repeat(3,1fr)}.v13-employee-lot{left:5%;width:90%;top:15%}.v13-radio{left:5%;right:5%}.v13-profile,.v13-builder{grid-template-columns:1fr}.v13-map{height:700px}}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V12.1 — Real Warsaw Map</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V13.0 — Living Transportation Department</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -266,7 +319,7 @@ button,.btn,select,input{touch-action:manipulation}
 
 
 <section id="world12" class="view active">
- <div class="section-head"><div><h2>🚌 Warsaw Transportation World</h2><div class="small">A visual transportation department built on your existing simulation.</div></div></div>
+ <div class="section-head"><div><h2>🚌 Living Warsaw Transportation Department</h2><div class="small">Watch it operate. Step in when the Director is actually needed.</div></div></div>
  <div id="world12body"></div>
 </section>
 <section id="today" class="view">
@@ -818,7 +871,8 @@ function ensureAssignmentFields(){
  });
 }
 
-function openBusFile(id){ensureV4Data();let b=state.buses.find(x=>x.id===id);if(!b)return;let annual=Math.round((b.repairSpend||0)/Math.max(1,busAge(b)||1));openModal('Bus File — '+b.id,`<div class="detail"><div class="kv"><span>Vehicle</span><b>${b.year} ${b.model}</b></div><div class="kv"><span>Bus Age</span><b>${busAge(b)} years</b></div><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Purpose</span><b>${b.designation}</b></div><div class="kv"><span>Power</span><b>${b.fuelType||'Diesel'}</b></div><div class="kv"><span>Technology</span><b>${b.cameras?'Cameras • ':''}${b.gps?'GPS • ':''}${b.airConditioning?'A/C':''}</b></div><div class="kv"><span>Condition</span><b>${b.condition}%</b></div><div class="kv"><span>Total Repair Spend</span><b>${money(b.repairSpend||0)}</b></div><div class="kv"><span>Average / Year</span><b>${money(annual)}</b></div><div class="kv"><span>Breakdowns</span><b>${b.breakdowns||0}</b></div></div><h3>History</h3>${(b.history||[]).map(h=>`<div class="alert">Year ${h.year}: ${h.event}${h.cost?' • '+money(h.cost):''}</div>`).join('')||'<div class="small">No archived history yet.</div>'}<div class="actions"><button class="btn" onclick="replacementDecision(${b.id})">Replacement Review</button><button class="btn" onclick="retireBus(${b.id})">Retire / Dispose Bus</button></div>`)}
+function openBusFileLegacyV13(id){ensureV4Data();let b=state.buses.find(x=>x.id===id);if(!b)return;let annual=Math.round((b.repairSpend||0)/Math.max(1,busAge(b)||1));openModal('Bus File — '+b.id,`<div class="detail"><div class="kv"><span>Vehicle</span><b>${b.year} ${b.model}</b></div><div class="kv"><span>Bus Age</span><b>${busAge(b)} years</b></div><div class="kv"><span>Mileage</span><b>${b.miles.toLocaleString()}</b></div><div class="kv"><span>Purpose</span><b>${b.designation}</b></div><div class="kv"><span>Power</span><b>${b.fuelType||'Diesel'}</b></div><div class="kv"><span>Technology</span><b>${b.cameras?'Cameras • ':''}${b.gps?'GPS • ':''}${b.airConditioning?'A/C':''}</b></div><div class="kv"><span>Condition</span><b>${b.condition}%</b></div><div class="kv"><span>Total Repair Spend</span><b>${money(b.repairSpend||0)}</b></div><div class="kv"><span>Average / Year</span><b>${money(annual)}</b></div><div class="kv"><span>Breakdowns</span><b>${b.breakdowns||0}</b></div></div><h3>History</h3>${(b.history||[]).map(h=>`<div class="alert">Year ${h.year}: ${h.event}${h.cost?' • '+money(h.cost):''}</div>`).join('')||'<div class="small">No archived history yet.</div>'}<div class="actions"><button class="btn" onclick="replacementDecision(${b.id})">Replacement Review</button><button class="btn" onclick="retireBus(${b.id})">Retire / Dispose Bus</button></div>`)}
+function openBusFile(id){v13OpenBus(id)}
 
 function retireBus(id){
  let b=state.buses.find(x=>x.id===id);if(!b)return;
@@ -1994,6 +2048,129 @@ function renderV10DistrictExtras(){
  });
 }
 
+
+/* ===== V13 LIVING TRANSPORTATION DEPARTMENT ===== */
+function ensureV13(){
+ state.v13=state.v13||{};
+ let v=state.v13;
+ if(v.speed==null)v.speed=1;
+ if(v.paused==null)v.paused=true;
+ if(!v.radio)v.radio=["DISPATCH: Transportation Center online. Morning operations ready."];
+ if(!v.busHistory)v.busHistory={};
+ if(!v.busSpecs)v.busSpecs={};
+ if(!v.driverPrefs)v.driverPrefs={};
+ if(!v.facility)v.facility={bays:3,wash:true,fuel:true,covered:false,chargers:0};
+ if(!v.legends)v.legends=[];
+ if(!v.worldEvents)v.worldEvents=[];
+ if(!v.delegation)v.delegation={dispatch:true,shop:true,hr:true};
+ if(!v.deliveryQueue)v.deliveryQueue=[];
+ if(!v.routeMemory)v.routeMemory={};
+ state.buses.forEach((b,i)=>{
+   if(!v.busSpecs[b.id]){
+    let model=String(b.model||'');
+    let type=(Number(b.capacity||72)<=30)?'Type A / Mini':(model.includes('All American')||model.includes('Saf-T-Liner'))?'Rear Engine / Pusher':'Conventional Type C';
+    v.busSpecs[b.id]={type,capacity:Number(b.capacity||72),fuel:b.fuelType||'Diesel',ac:'Driver A/C',cameras:6,gps:true,heatedMirrors:true,wheelchair:Number(b.wheelchairPositions||0),storage:type.includes('Pusher')?'Underfloor':'None',districtSpec:'Warsaw Standard',vin:'WCS'+String(state.year||2026).slice(-2)+String(b.id).padStart(3,'0')+String(100000+i),deliveryMiles:Math.max(12,70+i*17),reliability:80+((i*7)%18),cleanliness:85};
+   }
+   if(!v.busHistory[b.id])v.busHistory[b.id]=[{year:state.year||2026,text:`Bus ${b.id} entered the V13 fleet history system.`}];
+ });
+}
+function v13BusType(b){ensureV13();return state.v13.busSpecs[b.id]?.type||'Conventional Type C'}
+function v13BusSVG(b,large=false){
+ ensureV13();let s=state.v13.busSpecs[b.id]||{},type=s.type||'Conventional Type C',n=b.id;
+ let pusher=type.includes('Pusher'),front=type.includes('Front Engine'),mini=type.includes('Type A');
+ let x=mini?35:10,w=mini?245:330,hood=(!pusher&&!front&&!mini);
+ let bodyX=hood?70:x,bodyW=hood?w-60:w;
+ let windows=mini?5:(pusher||front?9:8), win='';
+ for(let i=0;i<windows;i++){let wx=bodyX+18+i*((bodyW-70)/windows);win+=`<rect x="${wx}" y="31" width="${Math.max(16,(bodyW-85)/windows)}" height="28" rx="2" fill="#86b8cc" stroke="#202b31" stroke-width="2"/>`}
+ let frontShape=pusher||front?`<path d="M${x} 24 L${x+bodyW} 24 L${x+bodyW} 82 L${x} 82 Z" fill="#f2c400" stroke="#202020" stroke-width="4"/>`:`<path d="M${bodyX} 24 L${bodyX+bodyW} 24 L${bodyX+bodyW} 82 L${bodyX} 82 Z" fill="#f2c400" stroke="#202020" stroke-width="4"/><path d="M${x} 58 L${bodyX} 45 L${bodyX} 82 L${x} 82 Z" fill="#f2c400" stroke="#202020" stroke-width="4"/>`;
+ return `<svg class="v13-bus-svg" viewBox="0 0 370 115" aria-label="Bus ${n}">${frontShape}${win}<rect x="${bodyX+8}" y="66" width="${bodyW-16}" height="5" fill="#111"/><rect x="${bodyX+8}" y="76" width="${bodyW-16}" height="3" fill="#111"/><text x="${bodyX+16}" y="73" font-size="${large?18:15}" font-weight="900" fill="#111">${n}</text><text x="${bodyX+bodyW/2}" y="73" text-anchor="middle" font-size="8" font-weight="900" fill="#111">WARSAW COMMUNITY SCHOOLS</text>${s.wheelchair?`<text x="${bodyX+bodyW-38}" y="73" font-size="16">♿</text>`:''}<circle cx="${bodyX+48}" cy="88" r="13" fill="#222"/><circle cx="${bodyX+bodyW-48}" cy="88" r="13" fill="#222"/><circle cx="${bodyX+48}" cy="88" r="6" fill="#999"/><circle cx="${bodyX+bodyW-48}" cy="88" r="6" fill="#999"/>${pusher?`<rect x="${bodyX+bodyW-15}" y="34" width="6" height="38" fill="#333"/>`:''}${front?`<rect x="${bodyX+5}" y="34" width="7" height="38" fill="#333"/>`:''}<circle cx="${bodyX+4}" cy="48" r="4" fill="#fff3a0"/><circle cx="${bodyX+4}" cy="61" r="3" fill="#d33"/></svg>`;
+}
+function v13BusWorldStatus(b){
+ let r=state.routes.find(x=>Number(x.bus)===Number(b.id)||Number(x.temporaryBus)===Number(b.id));
+ let m=Number(state.simMinutes||315),st=String(b.status||'').toLowerCase();
+ if(st.includes('repair')||st.includes('maint')||Number(b.condition||100)<50)return 'shop';
+ if(r&&((m>=355&&m<=600)||(m>=840&&m<=1040)))return 'route';
+ return 'lot';
+}
+function v13WeatherClass(){
+ let w=String(state.weather?.condition||state.weather?.type||state.weather||'').toLowerCase();
+ if(w.includes('snow'))return 'v13-snow'; if(w.includes('rain')||w.includes('storm'))return 'v13-rain'; return '';
+}
+function v13Time(){try{return minsToTime(state.simMinutes||315)}catch(e){return `${Math.floor((state.simMinutes||315)/60)}:${String((state.simMinutes||315)%60).padStart(2,'0')}`}}
+function v13Date(){try{return formatGameDate()}catch(e){return state.gameDate||`School Year ${state.year||1}`}}
+function v13Money(x){try{return money(x)}catch(e){return '$'+Number(x||0).toLocaleString()}}
+function v13DriverForBus(b){let r=state.routes.find(x=>Number(x.bus)===Number(b.id));return r?state.staff.find(s=>s.name===r.driver):null}
+function v13RouteForBus(b){return state.routes.find(x=>Number(x.bus)===Number(b.id)||Number(x.temporaryBus)===Number(b.id))}
+function v13Radio(text){ensureV13();state.v13.radio.unshift(text);state.v13.radio=state.v13.radio.slice(0,10)}
+function v13OpenBus(id){
+ ensureV13();let b=state.buses.find(x=>Number(x.id)===Number(id));if(!b)return;
+ let s=state.v13.busSpecs[b.id],r=v13RouteForBus(b),d=v13DriverForBus(b),hist=state.v13.busHistory[b.id]||[];
+ let cond=Number(b.condition||100),fuel=Number(b.fuel||b.fuelLevel||75);
+ openModal(`🚌 Bus ${b.id} — ${b.year||''} ${b.model||s.type}`,`<div class="v13-profile"><div><div class="v13-bigbus">${v13BusSVG(b,true)}</div><div class="actions" style="margin-top:8px"><button class="btn" onclick="fuelBus(${b.id})">⛽ Fuel</button><button class="btn" onclick="maintainBus(${b.id})">🔧 Shop</button><button class="btn" onclick="v13WashBus(${b.id})">🧼 Wash</button></div></div><div><div class="v13-specgrid"><div class="v13-spec"><b>Bus Type</b><br>${s.type}</div><div class="v13-spec"><b>Assignment</b><br>${r?'Route '+r.id:'Spare / Unassigned'}</div><div class="v13-spec"><b>Driver</b><br>${d?d.name:'—'}</div><div class="v13-spec"><b>Mileage</b><br>${Number(b.mileage||0).toLocaleString()} mi</div><div class="v13-spec"><b>Capacity</b><br>${s.capacity} passengers</div><div class="v13-spec"><b>Fuel</b><br>${s.fuel} • ${fuel}%</div><div class="v13-spec"><b>Configuration</b><br>${s.ac} • ${s.cameras} cameras • GPS ${s.gps?'✓':'—'}</div><div class="v13-spec"><b>VIN / Build</b><br>${s.vin}<br>Delivery: ${s.deliveryMiles} mi</div></div><div style="margin-top:10px"><b>Condition ${cond}%</b><div class="v13-condition"><div style="width:${cond}%"></div></div><div class="small">Cleanliness ${s.cleanliness}% • Reliability ${s.reliability}/100</div></div><h4>Vehicle Life Story</h4><div class="v13-history">${hist.slice().reverse().map(x=>`<div class="v13-event"><b>${x.year}</b> — ${x.text}</div>`).join('')}</div></div></div>`);
+}
+function v13WashBus(id){ensureV13();let b=state.buses.find(x=>Number(x.id)===Number(id));if(!b)return;state.v13.busSpecs[id].cleanliness=100;state.v13.busHistory[id].push({year:state.year,text:'Washed and detailed at the Transportation Center.'});v13Radio(`SHOP: Bus ${id} completed the wash bay.`);notify?.(`Bus ${id} is clean and ready.`);render()}
+function v13Room(name){
+ let map={Director:'today',Dispatch:'dispatch',Drivers:'staffing',Training:'training',Shop:'shop'};
+ openModal(`🏢 ${name}`,`<div class="alert"><b>${name}</b><br>${name==='Dispatch'?'Routine coverage can be handled automatically by your dispatcher.':name==='Shop'?'Mechanics handle routine repairs automatically when delegation is enabled.':'This area connects the visual world to the full management system.'}</div><div class="actions"><button class="btn primary" onclick="closeModal();goView('${map[name]||'today'}')">Open ${name}</button></div>`);
+}
+function v13SetSpeed(x){ensureV13();state.v13.speed=x;state.v13.paused=x===0;renderV13World(window.v13view||'campus')}
+function v13Advance(){
+ ensureV13();if(state.v13.paused)return;
+ let step=15*state.v13.speed; state.simMinutes=Math.min(1439,Number(state.simMinutes||315)+step);
+ if(state.simMinutes>=360&&state.simMinutes-step<360)v13Radio("DISPATCH: Morning pull-out is underway.");
+ if(state.simMinutes>=480&&state.simMinutes-step<480)v13Radio("DISPATCH: Morning routes are clearing schools.");
+ if(state.simMinutes>=870&&state.simMinutes-step<870)v13Radio("DISPATCH: Afternoon buses are staging for dismissal.");
+ if(state.simMinutes>=1030&&state.simMinutes-step<1030)v13Radio("DISPATCH: Afternoon routes are returning to the Transportation Center.");
+ state.buses.forEach(b=>{let s=state.v13.busSpecs[b.id];if(s)s.cleanliness=Math.max(20,s.cleanliness-(v13BusWorldStatus(b)==='route'?1:0))});
+ renderV13World(window.v13view||'campus');
+}
+function v13Toolbar(){
+ ensureV13();let ready=state.buses.filter(b=>Number(b.condition||100)>=50).length;
+ return `<div class="v13-toolbar"><span class="v13-clock">${v13Time()}</span><span class="stat">📅 ${v13Date()}</span><span class="stat">🚌 ${ready}/${state.buses.length} ready</span><span class="stat">👨‍✈️ ${state.staff.filter(s=>s.status!=='Former').length} drivers</span><span class="stat">💰 ${v13Money(state.budget||state.operatingBudget||0)}</span><span class="stat">🌤 ${state.weather?.temp||57}°F</span><button class="btn v13-speed ${state.v13.speed===0?'active':''}" onclick="v13SetSpeed(0)">⏸</button>${[1,2,4,8].map(x=>`<button class="btn v13-speed ${state.v13.speed===x&&!state.v13.paused?'active':''}" onclick="v13SetSpeed(${x})">${x}×</button>`).join('')}<button class="btn" onclick="v13Advance()">⏩ Step</button></div>`;
+}
+function v13Campus(){
+ ensureV13();let shop=state.buses.filter(b=>v13BusWorldStatus(b)==='shop'),activeDrivers=state.staff.filter(s=>s.status!=='Former');
+ return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn primary" onclick="renderV13World('campus')">🏢 Campus</button><button class="btn" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="v13OpenBuilder()">🚌 Order Bus</button><button class="btn" onclick="v13MorningBrief()">☕ Morning Brief</button><button class="btn" onclick="v13Delegation()">🧠 Delegation</button></div><div class="v13-campus"><div class="v13-weather ${v13WeatherClass()}"></div><div class="v13-employee-lot">${activeDrivers.slice(0,9).map(()=>'<div class="v13-car"></div>').join('')}<span style="color:white;font-size:8px;margin-left:5px">EMPLOYEE LOT</span></div><div class="v13-asphalt"></div><div class="v13-building"><div class="v13-sign">WARSAW COMMUNITY SCHOOLS • TRANSPORTATION</div><div class="v13-rooms"><div class="v13-room" onclick="v13Room('Director')">👔 <b>Director</b><br>Command • Board</div><div class="v13-room" onclick="v13Room('Dispatch')">📻 <b>Dispatch</b><br>Radio • Coverage</div><div class="v13-room" onclick="v13Room('Drivers')">👨‍✈️ <b>Driver Room</b><br>Staff • Route bids</div><div class="v13-room" onclick="v13Room('Training')">🎓 <b>Training</b><br>CDL • In-service</div></div></div><div class="v13-garage">${[0,1,2].map(i=>`<div class="v13-bay" onclick="v13Room('Shop')"><b>BAY ${i+1}</b>${shop[i]?`<div class="v13-buswrap">${v13BusSVG(shop[i])}</div>`:'<div class="small" style="margin-top:20px">AVAILABLE</div>'}</div>`).join('')}</div><div class="v13-lot">${state.buses.map(b=>{let st=v13BusWorldStatus(b);return `<div class="v13-space">${st==='lot'?`<div class="v13-buswrap" onclick="v13OpenBus(${b.id})">${v13BusSVG(b)}</div>`:`<div class="v13-bus-out" onclick="v13OpenBus(${b.id})">BUS ${b.id}<br>${st==='route'?'OUT ON ROUTE':'IN SHOP'}</div>`}<span class="v13-space-label">SPACE ${b.id}</span></div>`}).join('')}</div><div class="v13-fuel">⛽ FUEL ISLAND<br><span class="small">Drivers auto-fuel low buses</span></div><div class="v13-wash">🧼 BUS WASH<br><span class="small">Road salt & dirt removal</span></div><div class="v13-radio"><b>📻 RADIO</b> ${state.v13.radio[0]||'All quiet.'}</div></div></div>`;
+}
+function v13Warsaw(){
+ ensureV13();let osm='https://www.openstreetmap.org/export/embed.html?bbox=-85.94%2C41.18%2C-85.76%2C41.31&layer=mapnik&marker=41.261%2C-85.844';
+ let buses=state.routes.slice(0,12).map((r,i)=>{let b=state.buses.find(x=>Number(x.id)===Number(r.bus));if(!b)return'';let m=Number(state.simMinutes||315),phase=((m-315)/725+i*.09)%1,left=18+Math.abs(Math.sin(phase*6.28+i))*66,top=20+Math.abs(Math.cos(phase*5.4+i))*62;return `<div class="v13-mapbus" style="left:${left}%;top:${top}%" onclick="v13OpenBus(${b.id})">${v13BusSVG(b)}</div>`}).join('');
+ return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn" onclick="renderV13World('campus')">🏢 Campus</button><button class="btn primary" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="goView('routes')">🛣️ Route Management</button></div><div class="v13-map"><iframe loading="lazy" src="${osm}" title="Warsaw Indiana map"></iframe><div class="v13-map-overlay">${buses}<div class="v13-routebadge"><b>WARSAW, INDIANA</b><br>Real map beneath the simulation layer<br>Numbered buses move as game time advances.</div></div></div></div>`;
+}
+function renderV13World(view='campus'){ensureV13();window.v13view=view;let e=$('world12body');if(e)e.innerHTML=view==='warsaw'?v13Warsaw():v13Campus()}
+function v13MorningBrief(){
+ ensureV13();let shop=state.buses.filter(b=>v13BusWorldStatus(b)==='shop'),open=state.routes.filter(r=>!r.driver||!r.bus);
+ openModal('☕ Good Morning, Director',`<div class="v13-daycard"><h3>${v13Date()} • ${v13Time()}</h3><p>Transportation is preparing for today's operation.</p></div><div class="v13-daycard ${open.length?'v13-alert':'v13-good'}"><b>🚌 Fleet:</b> ${state.buses.length-shop.length}/${state.buses.length} available<br><b>🔧 Shop:</b> ${shop.length?shop.map(b=>'Bus '+b.id).join(', '):'No buses currently held in shop'}<br><b>👨‍✈️ Coverage:</b> ${open.length?open.length+' route(s) need attention':'All permanent route assignments appear covered'}<br><b>📻 Latest:</b> ${state.v13.radio[0]}</div><div class="actions"><button class="btn primary" onclick="closeModal();renderV13World('campus')">Enter Transportation Center</button><button class="btn" onclick="closeModal();runTransportationDay()">Run Full Day</button></div>`);
+}
+function v13Delegation(){
+ ensureV13();let d=state.v13.delegation;
+ openModal('🧠 Management Delegation',`<div class="alert">Good staff should reduce clicking. Routine issues can be handled automatically while major decisions still come to the Director.</div>${[['dispatch','Dispatch routine coverage'],['shop','Shop repairs under routine threshold'],['hr','Routine HR scheduling']].map(x=>`<label class="card" style="display:block;margin:7px 0"><input type="checkbox" ${d[x[0]]?'checked':''} onchange="state.v13.delegation.${x[0]}=this.checked;autosaveGame()"> <b>${x[1]}</b></label>`).join('')}`);
+}
+function v13OpenBuilder(){
+ ensureV13();state.v13.builder=state.v13.builder||{type:'Conventional Type C',capacity:72,fuel:'Diesel',package:'Standard Route',ac:'Driver A/C',wheelchair:0};
+ v13RenderBuilder();
+}
+function v13RenderBuilder(){
+ let x=state.v13.builder,types=['Conventional Type C','Front Engine Type D','Rear Engine / Pusher','Type A / Mini'],caps=x.type.includes('Mini')?[18,24,30]:x.type.includes('Type D')||x.type.includes('Pusher')?[72,78,84,90]:[54,66,72,78];
+ let demo={id:'NEW',year:(Number(state.year||2026)+1),model:x.type,capacity:x.capacity,wheelchairPositions:x.wheelchair};
+ state.v13.busSpecs.NEW={...x,cameras:8,gps:true,heatedMirrors:true,storage:x.type.includes('Pusher')?'Underfloor':'None'};
+ let base=x.type.includes('Pusher')?185000:x.type.includes('Front')?168000:x.type.includes('Mini')?92000:142000;
+ let price=base+(x.capacity-54)*650+(x.fuel==='Electric'?95000:x.fuel==='Propane'?9000:0)+(x.package==='Premium Trip'?18000:x.package==='Special Needs'?24000:0);
+ openModal('🚌 New Bus Configurator',`<div class="v13-builder"><div><h4>Bus Type</h4><div class="v13-optiongrid">${types.map(t=>`<div class="v13-option ${x.type===t?'selected':''}" onclick="state.v13.builder.type='${t}';state.v13.builder.capacity=${t.includes('Mini')?24:(t.includes('Type D')||t.includes('Pusher')?84:72)};v13RenderBuilder()">${t}</div>`).join('')}</div><h4>Capacity</h4><div class="actions">${caps.map(c=>`<button class="btn ${x.capacity===c?'primary':''}" onclick="state.v13.builder.capacity=${c};v13RenderBuilder()">${c}</button>`).join('')}</div><h4>Fuel</h4><div class="actions">${['Diesel','Propane','Electric'].map(f=>`<button class="btn ${x.fuel===f?'primary':''}" onclick="state.v13.builder.fuel='${f}';v13RenderBuilder()">${f}</button>`).join('')}</div><h4>Package</h4><div class="actions">${['Standard Route','Rural Route','Special Needs','Premium Trip'].map(p=>`<button class="btn ${x.package===p?'primary':''}" onclick="state.v13.builder.package='${p}';state.v13.builder.wheelchair=${p==='Special Needs'?4:0};v13RenderBuilder()">${p}</button>`).join('')}</div></div><div><div class="v13-bigbus">${v13BusSVG(demo,true)}</div><div class="delivery"><b>${Number(state.year||2026)+1} ${x.type}</b><br>${x.capacity} passenger • ${x.fuel}<br>${x.package} • ${x.wheelchair?x.wheelchair+' wheelchair positions':'standard seating'}<hr><b>Estimated Purchase: ${v13Money(price)}</b><br><span class="small">Delivery includes a build sheet, delivery mileage, VIN, fleet history and your assigned fleet number.</span></div><div class="actions" style="margin-top:10px"><button class="btn primary" onclick="v13OrderConfiguredBus(${price})">Place Order</button></div></div></div>`);
+}
+function v13NextBusNumber(){let nums=state.buses.map(b=>Number(b.id)).filter(Number.isFinite);return Math.max(60,...nums)+1}
+function v13OrderConfiguredBus(price){
+ let x={...state.v13.builder},id=v13NextBusNumber();
+ if(Number(state.budget||state.operatingBudget||0)<price){notify?.('Not enough available operating budget for this order.');return}
+ if(state.budget!=null)state.budget-=price;else state.operatingBudget-=price;
+ let b={id,year:Number(state.year||2026)+1,model:x.type,capacity:x.capacity,mileage:Math.floor(80+Math.random()*240),condition:100,status:'Spare',fuel:100,wheelchairLift:x.wheelchair>0,wheelchairPositions:x.wheelchair};
+ state.buses.push(b);state.v13.busSpecs[id]={...x,cameras:8,gps:true,heatedMirrors:true,storage:x.type.includes('Pusher')?'Underfloor':'None',districtSpec:'Warsaw Standard',vin:'WCS'+String(state.year||2026).slice(-2)+String(id).padStart(3,'0')+Math.floor(100000+Math.random()*899999),deliveryMiles:b.mileage,reliability:95,cleanliness:100};
+ state.v13.busHistory[id]=[{year:state.year,text:`Ordered and delivered as a ${x.type} (${x.package}).`},{year:state.year,text:`Assigned fleet number ${id}; arrived with ${b.mileage} delivery miles.`}];
+ v13Radio(`DELIVERY: New ${x.type} Bus ${id} has arrived at the Transportation Center.`);
+ autosaveGame();closeModal();render();v13Delivery(id);
+}
+function v13Delivery(id){let b=state.buses.find(x=>Number(x.id)===Number(id));openModal('🎉 NEW BUS DELIVERY',`<div class="v13-bigbus">${v13BusSVG(b,true)}</div><div style="text-align:center"><h2>BUS ${id}</h2><p>${b.year} ${state.v13.busSpecs[id].type}</p><p>${b.mileage} delivery miles • ${state.v13.busSpecs[id].package}</p><button class="btn primary" onclick="closeModal();renderV13World('campus')">Put Bus ${id} Into Service</button></div>`)}
+
 /* V12 WARSAW VISUAL WORLD */
 function busWorldStatus12(b){
  let assigned=state.routes.some(r=>Number(r.bus)===Number(b.id)||Number(r.temporaryBus)===Number(b.id));
@@ -2027,10 +2204,8 @@ function gameDistrictMap12(){
  let mb=state.routes.slice(0,9).map((r,i)=>`<div class="mapbus12" style="left:${22+(i*9)%65}%;top:${30+(i*14)%53}%">🚌 ${r.bus||r.id}</div>`).join('');
  return `<div class="world12"><div class="world12hud">${hud12()}</div><div class="world12tabs"><button class="btn" onclick="renderWorld12('campus')">🏢 Transportation Campus</button><button class="btn" onclick="renderWorld12('map')">🗺️ Real Warsaw Map</button><button class="btn primary" onclick="renderWorld12('gamemap')">🎮 Game Map</button></div><div class="map12"><div class="lake12" style="width:14%;height:21%;left:72%;top:11%"></div><div class="lake12" style="width:17%;height:24%;left:69%;top:63%"></div><div class="road12 h" style="top:43%;transform:rotate(-4deg)"></div><div class="road12 h" style="top:67%;transform:rotate(5deg)"></div><div class="road12 v" style="left:51%;transform:rotate(6deg)"></div><div class="road12 v" style="left:31%;transform:rotate(-7deg)"></div>${p.map(x=>`<div class="place12" style="left:${x[1]}%;top:${x[2]}%">🏫 ${x[0]}</div>`).join('')}<div class="place12 transport" style="left:54%;top:28%" onclick="renderWorld12('campus')">🚌 Transportation Center</div>${mb}<div class="legend12"><b>GAME OPERATIONS MAP</b><br>Use this view for animated gameplay.<br>Use Real Warsaw Map for actual geography.</div></div></div>`;
 }
-function renderWorld12(mode){
- window.world12mode=mode||window.world12mode||'campus';
- let e=$('world12body'); if(e)e.innerHTML=window.world12mode==='map'?districtMap12():(window.world12mode==='gamemap'?gameDistrictMap12():campus12());
-}
+function renderWorld12(mode){renderV13World(mode==='map'?'warsaw':'campus')}
+
 
 function render(){
  ensureRealCalendar();
