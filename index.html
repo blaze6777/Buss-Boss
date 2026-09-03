@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V13.1 — Visual World Hotfix</title>
+<title>School Transportation Tycoon — Tycoon Web V20.0 — Living Simulation Engine</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -273,12 +273,147 @@ button,.btn,select,input{touch-action:manipulation}
 .v13-worldnav{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:#f5f7f8}
 .v13-speed.active{background:#f2c400;color:#111}
 @media(max-width:850px){.v13-campus{min-height:900px}.v13-building,.v13-garage{left:5%;width:90%}.v13-building{top:23%;height:20%}.v13-garage{top:44%;height:16%}.v13-lot{left:5%;right:5%;top:62%;bottom:8%;grid-template-columns:repeat(3,1fr)}.v13-employee-lot{left:5%;width:90%;top:15%}.v13-radio{left:5%;right:5%}.v13-profile,.v13-builder{grid-template-columns:1fr}.v13-map{height:700px}}
+
+/* V14 HR + Applicant Tracking */
+.hr-pipeline{display:grid;grid-template-columns:repeat(6,minmax(135px,1fr));gap:8px;overflow:auto;padding-bottom:6px}
+.hr-stage{background:#f5f7f8;border:1px solid var(--line);border-radius:10px;padding:8px;min-height:120px}
+.hr-stage h4{margin:0 0 7px;font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.hr-stage-count{float:right;background:#17324d;color:white;border-radius:999px;padding:2px 6px;font-size:8px}
+.hr-mini{background:white;border:1px solid #dfe4e7;border-radius:7px;padding:6px;margin:5px 0;cursor:pointer;font-size:9px}
+.hr-mini:hover{box-shadow:0 2px 8px #0002}
+.hr-file-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.hr-score{font-size:24px;font-weight:900}
+.hr-risk{padding:3px 6px;border-radius:999px;font-size:8px;background:#eef1f3}
+.hr-check{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #e5e9eb;font-size:9px}
+.hr-check:last-child{border-bottom:0}
+.hr-timeline{border-left:3px solid #d9e1e5;padding-left:10px}
+.hr-timeline div{font-size:9px;margin:6px 0}
+.hr-question{padding:9px;border-radius:8px;background:#f7f9fa;border:1px solid #e1e5e8;margin:7px 0}
+.hr-answer{padding:8px;margin-top:5px;background:white;border-left:3px solid #7390a5;font-size:9px}
+.hr-job{padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;margin:7px 0}
+.hr-status-applied{border-left:5px solid #7991a4}.hr-status-interview{border-left:5px solid #d69b2d}.hr-status-check{border-left:5px solid #6c85b8}.hr-status-offer{border-left:5px solid #8b69a8}.hr-status-hired{border-left:5px solid #579161}.hr-status-rejected{opacity:.65}
+.hr-metric{font-size:20px;font-weight:900}
+.hr-tag{display:inline-block;margin:2px 3px 2px 0;padding:3px 5px;border-radius:999px;background:#edf2f5;font-size:8px}
+.hr-note{background:#fff9df;border:1px solid #eadb94;padding:7px;border-radius:7px;font-size:9px}
+.hr-redacted{letter-spacing:.08em;background:#252525;color:#252525;border-radius:2px;user-select:none}
+@media(max-width:900px){.hr-pipeline{grid-template-columns:repeat(3,minmax(150px,1fr))}}
+
+/* V15 Operations Simulation */
+.ops15-status{display:grid;grid-template-columns:55px 1fr 95px 85px 80px;gap:7px;align-items:center;padding:7px 8px;border-bottom:1px solid #e1e6e9;font-size:9px}
+.ops15-status:last-child{border-bottom:0}
+.ops15-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;background:#5a9564}.ops15-dot.warn{background:#d19a31}.ops15-dot.bad{background:#b95e5e}
+.ops15-route-card{border:1px solid var(--line);border-radius:9px;padding:9px;background:white;margin:6px 0;cursor:pointer}
+.ops15-route-card:hover{box-shadow:0 2px 10px #0002}
+.ops15-stop{display:grid;grid-template-columns:54px 1fr 70px 70px 72px 110px;gap:6px;align-items:center;border-bottom:1px solid #e5e9eb;padding:7px 4px;font-size:9px}
+.ops15-stop:last-child{border-bottom:0}
+.ops15-stop input{width:100%;padding:4px;font-size:9px}
+.ops15-stop .time{font-weight:900;font-variant-numeric:tabular-nums}
+.ops15-radio-line{font-family:ui-monospace,Consolas,monospace;font-size:9px;padding:5px 0;border-bottom:1px solid #ffffff18}
+.ops15-radio-line b{color:#f2c400}
+.ops15-escalation{border-left:5px solid #d39c2d;background:#fffaf0;padding:8px;border-radius:7px;margin:6px 0;font-size:9px}
+.ops15-escalation.major{border-left-color:#b95353;background:#fff4f4}
+.ops15-escalation.good{border-left-color:#559364;background:#f3fbf5}
+.ops15-traffic{display:flex;justify-content:space-between;gap:8px;padding:7px;border-bottom:1px solid #e6e9eb;font-size:9px}
+.ops15-traffic:last-child{border-bottom:0}
+.ops15-pm{display:grid;grid-template-columns:50px 1fr 90px 90px 110px;gap:7px;align-items:center;padding:7px;border-bottom:1px solid #e4e8ea;font-size:9px}
+.ops15-bar{height:6px;background:#e1e5e7;border-radius:8px;overflow:hidden}.ops15-bar i{display:block;height:100%;background:#718f71}
+.ops15-part{display:grid;grid-template-columns:1fr 60px 70px;gap:7px;align-items:center;padding:7px;border-bottom:1px solid #e4e8ea;font-size:9px}
+.ops15-timeline{position:relative;padding-left:22px}
+.ops15-timeline:before{content:"";position:absolute;left:8px;top:3px;bottom:3px;width:3px;background:#d6dde1}
+.ops15-timeitem{position:relative;margin:10px 0;padding:8px 9px;background:#f6f8f9;border-radius:8px;font-size:9px}
+.ops15-timeitem:before{content:"";position:absolute;width:10px;height:10px;border-radius:50%;background:#17324d;left:-19px;top:10px}
+.ops15-econ{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.ops15-econ>div{padding:9px;border:1px solid var(--line);border-radius:8px;background:#f8fafb}
+.ops15-cost{font-size:18px;font-weight:900}
+.ops15-schooltag,.ops15-tag{display:inline-block;padding:3px 6px;border-radius:999px;background:#edf2f5;font-size:8px;margin:2px}
+.ops15-crossing{background:#fff4d8}
+.ops15-over{background:#fff0f0}
+@media(max-width:900px){.ops15-status{grid-template-columns:45px 1fr 80px}.ops15-status>*:nth-child(4),.ops15-status>*:nth-child(5){display:none}.ops15-stop{grid-template-columns:50px 1fr 60px}.ops15-stop>*:nth-child(4),.ops15-stop>*:nth-child(5),.ops15-stop>*:nth-child(6){display:none}.ops15-pm{grid-template-columns:45px 1fr 90px}.ops15-pm>*:nth-child(4),.ops15-pm>*:nth-child(5){display:none}}
+
+/* V16 Riders, Households & Special Needs */
+.r16-house{border:1px solid var(--line);border-radius:9px;background:#fff;padding:9px;margin:7px 0}
+.r16-house h4{margin:0 0 5px}
+.r16-students{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.r16-student{padding:6px 8px;border-radius:7px;background:#eef3f6;border:1px solid #d7e0e5;font-size:9px;cursor:pointer}
+.r16-student.special{background:#fff7df;border-color:#e3cd86}
+.r16-student:hover{box-shadow:0 2px 8px #0002}
+.r16-cap{padding:8px;border-bottom:1px solid #e5e9eb;font-size:9px}
+.r16-cap.warn{background:#fff8e6}.r16-cap.bad{background:#fff0f0}
+.r16-request{border-left:5px solid #7b91a4;background:#f8fafb;padding:8px;border-radius:7px;margin:7px 0;font-size:9px}
+.r16-request.pending{border-left-color:#d19a31}.r16-request.approved{border-left-color:#579161}.r16-request.denied{border-left-color:#b95e5e}
+.r16-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.r16-card{padding:8px;border:1px solid var(--line);border-radius:8px;background:#f8fafb;font-size:9px}
+.r16-plan{border-left:5px solid #c79c36;background:#fff9e7;padding:9px;border-radius:8px;margin:7px 0;font-size:9px}
+.r16-badge{display:inline-block;padding:3px 6px;border-radius:999px;background:#edf2f5;font-size:8px;margin:2px}
+.r16-mapstop{font-weight:700}
+@media(max-width:850px){.r16-grid{grid-template-columns:1fr}}
+
+/* V17-V19 Workforce / Procurement / Administration */
+.v17-row,.v18-row,.v19-row{display:grid;grid-template-columns:70px 1fr 100px 100px;gap:7px;align-items:center;padding:7px;border-bottom:1px solid #e5e9eb;font-size:9px}
+.v17-stars{letter-spacing:1px}
+.v17-sub{border:1px solid var(--line);border-radius:8px;padding:8px;margin:6px 0;background:#f8fafb}
+.v17-paygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.v17-paybox,.v19-box{border:1px solid var(--line);border-radius:8px;background:#f8fafb;padding:8px}
+.v18-project{border-left:5px solid #6f88a5;background:#f7fafc;border-radius:8px;padding:9px;margin:7px 0}
+.v18-project.good{border-left-color:#579161}.v18-project.warn{border-left-color:#d19a31}.v18-project.bad{border-left-color:#b95e5e}
+.v18-stagebar{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.v18-stagebar span{padding:3px 5px;border-radius:999px;background:#edf1f4;font-size:8px}.v18-stagebar span.done{background:#dff0e3}.v18-stagebar span.current{background:#fff0bd;font-weight:800}
+.v19-score{display:grid;grid-template-columns:1fr 60px;gap:7px;align-items:center;padding:7px;border-bottom:1px solid #e6eaec;font-size:9px}
+.v19-meter{height:7px;background:#e0e5e8;border-radius:10px;overflow:hidden}.v19-meter i{display:block;height:100%;background:#708f72}
+.v19-rep{display:grid;grid-template-columns:1fr 55px;gap:7px;align-items:center;padding:8px;border-bottom:1px solid #e6eaec}
+.v19-growth{border:1px solid var(--line);border-radius:8px;padding:9px;background:#fff;margin:7px 0}
+.v19-news{border-left:4px solid #7a8fa5;padding:7px 9px;background:#f8fafb;margin:6px 0;font-size:9px}
+@media(max-width:900px){.v17-row,.v18-row,.v19-row{grid-template-columns:55px 1fr 80px}.v17-row>*:nth-child(4),.v18-row>*:nth-child(4),.v19-row>*:nth-child(4){display:none}.v17-paygrid{grid-template-columns:1fr}}
+
+/* V20 Living Simulation Engine */
+.v20-livebadge{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#12283d;color:#fff;font-size:9px;font-weight:800}
+.v20-livebadge i{width:8px;height:8px;border-radius:50%;background:#61c777;box-shadow:0 0 0 4px #61c77722}
+.v20-campus{position:relative;min-height:650px;border-radius:14px;overflow:hidden;background:linear-gradient(#cfe2ee 0 18%,#94ad79 18% 100%);border:1px solid #9eabb3}
+.v20-road{position:absolute;background:#555d62;border:3px solid #c8c8c4}
+.v20-road.main{left:-3%;right:-3%;height:70px;bottom:15px}.v20-road.drive{left:45%;width:72px;top:170px;bottom:80px}
+.v20-road:after{content:"";position:absolute;left:0;right:0;top:50%;border-top:2px dashed #f4df73}
+.v20-building{position:absolute;left:4%;top:90px;width:39%;height:155px;background:#e6e0d2;border:5px solid #6f6252;border-radius:10px;box-shadow:0 10px 20px #0003}
+.v20-building .sign{background:#17324d;color:#fff;text-align:center;font-size:10px;font-weight:900;padding:7px}
+.v20-rooms{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:8px}
+.v20-room{background:#f8f5ec;border:2px solid #aa9e8c;border-radius:6px;padding:9px 4px;text-align:center;font-size:8px;cursor:pointer;min-height:56px}
+.v20-garage{position:absolute;left:4%;top:255px;width:39%;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.v20-bay{height:88px;background:#8b9498;border:4px solid #5d6467;border-radius:6px;padding:5px;text-align:center;font-size:8px;color:#fff;overflow:hidden}
+.v20-lot{position:absolute;left:51%;right:3%;top:68px;bottom:104px;background:#585f63;border:5px solid #bec2bd;border-radius:8px;padding:9px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;align-content:start}
+.v20-space{height:74px;border:2px solid #e5dfbc;position:relative;border-radius:3px;text-align:center;color:#fff;font-size:7px;overflow:hidden}
+.v20-space .v13-bus{max-width:100%;transform:scale(.92)}
+.v20-empty{padding-top:22px;opacity:.7;font-weight:800}
+.v20-actor{position:absolute;z-index:12;min-width:30px;text-align:center;transition:left .5s linear,top .5s linear}
+.v20-person{width:22px;height:22px;margin:auto;border-radius:50%;background:#f2c9a6;border:3px solid #283c50;box-shadow:0 2px 4px #0003;font-size:9px;line-height:17px;font-weight:900}
+.v20-person.mechanic{border-color:#7c5230}.v20-person.office{border-color:#495f86}.v20-person.driver{border-color:#204d2c}
+.v20-actor label{display:block;background:#ffffffdd;border-radius:4px;padding:2px 4px;margin-top:2px;font-size:7px;white-space:nowrap}
+.v20-car{position:absolute;width:30px;height:15px;border-radius:8px 8px 5px 5px;background:#d6d9db;border:2px solid #3e494f;z-index:8}
+.v20-fuel{position:absolute;left:43%;bottom:106px;width:95px;height:68px;background:#e7d6a3;border:4px solid #726747;border-radius:7px;text-align:center;padding:8px;font-size:8px;font-weight:800}
+.v20-wash{position:absolute;left:27%;bottom:105px;width:90px;height:66px;background:#b7d6e5;border:4px solid #55798e;border-radius:7px;text-align:center;padding:8px;font-size:8px;font-weight:800}
+.v20-train{position:absolute;left:0;right:0;bottom:82px;height:20px;background:repeating-linear-gradient(90deg,#652e2e 0 45px,#222 45px 50px);z-index:20;animation:v20train 5s linear infinite;color:#fff;font-size:8px;font-weight:900;padding:2px}
+@keyframes v20train{from{transform:translateX(-45%)}to{transform:translateX(45%)}}
+.v20-snow{position:absolute;inset:0;pointer-events:none;z-index:30;background-image:radial-gradient(circle,#fff 0 2px,transparent 3px);background-size:40px 40px;opacity:.45;animation:v20snow 4s linear infinite}
+@keyframes v20snow{to{background-position:20px 50px}}
+.v20-rain{position:absolute;inset:0;pointer-events:none;z-index:30;background:repeating-linear-gradient(105deg,transparent 0 14px,#ffffff55 15px 16px);opacity:.45;animation:v20rain .8s linear infinite}
+@keyframes v20rain{to{background-position:30px 40px}}
+.v20-livepanel{position:absolute;left:3%;right:3%;bottom:6px;z-index:25;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:6px}
+.v20-livepanel>div{background:#0f2335e8;color:#fff;border:1px solid #ffffff22;border-radius:8px;padding:7px;font-size:8px;min-height:55px}
+.v20-feed{max-height:70px;overflow:auto}
+.v20-feed div{padding:2px 0;border-bottom:1px solid #ffffff14}
+.v20-score{font-size:22px;font-weight:900}
+.v20-schoolscene{position:absolute;right:4%;bottom:108px;width:180px;background:#f3ead8;border:4px solid #8b765b;border-radius:8px;padding:6px;z-index:8;font-size:8px}
+.v20-kids{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}.v20-kid{font-size:14px}
+.v20-map-event{position:absolute;z-index:10;background:#fff;border:2px solid #a26431;border-radius:7px;padding:4px 6px;font-size:8px;font-weight:800;box-shadow:0 2px 7px #0003}
+.v20-inbox-row{border-left:4px solid #7890a5;background:#f7f9fa;border-radius:7px;padding:8px;margin:6px 0;font-size:9px}
+.v20-inbox-row.urgent{border-left-color:#b95151;background:#fff4f4}.v20-inbox-row.done{border-left-color:#579161;opacity:.75}
+.v20-authority{display:grid;grid-template-columns:1fr 100px;gap:7px;align-items:center;padding:7px;border-bottom:1px solid #e4e8ea}
+.v20-flow{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:8px;margin-top:6px}.v20-flow span{padding:4px 6px;background:#edf2f5;border-radius:999px}.v20-flow b{font-size:12px}
+@media(max-width:900px){
+ .v20-campus{min-height:820px}.v20-building{width:92%;left:4%}.v20-garage{width:92%;left:4%;top:255px}.v20-lot{left:4%;right:4%;top:360px;bottom:175px}.v20-livepanel{grid-template-columns:1fr}.v20-schoolscene{display:none}.v20-fuel{bottom:112px;left:53%}.v20-wash{bottom:112px;left:25%}
+}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V13.1 — Visual World Hotfix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V20.0 — Living Simulation Engine</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -406,26 +541,21 @@ button,.btn,select,input{touch-action:manipulation}
 </section>
 
   <section id="routes" class="view">
-    <div class="route-layout">
-      <div class="panel">
-        <div class="section-head"><div><h2>Visual Route Planner</h2><div class="small">Each regular route runs high school, then elementary in the AM.</div><div class="actions" style="margin:0 0 12px"><button class="btn" onclick="openRouteRepairV116()">🛠️ Check Duplicate Routes</button><button class="btn" onclick="openClosedRoutesV116()">🗄️ Closed Routes</button></div></div><button class="btn" onclick="autoBalance()">Auto-Balance</button></div>
-        <div class="map" id="routeMap">
-          <div class="road h" style="left:4%;top:48%;width:92%"></div>
-          <div class="road v" style="left:48%;top:5%;height:90%"></div>
-          <div class="road h" style="left:14%;top:23%;width:62%;transform:rotate(-18deg)"></div>
-          <div class="road h" style="left:20%;top:73%;width:60%;transform:rotate(14deg)"></div>
-          <div class="garage-dot" style="left:49%;top:50%">TRANSPORT<br>CENTER</div>
-          <div class="school" style="left:80%;top:18%">WARSAW<br>HIGH</div>
-          <div class="school" style="left:79%;top:78%">LINCOLN<br>ELEMENTARY</div>
-          <div class="school" style="left:18%;top:17%">JEFFERSON<br>ELEMENTARY</div>
-          <div class="school" style="left:16%;top:80%">HARRISON<br>ELEMENTARY</div>
-          <div id="mapStops"></div>
-        </div>
-      </div>
-      <aside class="panel"><div class="small">ROUTE PACKAGE</div><h2 id="routeTitle">Route 12</h2><div id="routeDetail" class="detail"></div><div class="actions"><button class="btn" onclick="editStops()">Edit Stops</button><button class="btn" onclick="reassignRoute()">Reassign</button></div></aside>
-    </div>
-    <div class="route-card-grid" id="routeCards" style="margin-top:12px"></div>
-  </section>
+  <div class="section-head">
+    <div><h2>🗺️ Route Operations & Stop Planning</h2><div class="small">Every route now has stop times, students, deadhead mileage, crossings, timing history and a route sheet.</div></div>
+    <div class="actions"><button class="btn primary" onclick="opsRouteOptimizerV15()">Route Optimizer</button><button class="btn" onclick="openRouteRepairV116()">Duplicate Check</button><button class="btn" onclick="openClosedRoutesV116()">Closed Routes</button></div>
+  </div>
+  <div class="today-grid" id="routeOpsKpis"></div>
+  <div class="grid2">
+    <div class="panel"><div class="section-head"><h3 style="margin:0">Live Route Board</h3><button class="btn" onclick="opsAdvanceTrafficV15()">Refresh Traffic</button></div><div id="routeOpsBoard"></div></div>
+    <aside class="panel"><div class="small">ROUTE FILE</div><h2 id="routeTitle">Select a route</h2><div id="routeDetail"></div></aside>
+  </div>
+  <div class="panel" style="margin-top:12px">
+    <div class="section-head"><div><h3 style="margin:0">Stop-by-Stop Route Sheet</h3><div class="small">Drag-style editing is represented with stop controls; changes immediately recalculate miles, time, riders and annual cost.</div></div><button class="btn" onclick="opsAddStopV15()">+ Add Stop</button></div>
+    <div id="routeStopSheet"></div>
+  </div>
+  <div class="route-card-grid" id="routeCards" style="margin-top:12px"></div>
+</section>
 
   <section id="department" class="view">
   <div class="section-head">
@@ -525,10 +655,19 @@ button,.btn,select,input{touch-action:manipulation}
 </section>
 
 <section id="shop" class="view">
- <div class="section-head"><div><h2>🔧 Maintenance Shop & Fleet Strategy</h2><div class="small">Repair queue, mechanic assignments, parts delays, inspections, replacement planning, fuel prices and electric infrastructure.</div></div><div class="actions"><button class="btn" onclick="openFiveYearFleetPlan()">5-Year Fleet Plan</button><button class="btn" onclick="runStateInspection()">State Inspection Week</button></div></div>
- <div class="today-grid" id="shopKpis"></div>
- <div class="grid2"><div class="panel"><h2 style="margin-top:0">Active Repair Queue</h2><div id="repairQueue"></div></div><div class="panel"><h2 style="margin-top:0">Fuel & Energy</h2><div id="energyPanel"></div></div></div>
- <div class="grid2" style="margin-top:12px"><div class="panel"><h2 style="margin-top:0">Parts Inventory & Orders</h2><div id="partsPanel"></div></div><div class="panel"><h2 style="margin-top:0">Replacement Outlook</h2><div id="replacementPanel"></div></div></div>
+  <div class="section-head">
+    <div><h2>🔧 Preventive Maintenance & Fleet Shop</h2><div class="small">Mileage-based PM, tires, inspections, parts inventory, mechanic workload and shop capacity now drive fleet readiness.</div></div>
+    <div class="actions"><button class="btn primary" onclick="opsRunShopDayV15()">Run Shop Work</button><button class="btn" onclick="openPartsInventoryV15()">Parts Room</button><button class="btn" onclick="runStateInspection()">State Inspection</button></div>
+  </div>
+  <div class="today-grid" id="shopKpis"></div>
+  <div class="grid2">
+    <div class="panel"><h3 style="margin-top:0">Today's Shop Board</h3><div id="repairQueue"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Parts Availability</h3><div id="partsPanel"></div></aside>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h3 style="margin-top:0">Preventive Maintenance Forecast</h3><div id="replacementPanel"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Fuel & Energy Economics</h3><div id="energyPanel"></div></aside>
+  </div>
 </section>
 
 <section id="boardroom" class="view">
@@ -537,14 +676,89 @@ button,.btn,select,input{touch-action:manipulation}
  <div class="grid2"><div class="panel"><h2 style="margin-top:0">Superintendent Goals</h2><div id="superGoals"></div></div><div class="panel"><h2 style="margin-top:0">Your Director Priorities</h2><div id="directorGoals"></div></div></div>
  <div class="panel" style="margin-top:12px"><h2 style="margin-top:0">Board Agenda & Community Reaction</h2><div id="boardAgenda"></div></div>
 </section>
-<section id="staffing" class="view">
-    <div class="section-head"><div><h2>Staffing & Applicants</h2><div class="small">Review candidates, interview, hire, reject, and build a substitute pool.</div></div><button class="btn" onclick="generateApplicant()">New Applicant</button></div>
-    <div class="grid2">
-      <div class="app-grid" id="applicantGrid"></div>
-      <aside class="panel"><div class="small">CANDIDATE REVIEW</div><h2 id="candidateName">Select an applicant</h2><div id="candidateDetail" class="detail"></div><div id="candidateActions" class="actions"></div></aside>
+
+<section id="riders" class="view">
+  <div class="section-head">
+    <div><h2>🎒 Students, Households & Transportation Requests</h2><div class="small">Real riders now live in households, attend specific schools, have AM/PM transportation, and consume actual route capacity.</div></div>
+    <div class="actions"><button class="btn primary" onclick="riderGenerateGrowthV16()">+ Add New Household</button><button class="btn" onclick="openTransportRequestV16()">New Transportation Request</button><button class="btn" onclick="openSpecialNeedsBoardV16()">Special Needs Board</button></div>
+  </div>
+  <div class="today-grid" id="riderKpisV16"></div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="section-head"><h3 style="margin:0">Households & Riders</h3><select id="riderSchoolFilterV16" onchange="renderRidersV16()"><option value="All">All Schools</option></select></div>
+      <div id="householdListV16"></div>
     </div>
-    <div class="panel" style="margin-top:12px"><h2 style="margin-top:0">Current Transportation Staff</h2><div class="staff-grid" id="staffGrid"></div></div>
-  </section>
+    <aside class="panel">
+      <div class="small">RIDER FILE</div><h2 id="riderTitleV16">Select a student</h2><div id="riderDetailV16"></div><div id="riderActionsV16" class="actions"></div>
+    </aside>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h3 style="margin-top:0">Transportation Change Requests</h3><div id="transportRequestsV16"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Capacity Watch</h3><div id="capacityWatchV16"></div></aside>
+  </div>
+</section>
+
+<section id="workforce" class="view">
+  <div class="section-head">
+    <div><h2>🧑‍✈️ Workforce, Payroll & Route Bid</h2><div class="small">Seniority, substitutes, route knowledge, training, pay schedules, overtime, trip pay and retirement planning now drive staffing realism.</div></div>
+    <div class="actions"><button class="btn primary" onclick="wfOpenRouteBidV17()">Annual Route Bid</button><button class="btn" onclick="wfOpenPayrollV17()">Payroll Report</button><button class="btn" onclick="wfOpenTrainingV17()">Training Compliance</button></div>
+  </div>
+  <div class="today-grid" id="wfKpisV17"></div>
+  <div class="grid2">
+    <div class="panel"><h3 style="margin-top:0">Driver Seniority & Route Knowledge</h3><div id="wfDriverBoardV17"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Substitute Availability</h3><div id="wfSubBoardV17"></div></aside>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h3 style="margin-top:0">Salary Schedule & Payroll</h3><div id="wfPayrollPanelV17"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Retirement & Succession Watch</h3><div id="wfRetirementPanelV17"></div></aside>
+  </div>
+</section>
+
+<section id="procurement" class="view">
+  <div class="section-head">
+    <div><h2>🚌 Fleet Procurement, Safety & Compliance</h2><div class="small">Capital requests, RFPs, vendor bids, factory tracking, delivery, warranties, state inspections and safety investigations.</div></div>
+    <div class="actions"><button class="btn primary" onclick="fpStartCapitalRequestV18()">New Capital Request</button><button class="btn" onclick="fpOpenFactoryBoardV18()">Factory Tracker</button><button class="btn" onclick="fpRunInspectionWeekV18()">State Inspection Week</button></div>
+  </div>
+  <div class="today-grid" id="fpKpisV18"></div>
+  <div class="grid2">
+    <div class="panel"><h3 style="margin-top:0">Open Procurement Projects</h3><div id="fpProjectsV18"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Fleet Replacement Forecast</h3><div id="fpForecastV18"></div></aside>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h3 style="margin-top:0">Safety & GPS / Camera Cases</h3><div id="fpSafetyCasesV18"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Warranty & Inspection Status</h3><div id="fpWarrantyV18"></div></aside>
+  </div>
+</section>
+
+<section id="admin" class="view">
+  <div class="section-head">
+    <div><h2>🏛️ Administration, Budget & District Growth</h2><div class="small">Superintendent/CFO expectations, annual budget development, board decisions, facilities, construction, KPIs, reputation and Warsaw growth.</div></div>
+    <div class="actions"><button class="btn primary" onclick="adOpenBudgetBuilderV19()">Build Next-Year Budget</button><button class="btn" onclick="adOpenBoardMeetingV19()">Board Meeting</button><button class="btn" onclick="adAdvanceGrowthV19()">Advance Growth Project</button></div>
+  </div>
+  <div class="today-grid" id="adKpisV19"></div>
+  <div class="grid2">
+    <div class="panel"><h3 style="margin-top:0">Director Scorecard</h3><div id="adScorecardV19"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Stakeholder Reputation</h3><div id="adReputationV19"></div></aside>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h3 style="margin-top:0">Budget Development</h3><div id="adBudgetPanelV19"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Facility & Construction</h3><div id="adFacilitiesV19"></div></aside>
+  </div>
+  <div class="panel" style="margin-top:12px"><h3 style="margin-top:0">Warsaw Growth & Community News</h3><div id="adGrowthNewsV19"></div></div>
+</section>
+<section id="staffing" class="view">
+  <div class="section-head">
+    <div><h2>👥 Human Resources & Applicant Tracking</h2><div class="small">Realistic vacancies, recruiting, applications, interviews, checks, CDL development, onboarding and employee files.</div></div>
+    <div class="actions"><button class="btn primary" onclick="hrCreateOpening()">+ Post Opening</button><button class="btn" onclick="generateApplicant()">Simulate Application</button><button class="btn" onclick="hrRecruitingCampaign()">Recruiting</button></div>
+  </div>
+  <div class="today-grid" id="hrKpis"></div>
+  <div class="panel" style="margin-bottom:12px"><div class="section-head"><div><h3 style="margin:0">Applicant Tracking System</h3><div class="small">Candidates move through a real hiring pipeline over game days.</div></div><div class="actions"><button class="btn" onclick="hrOpenAnalytics()">HR Analytics</button><button class="btn" onclick="hrOpenSuccession()">Succession Planning</button></div></div><div class="hr-pipeline" id="hrPipeline"></div></div>
+  <div class="grid2">
+    <div class="panel"><div class="section-head"><h3 style="margin:0">Applicants</h3><div id="hrFilter"></div></div><div class="app-grid" id="applicantGrid"></div></div>
+    <aside class="panel"><div class="small">CANDIDATE FILE</div><h2 id="candidateName">Select an applicant</h2><div id="candidateDetail" class="detail"></div><div id="candidateActions" class="actions"></div></aside>
+  </div>
+  <div class="panel" style="margin-top:12px"><div class="section-head"><h2 style="margin:0">Current Transportation Staff</h2><button class="btn" onclick="hrOpenAttendance()">Attendance & Leave</button></div><div class="staff-grid" id="staffGrid"></div></div>
+</section>
 
   <section id="trips" class="view">
     <div class="section-head"><div><h2>Trip Requests</h2><div class="small">Field trips, athletics, band, clubs, special programs, and community outings.</div></div><button class="btn" onclick="generateTrip()">New Request</button></div>
@@ -558,33 +772,38 @@ button,.btn,select,input{touch-action:manipulation}
   </section>
 
   <section id="dispatch" class="view">
-    <div class="grid2">
-      <div class="panel">
-        <div class="section-head"><div><h2>Live Dispatch</h2><div class="small">Morning sequence: high school first, then elementary.</div></div><button class="btn primary" onclick="startDispatch()">Start / Continue</button></div>
-        <div id="dispatchTimeline"></div>
-        <div class="radio" id="radioBox" style="margin-top:14px"><strong>BASE:</strong> Radio quiet. Start dispatch to begin the morning.</div>
-      </div>
-      <aside class="panel"><h2 style="margin-top:0">Route Readiness</h2><div id="readiness"></div></aside>
-    </div>
-  </section>
+  <div class="section-head">
+    <div><h2>📻 Live Dispatch Center</h2><div class="small">Routine radio traffic is handled automatically. Delays, coverage, road events and important incidents escalate to the Director.</div></div>
+    <div class="actions"><button class="btn primary" onclick="opsDispatchTickV15(true)">Advance Dispatch</button><button class="btn" onclick="opsSimulateRadioCallV15()">Incoming Radio</button><button class="btn" onclick="opsTrafficEventV15()">Road Event</button></div>
+  </div>
+  <div class="today-grid" id="dispatchKpisV15"></div>
+  <div class="grid2">
+    <div class="panel"><h3 style="margin-top:0">Route Status Board</h3><div id="dispatchBoardV15"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Director Escalations</h3><div id="dispatchEscalationsV15"></div></aside>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h3 style="margin-top:0">Radio Console</h3><div class="radio" id="radioBox"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Road / Traffic Intelligence</h3><div id="trafficIntelV15"></div></aside>
+  </div>
+</section>
 
 
   <section id="operations" class="view">
-    <div class="season-banner"><b id="seasonLabel">School Year Operations</b> • <span id="seasonHelp">Run the transportation day and manage the department.</span></div>
-    <div class="ops-grid">
-      <div class="ops-card"><div class="small">SIMULATION CLOCK</div><div class="big-time" id="simClock">5:15 AM</div><div class="small" id="simPhase">Pre-Trip</div><div class="progress" style="margin:10px 0"><i id="dayProgress" style="width:0%"></i></div><div class="actions"><button class="btn primary" onclick="advanceTime()">Advance Time</button><button class="btn" onclick="runToNextPhase()">Next Phase</button></div></div>
-      <div class="ops-card"><div class="small">TODAY'S OPERATIONS</div><h2 id="opsHeadline" style="margin:5px 0">Morning setup</h2><div id="opsSummary" class="detail"></div><div class="actions"><button class="btn" onclick="openWeatherCenter()">Weather</button><button class="btn" onclick="randomOperationalEvent()">Incoming Event</button></div></div>
-      <div class="ops-card"><div class="small">QUICK MANAGEMENT</div><div class="actions"><button class="btn" onclick="openMaintenanceCenter()">Work Orders</button><button class="btn" onclick="openBoardRequests()">Board Requests</button><button class="btn" onclick="openRecognition()">Recognition</button><button class="btn" onclick="openDistrictGrowth()">District Growth</button><button class="btn" onclick="openRouteGrowthRecommendationsV114()">Growth Route Needs</button></div></div>
-    </div>
-    <div class="grid2" style="margin-top:12px">
-      <div class="panel"><div class="section-head"><h2>Department Budget</h2><button class="btn" onclick="openBudgetDetail()">Full Budget</button><button class="btn" onclick="openSchoolYearBudgetV113()">School-Year Budget</button></div><div id="budgetDetailMini" class="budget-grid"></div></div>
-      <aside class="panel"><div class="section-head"><h2>News & Reputation</h2><span class="badge" id="reputationBadge">Good</span></div><div id="newsFeed"></div></aside>
-    </div>
-    <div class="grid2" style="margin-top:12px">
-      <div class="panel"><div class="section-head"><h2>Open Work Orders</h2><button class="btn" onclick="openMaintenanceCenter()">Manage</button></div><div id="workOrderMini"></div></div>
-      <aside class="panel"><div class="section-head"><h2>Recognition</h2><button class="btn" onclick="openRecognition()">Awards</button></div><div id="recognitionMini"></div></aside>
-    </div>
-  </section>
+  <div class="season-banner"><b id="seasonLabel">School Year Operations</b> • <span id="seasonHelp">Watch the department run and intervene when needed.</span></div>
+  <div class="section-head" style="margin-top:10px">
+    <div><h2>🚌 Daily Operations Command</h2><div class="small">One full transportation day now processes routes, traffic, mileage, fuel, shop needs and service performance together.</div></div>
+    <div class="actions"><button class="btn primary" onclick="runTransportationDay()">▶ Run Transportation Day</button><button class="btn" onclick="opsMorningDecisionV15()">5:15 AM Brief</button><button class="btn" onclick="openWeatherCenter()">Weather</button></div>
+  </div>
+  <div class="today-grid" id="opsKpisV15"></div>
+  <div class="grid2">
+    <div class="panel"><h3 style="margin-top:0">Today's Timeline</h3><div id="opsTimelineV15"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Director Attention</h3><div id="opsAttentionV15"></div></aside>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="panel"><h3 style="margin-top:0">Operating Economics</h3><div id="opsEconomicsV15"></div></div>
+    <aside class="panel"><h3 style="margin-top:0">Service Performance</h3><div id="opsPerformanceV15"></div></aside>
+  </div>
+</section>
 
   <section id="reports" class="view">
     <div class="grid2">
@@ -4364,13 +4583,1015 @@ document.addEventListener('click',function(e){
  activateViewV103(btn.getAttribute('data-view'),btn);
 });
 
+
+/* ===== V14 REALISTIC HR + APPLICANT TRACKING ===== */
+function ensureHRV14(){
+ state.hr=state.hr||{};
+ let hr=state.hr;
+ if(!hr.openings)hr.openings=[
+  {id:14001,role:'Bus Driver',fte:1,status:'Open',postedDay:state.day||1,payMin:23.10,payMax:27.80,hours:'6.0 hrs/day',days:'180 days/year',benefits:true,cdlTraining:true,source:['District Careers','Indeed-style']},
+  {id:14002,role:'Substitute Bus Driver',fte:.5,status:'Open',postedDay:state.day||1,payMin:22.50,payMax:25.00,hours:'As needed',days:'School year',benefits:false,cdlTraining:true,source:['District Careers']}
+ ];
+ if(!hr.recruiting)hr.recruiting={spend:0,reputation:70,referrals:0};
+ if(!hr.analytics)hr.analytics={hires:0,rejections:0,withdrawals:0,turnover:[],timeToHire:[]};
+ if(!hr.leave)hr.leave=[];
+ if(!hr.evalHistory)hr.evalHistory={};
+ if(!hr.discipline)hr.discipline={};
+ if(!hr.personnel)hr.personnel={};
+ if(!hr.filters)hr.filters={stage:'All'};
+ if(!hr.stageNames)hr.stageNames=['Applied','Review','Interview','Conditional Offer','Checks / Training','Orientation'];
+ (state.applicants||[]).forEach((a,i)=>hrUpgradeApplicantV14(a,i));
+ [...(state.staff||[]),...(state.supportStaff||[])].forEach(s=>hrEnsurePersonnelV14(s));
+}
+function hrTodayV14(){return Number(state.day||1)}
+function hrUpgradeApplicantV14(a,i=0){
+ if(a.hr14)return a;
+ let good=Number(a.score||70),hasCDL=String(a.cdl||'').includes('Class B');
+ let first=a.name?.split(' ')[0]||'Applicant';
+ Object.assign(a,{
+  hr14:true,id:a.id||Date.now()+i+Math.floor(Math.random()*1000),
+  role:a.role||'Bus Driver',stage:(a.status==='Hired'?'Hired':a.status==='Rejected'?'Rejected':a.status==='Interviewed'?'Interview':'Applied'),
+  appliedDay:a.appliedDay||Math.max(1,hrTodayV14()-Math.floor(Math.random()*7)),source:a.source||['District Careers','Indeed-style','Employee Referral','Job Fair'][i%4],
+  desiredPay:a.desiredPay||Number((22.75+(good-60)*.075).toFixed(2)),
+  education:a.education||['High School Diploma','Associate Degree','Some College','Bachelor’s Degree'][i%4],
+  phoneScreen:null,interviewData:null,references:null,checks:{background:'Not Started',mvr:'Not Started',drug:'Not Started',physical:'Not Started',cdl:hasCDL?'Verified':'Training Needed'},
+  timeline:a.timeline||[{day:a.appliedDay,event:'Application received'}],
+  employment:a.employment||hrEmploymentHistoryV14(a,i),
+  reasonLeaving:a.reasonLeaving||['Seeking stable school schedule','Career change','Relocation','Advancement opportunity','Looking for benefits'][i%5],
+  gapMonths:a.gapMonths??(i%5===0?6:0),
+  availability:a.availability||'Full-time',
+  hiddenQuality:a.hiddenQuality||Math.max(35,Math.min(99,good+Math.floor(Math.random()*17)-8)),
+  reliabilityClue:a.reliabilityClue||['Strong','Good','Unknown','Very Strong'][i%4],
+  serviceClue:a.serviceClue||['Good','Strong','Average','Very Strong'][i%4],
+  safetyClue:a.safetyClue||(['Clean','1 minor citation'].includes(a.record)?'Strong':'Review'),
+  notes:a.notes||[],stageReadyDay:null,offerPay:null,withdrawn:false
+ });
+ return a
+}
+function hrEmploymentHistoryV14(a,i){
+ let jobs=[
+  ['Kosciusko County Delivery','Delivery Driver',4,'Supervisor: Eligible for rehire'],
+  ['Community Childcare','Classroom Aide',6,'Worked with elementary-age children'],
+  ['Local Manufacturing','Material Handler',3,'Steady attendance reported'],
+  ['Neighboring School District','Substitute Bus Driver',2,'School transportation experience'],
+  ['Retail Center','Shift Supervisor',5,'Customer-service leadership']
+ ];
+ let j=jobs[i%jobs.length];
+ return [{employer:j[0],title:j[1],years:j[2],note:j[3]}]
+}
+function hrEnsurePersonnelV14(s){
+ if(!s||!s.name)return;
+ let p=state.hr.personnel[s.name]||(state.hr.personnel[s.name]={});
+ if(!p.hireYear)p.hireYear=(state.year||2026)-Number(s.years||0);
+ if(!p.positionHistory)p.positionHistory=[{year:p.hireYear,role:s.role||'Bus Driver'}];
+ if(!p.payHistory)p.payHistory=[{year:state.year||2026,pay:s.pay||state.paySchedule?.driverStart||23.10}];
+ if(!p.training)p.training=[];
+ if(!p.recognition)p.recognition=[];
+ if(!p.coaching)p.coaching=[];
+ if(!p.leave)p.leave=[];
+ if(!p.eval)p.eval={safety:Number(s.safetyScore||95),attendance:Number(s.attendance||98),service:85+((s.name.length*3)%13),teamwork:82+((s.name.length*5)%16),vehicleCare:84+((s.name.length*7)%14)};
+}
+function hrApplicationStageClass(a){
+ let s=a.stage||'Applied';if(s==='Hired')return'hr-status-hired';if(s==='Rejected'||s==='Withdrawn')return'hr-status-rejected';if(s.includes('Offer'))return'hr-status-offer';if(s.includes('Check')||s.includes('Training'))return'hr-status-check';if(s==='Interview')return'hr-status-interview';return'hr-status-applied'
+}
+function hrStageGroupV14(a){
+ let s=a.stage||'Applied';if(['Applied','Review','Interview','Conditional Offer','Checks / Training','Orientation'].includes(s))return s;
+ if(s==='Phone Screen')return'Review';return null
+}
+function renderHRV14(){
+ ensureHRV14();if(!$('hrKpis'))return;
+ hrProcessReadyStagesV14();
+ let active=state.applicants.filter(a=>!['Hired','Rejected','Withdrawn'].includes(a.stage));
+ let open=state.hr.openings.filter(o=>o.status==='Open');
+ let trainees=active.filter(a=>a.checks?.cdl==='Training In Progress').length;
+ let pendingChecks=active.filter(a=>a.stage==='Checks / Training').length;
+ $('hrKpis').innerHTML=[
+  ['Open Positions',open.length,''],
+  ['Active Candidates',active.length,''],
+  ['Interviews',active.filter(a=>a.stage==='Interview').length,''],
+  ['Pending Checks',pendingChecks,''],
+  ['CDL Trainees',trainees,''],
+  ['12-mo Driver Retention',Math.max(72,94-(state.hr.analytics.turnover.length*2))+'%','']
+ ].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="hr-metric">${x[1]}</div></div>`).join('');
+ $('hrPipeline').innerHTML=state.hr.stageNames.map(stage=>{
+  let arr=active.filter(a=>hrStageGroupV14(a)===stage);
+  return `<div class="hr-stage"><h4>${stage}<span class="hr-stage-count">${arr.length}</span></h4>${arr.map(a=>`<div class="hr-mini ${hrApplicationStageClass(a)}" onclick="selectApplicant(${state.applicants.indexOf(a)})"><b>${a.name}</b><br>${a.role}<br><span class="small">${a.source}</span></div>`).join('')||'<div class="small">No candidates</div>'}</div>`
+ }).join('');
+ $('hrFilter').innerHTML=`<select onchange="state.hr.filters.stage=this.value;renderApplicants()"><option>All</option>${state.hr.stageNames.concat(['Hired','Rejected']).map(x=>`<option ${state.hr.filters.stage===x?'selected':''}>${x}</option>`).join('')}</select>`;
+}
+function renderApplicants(){
+ ensureHRV14();renderHRV14();
+ let f=state.hr.filters.stage||'All';
+ let arr=state.applicants.map((a,i)=>({a,i})).filter(x=>f==='All'||x.a.stage===f||hrStageGroupV14(x.a)===f);
+ $('applicantGrid').innerHTML=arr.map(({a,i})=>`<button class="card ${hrApplicationStageClass(a)}" onclick="selectApplicant(${i})"><span class="status warn">${a.stage}</span><b>${a.name}</b><div class="small">${a.role} • ${a.source}</div><div class="small">${a.cdl}</div><div style="margin-top:7px"><span class="candidate-score">${a.score}</span><span class="small"> application score</span></div><div class="small">Applied day ${a.appliedDay} • Desired ${v13Money(a.desiredPay)}/hr</div></button>`).join('')||'<div class="alert">No candidates match this filter.</div>';
+ if(arr.length)selectApplicant(arr[0].i,false)
+}
+function selectApplicant(i){
+ ensureHRV14();selectedApplicant=i;let a=state.applicants[i];if(!a)return;hrUpgradeApplicantV14(a,i);
+ $('candidateName').innerHTML=`<div class="hr-file-header"><div>${a.name}<div class="small">${a.role} • Applied via ${a.source}</div></div><div class="hr-score">${a.score}<span class="small">/100</span></div></div>`;
+ let checks=Object.entries(a.checks||{}).map(([k,v])=>`<div class="hr-check"><span>${k.toUpperCase()}</span><b>${v}</b></div>`).join('');
+ let jobs=(a.employment||[]).map(j=>`<div class="hr-job"><b>${j.title}</b> — ${j.employer}<div class="small">${j.years} year(s) • ${j.note}</div></div>`).join('');
+ let clues=[`Reliability: ${a.reliabilityClue}`,`Customer/student service: ${a.serviceClue}`,`Safety: ${a.safetyClue}`,a.gapMonths?`${a.gapMonths}-month employment gap`:'No significant employment gap'];
+ $('candidateDetail').innerHTML=`<div class="kv"><span>Stage</span><b>${a.stage}</b></div><div class="kv"><span>Age</span><b>${a.age}</b></div><div class="kv"><span>Education</span><b>${a.education}</b></div><div class="kv"><span>CDL</span><b>${a.cdl}</b></div><div class="kv"><span>Availability</span><b>${a.availability}</b></div><div class="kv"><span>Desired pay</span><b>${v13Money(a.desiredPay)}/hr</b></div><div class="kv"><span>Reason for leaving</span><b>${a.reasonLeaving}</b></div><div style="margin:8px 0">${clues.map(x=>`<span class="hr-tag">${x}</span>`).join('')}</div><h4>Employment History</h4>${jobs}<h4>Qualification Checks</h4>${checks}${a.interviewData?`<h4>Interview</h4><div class="hr-note">${a.interviewData.summary}<br><b>Panel score: ${a.interviewData.score}/100</b></div>`:''}${a.references?`<h4>References</h4><div class="hr-note">${a.references.summary}</div>`:''}<h4>Application Timeline</h4><div class="hr-timeline">${(a.timeline||[]).slice().reverse().map(t=>`<div><b>Day ${t.day}</b> — ${t.event}</div>`).join('')}</div>`;
+ $('candidateActions').innerHTML=hrCandidateActionsV14(a,i)
+}
+function hrCandidateActionsV14(a,i){
+ if(['Hired','Rejected','Withdrawn'].includes(a.stage))return `<button class="btn" onclick="hrArchiveApplicantV14(${i})">Archive File</button>`;
+ if(a.stage==='Applied')return `<button class="btn primary" onclick="hrAdvanceApplicantV14(${i},'Review','HR review started')">Begin HR Review</button><button class="btn" onclick="reject(${i})">Decline</button>`;
+ if(a.stage==='Review'||a.stage==='Phone Screen')return `<button class="btn" onclick="hrPhoneScreenV14(${i})">☎ Phone Screen</button><button class="btn primary" onclick="hrScheduleInterviewV14(${i})">Schedule Interview</button><button class="btn" onclick="hrCheckReferenceV14(${i})">Check Reference</button><button class="btn" onclick="reject(${i})">Decline</button>`;
+ if(a.stage==='Interview')return `<button class="btn primary" onclick="interview(${i})">Conduct Interview</button>${a.interviewData?`<button class="btn" onclick="hrConditionalOfferV14(${i})">Make Conditional Offer</button>`:''}<button class="btn" onclick="reject(${i})">Decline</button>`;
+ if(a.stage==='Conditional Offer')return `<button class="btn primary" onclick="hrStartChecksV14(${i})">Start Pre-Employment Checks</button><button class="btn" onclick="hrWithdrawOfferV14(${i})">Withdraw Offer</button>`;
+ if(a.stage==='Checks / Training')return `<button class="btn" onclick="hrRunCheckV14(${i},'background')">Background</button><button class="btn" onclick="hrRunCheckV14(${i},'mvr')">MVR</button><button class="btn" onclick="hrRunCheckV14(${i},'drug')">Drug Screen</button><button class="btn" onclick="hrRunCheckV14(${i},'physical')">Physical</button>${a.checks.cdl==='Training Needed'?`<button class="btn" onclick="hrSponsorCDLV14(${i})">🎓 Sponsor CDL Training</button>`:''}<button class="btn primary" onclick="hrEvaluateChecksV14(${i})">Evaluate Readiness</button>`;
+ if(a.stage==='Orientation')return `<button class="btn primary" onclick="hire(${i})">Complete Orientation & Hire</button>`;
+ return ''
+}
+function hrAdvanceApplicantV14(i,stage,event,delay=0){
+ let a=state.applicants[i];a.stage=stage;a.status=stage;a.timeline.push({day:hrTodayV14(),event});a.stageReadyDay=delay?hrTodayV14()+delay:null;autosaveGame();render()
+}
+function hrPhoneScreenV14(i){
+ let a=state.applicants[i],quality=a.hiddenQuality,answers=quality>80?'Clear communication; understands split-shift schedule and safety expectations.':quality>60?'Adequate answers; one area needs follow-up at interview.':'Answers were vague; reliability and schedule fit need clarification.';
+ a.phoneScreen={day:hrTodayV14(),summary:answers};a.score=Math.max(40,Math.min(100,a.score+(quality>75?3:quality<55?-4:1)));a.stage='Review';a.timeline.push({day:hrTodayV14(),event:'Phone screen completed'});openModal('☎ Phone Screen Complete',`<div class="alert">${answers}</div><div class="small">The application score is only a clue. True employee quality stays partially hidden until employment.</div><button class="btn primary" onclick="closeModal();render()">Return to ATS</button>`);render()
+}
+function hrScheduleInterviewV14(i){let a=state.applicants[i];a.stage='Interview';a.stageReadyDay=hrTodayV14()+1;a.timeline.push({day:hrTodayV14(),event:'Interview scheduled for next hiring day'});render()}
+function interview(i){
+ let a=state.applicants[i];hrUpgradeApplicantV14(a,i);
+ if(a.stageReadyDay&&hrTodayV14()<a.stageReadyDay)return alert(`Interview is scheduled for game day ${a.stageReadyDay}.`);
+ let q=a.hiddenQuality,styles=q>82?['Uses a specific example, listens first, and de-escalates the parent professionally.','Immediately prioritizes student safety, secures the bus, and contacts Dispatch.','Explains that reliable attendance is essential and gives a strong example from prior employment.','Describes supporting coworkers and communicating clearly during a stressful shift.']:q>62?['Provides a reasonable customer-service example but lacks detail.','Recognizes the safety concern and says they would contact Dispatch.','Says attendance is important and reports generally good reliability.','Would help a coworker if time allows.']:['Says upset parents should call the office instead.','Focuses on finishing the route before reporting the issue.','Gives a vague answer about attendance.','Prefers to work alone and avoid other employees’ problems.'];
+ let qs=['Tell us about a time you dealt with an upset parent or customer.','A student reports a safety problem while you are driving. What do you do?','What does dependable attendance mean in a transportation department?','Tell us how you handle conflict with a coworker.'];
+ let score=Math.max(45,Math.min(98,Math.round((q+a.score)/2+Math.random()*6-3)));a.interviewData={score,summary:score>=85?'Excellent interview: strong safety judgment, communication and service mindset.':score>=70?'Solid interview with acceptable judgment; a few areas need reference verification.':'Interview raised concerns that should be weighed before moving forward.',answers:styles};a.score=Math.round((a.score+score)/2);a.timeline.push({day:hrTodayV14(),event:`Panel interview completed — ${score}/100`});
+ openModal(`🎤 Interview — ${a.name}`,`<div class="alert"><b>Interview Panel Score: ${score}/100</b><div class="small">${a.interviewData.summary}</div></div>${qs.map((q,i)=>`<div class="hr-question"><b>${q}</b><div class="hr-answer">${styles[i]}</div></div>`).join('')}<div class="actions"><button class="btn primary" onclick="closeModal();hrConditionalOfferV14(${i})">Move Toward Offer</button><button class="btn" onclick="closeModal();render()">Return to File</button></div>`)
+}
+function hrCheckReferenceV14(i){
+ let a=state.applicants[i],q=a.hiddenQuality,limited=Math.random()<.25;
+ let text=limited?'Prior employer verified dates and job title only.':q>78?'Former supervisor reports strong attendance, good performance, and eligibility for rehire.':q>58?'Former supervisor confirms satisfactory performance and eligibility for rehire.':'Former employer confirms dates but would not confirm rehire eligibility.';
+ a.references={summary:text};a.timeline.push({day:hrTodayV14(),event:'Reference check completed'});render()
+}
+function hrConditionalOfferV14(i){
+ let a=state.applicants[i];if(!a.interviewData)return alert('Complete an interview first.');
+ let opening=state.hr.openings.find(o=>o.role===a.role&&o.status==='Open')||state.hr.openings.find(o=>o.status==='Open');
+ let lo=opening?.payMin||23.10,hi=opening?.payMax||27.80,pay=Math.max(lo,Math.min(hi,a.desiredPay||lo));
+ a.offerPay=Number(pay.toFixed(2));a.stage='Conditional Offer';a.timeline.push({day:hrTodayV14(),event:`Conditional offer made at $${a.offerPay.toFixed(2)}/hr`});render()
+}
+function hrStartChecksV14(i){
+ let a=state.applicants[i];a.stage='Checks / Training';['background','mvr','drug','physical'].forEach(k=>{if(a.checks[k]==='Not Started')a.checks[k]='Pending'});a.stageReadyDay=hrTodayV14()+2;a.timeline.push({day:hrTodayV14(),event:'Pre-employment checks initiated'});render()
+}
+function hrRunCheckV14(i,k){
+ let a=state.applicants[i],q=a.hiddenQuality;
+ if(a.checks[k]==='Passed')return;
+ let fail=(k==='mvr'&&a.record!=='Clean'&&Math.random()<.08)||(q<45&&Math.random()<.07);
+ a.checks[k]=fail?'Needs Review':'Passed';a.timeline.push({day:hrTodayV14(),event:`${k.toUpperCase()} check: ${a.checks[k]}`});render()
+}
+function hrSponsorCDLV14(i){
+ let a=state.applicants[i];if(a.checks.cdl!=='Training Needed')return;
+ a.checks.cdl='Training In Progress';a.cdl='CDL training sponsored by district';a.cdlStep='Permit';a.stageReadyDay=hrTodayV14()+8;a.timeline.push({day:hrTodayV14(),event:'District-sponsored CDL program started: Permit → Classroom → Pre-trip → Skills → Road → Test'});render()
+}
+function hrEvaluateChecksV14(i){
+ let a=state.applicants[i],vals=['background','mvr','drug','physical'].map(k=>a.checks[k]);
+ if(vals.some(x=>x==='Pending'||x==='Not Started'))return alert('All required pre-employment checks must be completed first.');
+ if(vals.some(x=>x==='Needs Review'))return alert('One or more checks need HR review before this candidate can continue.');
+ if(a.checks.cdl==='Training Needed'||a.checks.cdl==='Training In Progress')return alert('CDL qualification/training is not complete yet.');
+ a.stage='Orientation';a.stageReadyDay=hrTodayV14()+1;a.timeline.push({day:hrTodayV14(),event:'Cleared for new-employee orientation'});render()
+}
+function hrProcessReadyStagesV14(){
+ ensureHRV14();
+ state.applicants.forEach(a=>{
+  if(a.stage==='Checks / Training'&&a.checks?.cdl==='Training In Progress'&&a.stageReadyDay&&hrTodayV14()>=a.stageReadyDay){
+    a.checks.cdl='Passed';a.cdl='Class B + P/S • District Trained';a.cdlStep='Completed';a.stageReadyDay=null;a.timeline.push({day:hrTodayV14(),event:'CDL training completed and qualification verified'});
+  }
+ })
+}
+function hire(i){
+ ensureHRV14();let a=state.applicants[i];if(a.stage!=='Orientation'&&a.stage!=='Hired')return alert('Candidate must complete the hiring pipeline and orientation first.');
+ if(a.stage==='Hired')return;
+ let opening=state.hr.openings.find(o=>o.role===a.role&&o.status==='Open');
+ a.stage=a.status='Hired';a.timeline.push({day:hrTodayV14(),event:'Orientation completed — employee hired'});
+ let regular=!a.role.includes('Substitute');
+ state.staff.push({name:a.name,age:a.age,years:0,cdl:a.cdl,status:regular?'Regular':'Substitute',route:null,morale:85,trip:true,safetyScore:95,attendance:98,pay:a.offerPay||a.desiredPay||23.10});
+ if(opening)opening.status='Filled';
+ state.hr.analytics.hires++;state.hr.analytics.timeToHire.push(hrTodayV14()-a.appliedDay);
+ hrEnsurePersonnelV14(state.staff[state.staff.length-1]);
+ state.hr.personnel[a.name].training.push({year:state.year||2026,item:'New Employee Orientation'});
+ state.hr.personnel[a.name].positionHistory=[{year:state.year||2026,role:a.role}];
+ v13Radio?.(`HR: ${a.name} completed orientation and joined Transportation as ${a.role}.`);
+ log(`${a.name} hired after completing the HR pipeline.`);autosaveGame();render()
+}
+function reject(i){
+ ensureHRV14();let a=state.applicants[i];a.stage=a.status='Rejected';a.timeline.push({day:hrTodayV14(),event:'Application closed — not selected'});state.hr.analytics.rejections++;log(`${a.name} application closed.`);render()
+}
+function hrWithdrawOfferV14(i){let a=state.applicants[i];a.stage=a.status='Rejected';a.timeline.push({day:hrTodayV14(),event:'Conditional offer withdrawn'});render()}
+function hrArchiveApplicantV14(i){state.applicants.splice(i,1);selectedApplicant=0;render()}
+function generateApplicant(){
+ ensureHRV14();
+ let first=['Jennifer','Sarah','Michael','Brandon','Denise','Heather','Caleb','Nicole','Jason','Amanda','Eric','Megan','Robert','Tina'],last=['Miller','Thompson','Turner','Cole','Warren','Young','Foster','Davis','Harris','Lewis','Porter','Grant','King','Alvarez'];
+ let n=first[Math.floor(Math.random()*first.length)]+' '+last[Math.floor(Math.random()*last.length)];
+ let openings=state.hr.openings.filter(o=>o.status==='Open'),o=openings[Math.floor(Math.random()*openings.length)]||{role:'Bus Driver',payMin:23.10,payMax:27.80};
+ let quality=45+Math.floor(Math.random()*51),hasCDL=Math.random()<.58,schoolExp=hasCDL&&Math.random()<.45;
+ let a={name:n,age:23+Math.floor(Math.random()*42),exp:schoolExp?'2–7 years school bus experience':hasCDL?'Commercial driving experience':'Entry-level / career change',cdl:hasCDL?'Class B + P/S':'No CDL — training needed',record:Math.random()<.86?'Clean':'1 minor citation',availability:Math.random()<.85?'Full-time':'Substitute only',score:Math.max(55,Math.min(96,quality+Math.floor(Math.random()*15)-7)),status:'New',role:o.role,source:['District Careers','Indeed-style','Employee Referral','Job Fair','Local Facebook Jobs'][Math.floor(Math.random()*5)],desiredPay:Number((o.payMin+Math.random()*Math.max(.5,o.payMax-o.payMin)).toFixed(2)),hiddenQuality:quality};
+ hrUpgradeApplicantV14(a,state.applicants.length);state.applicants.unshift(a);log(`Application received from ${n} for ${o.role}.`);render()
+}
+function hrCreateOpening(){
+ ensureHRV14();
+ openModal('📌 Post Transportation Opening',`<div class="alert">Create a realistic vacancy and choose how the district will recruit.</div>${['Bus Driver','Substitute Bus Driver','Dispatcher','Bus Mechanic','Bus Aide/Monitor','Transportation Secretary'].map(r=>`<div class="hr-job"><b>${r}</b><div class="small">${r==='Bus Driver'?'6.0 hrs/day • 180 days/year • CDL training available':'Transportation department position'}</div><button class="btn primary" onclick="hrPostOpeningV14('${r}')">Post Opening</button></div>`).join('')}`)
+}
+function hrPostOpeningV14(role){
+ let base=role==='Bus Driver'?23.10:role.includes('Substitute')?22.50:role==='Dispatcher'?25.50:role==='Bus Mechanic'?27.25:role==='Bus Aide/Monitor'?18.50:22.00;
+ state.hr.openings.push({id:Date.now(),role,fte:role.includes('Substitute')?.5:1,status:'Open',postedDay:hrTodayV14(),payMin:base,payMax:Number((base+4.7).toFixed(2)),hours:role==='Bus Driver'?'6.0 hrs/day':'Full schedule',days:'School year / position schedule',benefits:!role.includes('Substitute'),cdlTraining:role.includes('Driver'),source:['District Careers']});closeModal();render()
+}
+function hrRecruitingCampaign(){
+ ensureHRV14();openModal('📣 Recruiting Campaign',`<div class="alert">Recruiting affects applicant volume and quality over the next several game days.</div>${[['Employee Referral',500,'Low cost; good culture fit'],['Local Digital Campaign',1200,'Broader local applicant pool'],['Transportation Job Fair',2500,'Strong volume; chance for CDL trainees'],['CDL Recruitment Campaign',4000,'Targets experienced commercial drivers']].map(x=>`<div class="hr-job"><b>${x[0]} — ${v13Money(x[1])}</b><div class="small">${x[2]}</div><button class="btn" onclick="hrBuyRecruitingV14('${x[0]}',${x[1]})">Launch</button></div>`).join('')}`)
+}
+function hrBuyRecruitingV14(name,cost){
+ if(Number(state.budget||0)<cost)return alert('Not enough budget.');state.budget-=cost;state.hr.recruiting.spend+=cost;state.hr.recruiting.reputation=Math.min(100,state.hr.recruiting.reputation+2);
+ let count=name.includes('Job Fair')?4:name.includes('CDL')?3:2;for(let i=0;i<count;i++)generateApplicant();closeModal();render()
+}
+function hrOpenAnalytics(){
+ ensureHRV14();let a=state.hr.analytics,avg=a.timeToHire.length?Math.round(a.timeToHire.reduce((x,y)=>x+y,0)/a.timeToHire.length):0;
+ let source={};state.applicants.forEach(x=>source[x.source]=(source[x.source]||0)+1);
+ openModal('📊 HR Analytics',`<div class="today-grid">${[['Hires',a.hires],['Applications',state.applicants.length],['Avg Time to Hire',avg?avg+' days':'—'],['Recruiting Spend',v13Money(state.hr.recruiting.spend)]].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="hr-metric">${x[1]}</div></div>`).join('')}</div><h4>Applicant Sources</h4>${Object.entries(source).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')||'<div class="small">No source data yet.</div>'}<h4>Turnover Insight</h4><div class="alert">Driver retention and exit reasons accumulate across seasons. Pay, schedule, promotion opportunity and management climate can eventually influence resignations.</div>`)
+}
+function hrOpenSuccession(){
+ ensureHRV14();let people=[...(state.staff||[]),...(state.supportStaff||[])].filter(s=>s.status!=='Former').map(s=>({s,score:Number(s.years||0)*4+Number(s.safetyScore||90)*.35+Number(s.attendance||95)*.25})).sort((a,b)=>b.score-a.score).slice(0,10);
+ openModal('🌱 Succession Planning',`<div class="alert">Long-tenured, safe and dependable employees can grow into Trainer, Dispatcher, Coordinator, Supervisor and Assistant Director roles.</div>${people.map(x=>`<div class="hr-job"><b>${x.s.name}</b> — ${x.s.role||'Bus Driver'}<div class="small">${x.s.years||0} years service • Safety ${x.s.safetyScore||95}% • Attendance ${x.s.attendance||98}%</div><div class="hr-tag">${driverCareerReadinessV11?.(x.s)||'Developing'}</div></div>`).join('')}`)
+}
+function hrOpenAttendance(){
+ ensureHRV14();openModal('📅 Attendance & Leave',`<div class="alert">Routine approved leave can be handled by Dispatch/HR delegation. Attendance history remains in the employee file.</div>${(state.staff||[]).map(s=>`<div class="kv"><span>${s.name}</span><b>${s.attendance||98}% attendance • ${s.status}</b></div>`).join('')}`)
+}
+function openDriverFile(name){
+ ensureHRV14();let s=state.staff.find(x=>x.name===name)||state.supportStaff.find(x=>x.name===name);if(!s)return;hrEnsurePersonnelV14(s);let p=state.hr.personnel[name],e=p.eval;
+ let overall=Math.round((e.safety+e.attendance+e.service+e.teamwork+e.vehicleCare)/5);
+ openModal(`👤 Employee File — ${name}`,`<div class="hr-file-header"><div><h3 style="margin:0">${name}</h3><div class="small">${s.role||'Bus Driver'} • ${s.years||0} years service</div></div><span class="badge">${s.status}</span></div><div class="v13-specgrid" style="margin-top:10px"><div class="v13-spec"><b>Safety</b><br>${e.safety}%</div><div class="v13-spec"><b>Attendance</b><br>${e.attendance}%</div><div class="v13-spec"><b>Customer / Student Service</b><br>${e.service}%</div><div class="v13-spec"><b>Teamwork</b><br>${e.teamwork}%</div><div class="v13-spec"><b>Vehicle Care</b><br>${e.vehicleCare}%</div><div class="v13-spec"><b>Annual Evaluation</b><br>${overall>=90?'Exceeds Expectations':overall>=80?'Meets Expectations':'Needs Improvement'} (${overall})</div></div><h4>Position History</h4>${p.positionHistory.map(x=>`<div class="kv"><span>${x.year}</span><b>${x.role}</b></div>`).join('')}<h4>Training & Recognition</h4>${p.training.concat(p.recognition).map(x=>`<div class="hr-tag">${x.year}: ${x.item}</div>`).join('')||'<div class="small">No additional records yet.</div>'}<div class="actions" style="margin-top:10px"><button class="btn" onclick="hrRecognizeV14('${name.replace(/'/g,"\\'")}')">⭐ Recognize</button><button class="btn" onclick="hrEvaluateEmployeeV14('${name.replace(/'/g,"\\'")}')">Annual Evaluation</button><button class="btn" onclick="hrCoachEmployeeV14('${name.replace(/'/g,"\\'")}')">Document Coaching</button></div>`)
+}
+function renderStaff(){
+ ensureHRV14();$('staffGrid').innerHTML=state.staff.map(s=>{hrEnsurePersonnelV14(s);let p=state.hr.personnel[s.name],e=p.eval,overall=Math.round((e.safety+e.attendance+e.service+e.teamwork+e.vehicleCare)/5);return `<button class="card" onclick="openDriverFile('${s.name.replace(/'/g,"\\'")}')"><span class="badge">${s.status}</span><b>${s.name}</b><div class="small">Age ${s.age} • ${s.years} years service</div><div class="small">Route ${s.route||'Unassigned'} • Morale ${s.morale||85}%</div><div class="small">Safety ${s.safetyScore||95}% • Attendance ${s.attendance||98}%</div><div class="small">Evaluation: ${overall>=90?'Exceeds':overall>=80?'Meets':'Needs Improvement'}</div></button>`}).join('')
+}
+function hrRecognizeV14(name){let p=state.hr.personnel[name];p.recognition.push({year:state.year||2026,item:'Director recognition for positive contribution'});let s=state.staff.find(x=>x.name===name)||state.supportStaff.find(x=>x.name===name);if(s)s.morale=Math.min(100,Number(s.morale||85)+3);closeModal();render()}
+function hrEvaluateEmployeeV14(name){
+ let p=state.hr.personnel[name],e=p.eval,overall=Math.round((e.safety+e.attendance+e.service+e.teamwork+e.vehicleCare)/5);state.hr.evalHistory[name]=state.hr.evalHistory[name]||[];state.hr.evalHistory[name].push({year:state.year||2026,overall});
+ openModal(`📝 Annual Evaluation — ${name}`,`<div class="alert"><b>${overall>=90?'Exceeds Expectations':overall>=80?'Meets Expectations':'Needs Improvement'}</b> — ${overall}/100</div>${Object.entries(e).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}%</b></div>`).join('')}<div class="small" style="margin-top:8px">Evaluation history now persists in the employee file and can influence future internal opportunities.</div>`)
+}
+function hrCoachEmployeeV14(name){let p=state.hr.personnel[name];p.coaching.push({year:state.year||2026,item:'Documented coaching conversation'});closeModal();notify?.(`Coaching conversation documented for ${name}.`);render()}
+
+
+/* ===== V15 OPERATIONS SIMULATION ===== */
+function ensureOpsV15(){
+ state.ops15=state.ops15||{};
+ let o=state.ops15;
+ if(!o.radio)o.radio=[];
+ if(!o.escalations)o.escalations=[];
+ if(!o.traffic)o.traffic=[
+  {road:'US 30 / SR 15',level:'Moderate',delay:3},
+  {road:'Center Street',level:'Light',delay:1},
+  {road:'Winona Avenue',level:'Light',delay:1},
+  {road:'Railroad Crossings',level:'Normal',delay:0},
+  {road:'Rural Roads',level:'Clear',delay:0}
+ ];
+ if(!o.parts)o.parts={
+  'Oil Filters':18,'Fuel Filters':12,'Wiper Blades':22,'Headlamps':11,'Brake Sets':6,'Tires':14,'Belts':8,'DEF':24,'Lift Service Kits':4
+ };
+ if(!o.partOrders)o.partOrders=[];
+ if(!o.dailyEconomics)o.dailyEconomics={fuel:0,maintenance:0,labor:0,trips:0,totalMiles:0};
+ if(!o.performance)o.performance={onTime:96,lateRoutes:0,roadCalls:0,missedStops:0,avgDelay:2,parentComplaints:0};
+ if(!o.routeHistory)o.routeHistory={};
+ if(!o.lastDayReport)o.lastDayReport=null;
+ if(!o.timeline)o.timeline=[];
+ if(!o.weatherRoadImpact)o.weatherRoadImpact=0;
+ if(!o.shopBacklog)o.shopBacklog=[];
+ (state.routes||[]).forEach((r,i)=>opsEnsureRouteV15(r,i));
+ (state.buses||[]).forEach((b,i)=>opsEnsureBusV15(b,i));
+}
+function opsMinutesTextV15(m){m=Math.max(0,Math.round(m));let h=Math.floor(m/60)%24,min=m%60,ap=h>=12?'PM':'AM',hh=h%12||12;return `${hh}:${String(min).padStart(2,'0')} ${ap}`}
+function opsEnsureRouteV15(r,i=0){
+ if(r.ops15)return;
+ let names=['Prairie Ridge','Center Street','Lake City Hwy','Old Road 30','Winona Lake','Stonehenge','Airport Road','CR 200 N','CR 100 E','Market Street','Fort Wayne Street','Patterson Road','Pierceton Road','Fox Farm','Husky Trail','Ranch Road'];
+ let schools=r.specialNeeds?['Special Programs']:i%3===0?['Warsaw Community High School','Lincoln Elementary']:i%3===1?['Edgewood Middle School','Jefferson Elementary']:['Lakeview Middle School','Harrison Elementary'];
+ let base=355+(i%5)*4, riderTotal=Number(r.students||(Number(r.hsStudents||0)+Number(r.elemStudents||0))||48);
+ let count=Math.max(5,Math.min(16,Math.round(riderTotal/6)));
+ r.ops15={
+   pullout:base-18, firstStop:base, schoolArrival:base+42+(i%4)*3, returnGarage:base+63+(i%4)*3,
+   pmPullout:860+(i%4)*5, pmReturn:1020+(i%5)*6,
+   deadheadMiles:Number((3.1+(i%5)*.8).toFixed(1)),
+   crossings:i%4===0?1:0, turnarounds:i%5===0?1:0,
+   schools, routeType:r.specialNeeds?'Special Needs':i%3===0?'Mixed Urban/Rural':i%3===1?'Urban/Suburban':'Rural',
+   stopTimes:[], typicalDelay:1+(i%4), late20:Math.max(0,(i*3)%9), onTimePct:Math.max(88,99-(i%7)*2),
+   annualCost:0, serviceDays:180, version:1
+ };
+ for(let s=0;s<count;s++){
+   let riders=Math.max(1,Math.round(riderTotal/count + ((s*3+i)%5)-2));
+   r.ops15.stopTimes.push({
+    id:`${r.id}-${s+1}`,name:names[(i*2+s)%names.length]+(s%3===0?' & '+['Main St','Oak Dr','Meadow Ln','School Rd'][s%4]:''),
+    time:base+s*3+(s>7?Math.floor((s-7)/3):0),riders,
+    miles:Number((1.2+((s+i)%5)*.45).toFixed(1)),crossing:r.ops15.crossings&&s===Math.floor(count/2),
+    safety:['Normal','Normal','Normal','Watch'][((s+i)%4)]
+   })
+ }
+ opsRecalcRouteV15(r);
+ r.ops15.version=1;r.ops15.originalCreatedYear=state.year||2026;
+ state.ops15.routeHistory[r.id]=state.ops15.routeHistory[r.id]||[{year:state.year||2026,text:'Route operating file created in V15.'}]
+}
+function opsEnsureBusV15(b,i=0){
+ let miles=Number(b.miles||b.mileage||0);
+ if(b.miles==null)b.miles=miles;
+ if(!b.ops15)b.ops15={
+  lastPM:miles-Math.floor(500+((i*733)%4200)),pmInterval:5000,nextPM:Math.ceil((miles+1)/5000)*5000,
+  tirePct:Math.max(38,94-(i*7)%49),brakePct:Math.max(45,96-(i*5)%43),batteryPct:Math.max(52,93-(i*9)%38),
+  mpg:(b.fuelType==='Propane'?5.0:b.fuelType==='Electric'?2.0:6.3+((i%5)*.25)),idlePct:7+(i%6),
+  inspectionDueDays:30+(i*23)%270,shopPriority:'Routine',outOfService:false
+ }
+}
+function opsRecalcRouteV15(r){
+ let x=r.ops15;if(!x)return;
+ let stopMiles=x.stopTimes.reduce((a,s)=>a+Number(s.miles||0),0);
+ x.oneWayMiles=Number((stopMiles+x.deadheadMiles).toFixed(1));
+ x.dailyMiles=Number((x.oneWayMiles*2).toFixed(1));
+ x.riders=x.stopTimes.reduce((a,s)=>a+Number(s.riders||0),0);
+ x.firstStop=x.stopTimes.length?x.stopTimes[0].time:x.firstStop;
+ x.schoolArrival=x.stopTimes.length?x.stopTimes[x.stopTimes.length-1].time+12:x.schoolArrival;
+ x.returnGarage=x.schoolArrival+18;
+ x.annualCost=Math.round(x.dailyMiles*x.serviceDays*1.12 + x.riders*x.serviceDays*1.35 + 4200);
+ if(!r.specialNeeds){r.hsStudents=Math.round(x.riders*.44);r.elemStudents=x.riders-r.hsStudents}else r.students=x.riders;
+}
+function opsRouteCapacityV15(r){
+ let b=state.buses.find(x=>Number(x.id)===Number(r.temporaryBus||r.bus)),cap=Number(state.v13?.busSpecs?.[b?.id]?.capacity||b?.capacity||72);return {riders:r.ops15.riders,cap,pct:cap?Math.round(r.ops15.riders/cap*100):0}
+}
+function renderRoutes(){
+ ensureOpsV15();if(!$('routeCards'))return;
+ let totalMiles=state.routes.reduce((a,r)=>a+r.ops15.dailyMiles,0),avgOn=Math.round(state.routes.reduce((a,r)=>a+r.ops15.onTimePct,0)/Math.max(1,state.routes.length)),cross=state.routes.reduce((a,r)=>a+r.ops15.crossings,0);
+ if($('routeOpsKpis'))$('routeOpsKpis').innerHTML=[['Active Routes',state.routes.length],['Daily Route Miles',totalMiles.toFixed(0)],['Avg On-Time',avgOn+'%'],['Rail Crossings',cross],['Route Riders',state.routes.reduce((a,r)=>a+r.ops15.riders,0)]].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ if($('routeOpsBoard'))$('routeOpsBoard').innerHTML=state.routes.map(r=>{let c=opsRouteCapacityV15(r),delay=opsRouteCurrentDelayV15(r),cls=delay>=8?'bad':delay>=4?'warn':'';return `<div class="ops15-status" onclick="selectRoute(${r.id})"><div><span class="ops15-dot ${cls}"></span><b>${r.id}</b></div><div><b>${r.ops15.routeType}</b><br><span class="small">${r.ops15.schools.join(' → ')}</span></div><div>${r.ops15.riders}/${c.cap} riders</div><div>${r.ops15.dailyMiles} mi/day</div><div>${delay?`+${delay} min`:'On time'}</div></div>`}).join('');
+ $('routeCards').innerHTML=state.routes.map(r=>{let c=opsRouteCapacityV15(r);return `<button class="card ${c.pct>100?'ops15-over':''}" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>Route ${r.id}</b><div class="small">${r.ops15.routeType} • Bus ${r.temporaryBus||r.bus||'—'} • ${r.temporaryDriver||r.driver||'No driver'}</div><div style="margin-top:7px">${r.ops15.schools.map(s=>`<span class="ops15-schooltag">${s}</span>`).join('')}</div><div class="small">${r.ops15.riders}/${c.cap} riders • ${r.ops15.dailyMiles} mi/day • ${r.ops15.onTimePct}% on-time</div></button>`}).join('');
+ if(!state.routes.some(r=>Number(r.id)===Number(selectedRoute))&&state.routes.length)selectedRoute=state.routes[0].id;
+ if(state.routes.length)selectRoute(Number(selectedRoute),false);
+}
+function selectRoute(id,scroll=true){
+ ensureOpsV15();selectedRoute=Number(id);let r=state.routes.find(x=>Number(x.id)===Number(id));if(!r)return;let c=opsRouteCapacityV15(r),delay=opsRouteCurrentDelayV15(r);
+ if($('routeTitle'))$('routeTitle').textContent=`Route ${r.id}`;
+ if($('routeDetail'))$('routeDetail').innerHTML=`<div class="kv"><span>Driver</span><b>${r.temporaryDriver||r.driver||'Uncovered'}</b></div><div class="kv"><span>Bus</span><b>${r.temporaryBus||r.bus||'Unassigned'}</b></div><div class="kv"><span>Route type</span><b>${r.ops15.routeType}</b></div><div class="kv"><span>AM riders</span><b>${r.ops15.ridersAM||0}</b></div><div class="kv"><span>PM riders</span><b>${r.ops15.ridersPM||0}</b></div><div class="kv"><span>Pull-out</span><b>${opsMinutesTextV15(r.ops15.pullout)}</b></div><div class="kv"><span>First stop</span><b>${opsMinutesTextV15(r.ops15.firstStop)}</b></div><div class="kv"><span>School arrival</span><b>${opsMinutesTextV15(r.ops15.schoolArrival)}</b></div><div class="kv"><span>Return garage</span><b>${opsMinutesTextV15(r.ops15.returnGarage)}</b></div><div class="kv"><span>Capacity</span><b>${c.riders}/${c.cap} (${c.pct}%)</b></div><div class="kv"><span>Daily mileage</span><b>${r.ops15.dailyMiles} mi</b></div><div class="kv"><span>Deadhead</span><b>${r.ops15.deadheadMiles} mi/run</b></div><div class="kv"><span>Rail crossings</span><b>${r.ops15.crossings}</b></div><div class="kv"><span>Typical delay</span><b>${r.ops15.typicalDelay} min</b></div><div class="kv"><span>Current estimate</span><b>${delay?`+${delay} min`:'On time'}</b></div><div class="kv"><span>Projected annual cost</span><b>${v13Money(r.ops15.annualCost)}</b></div><div class="actions" style="margin-top:8px"><button class="btn" onclick="editStops()">Edit Stops</button><button class="btn" onclick="reassignRoute()">Reassign Bus</button><button class="btn" onclick="opsRouteHistoryV15(${r.id})">Route History</button></div>`;
+ if($('routeStopSheet'))$('routeStopSheet').innerHTML=`<div class="ops15-stop small"><b>TIME</b><b>STOP / LOCATION</b><b>RIDERS</b><b>LEG MI</b><b>SAFETY</b><b>ACTION</b></div>`+r.ops15.stopTimes.map((s,i)=>`<div class="ops15-stop ${s.crossing?'ops15-crossing':''}"><span class="time">${opsMinutesTextV15(s.time)}</span><span><b>${s.name}</b>${s.crossing?'<br><span class="small">🚂 Railroad crossing immediately after stop</span>':''}</span><span>${s.riders}</span><span>${s.miles}</span><span>${s.safety}</span><span><button class="btn" onclick="opsMoveStopV15(${i},-1)">↑</button> <button class="btn" onclick="opsMoveStopV15(${i},1)">↓</button> <button class="btn" onclick="opsRemoveStopV15(${i})">×</button></span></div>`).join('')+`<div class="ops15-stop"><span class="time">${opsMinutesTextV15(r.ops15.schoolArrival)}</span><span><b>🏫 ${r.ops15.schools.join(' / ')}</b></span><span>${r.ops15.riders}</span><span>—</span><span>Arrival</span><span></span></div>`;
+}
+function editStops(){let r=state.routes.find(x=>Number(x.id)===Number(selectedRoute));if(!r)return;openModal(`✏️ Route ${r.id} Stop Editor`,`<div class="alert">Edit a stop and V15 will immediately recalculate route time, miles, riders and annual cost.</div>${r.ops15.stopTimes.map((s,i)=>`<div class="hr-job"><b>${opsMinutesTextV15(s.time)} — ${s.name}</b><div class="small">${s.riders} riders • ${s.miles} miles to next segment</div><div class="actions"><button class="btn" onclick="opsEditStopV15(${i})">Edit</button><button class="btn" onclick="opsRemoveStopV15(${i});closeModal()">Remove</button></div></div>`).join('')}`)
+}
+function opsEditStopV15(i){
+ let r=state.routes.find(x=>Number(x.id)===Number(selectedRoute)),s=r?.ops15.stopTimes[i];if(!s)return;
+ openModal(`Edit Stop — Route ${r.id}`,`<label>Stop name<input id="opsStopName" value="${s.name.replace(/"/g,'&quot;')}"></label><label>Riders<input id="opsStopRiders" type="number" min="0" max="90" value="${s.riders}"></label><label>Segment miles<input id="opsStopMiles" type="number" step=".1" min=".1" value="${s.miles}"></label><label>Scheduled time (minutes after midnight)<input id="opsStopTime" type="number" value="${s.time}"></label><div class="actions"><button class="btn primary" onclick="opsSaveStopV15(${i})">Save Stop</button></div>`)
+}
+function opsSaveStopV15(i){let r=state.routes.find(x=>Number(x.id)===Number(selectedRoute)),s=r?.ops15.stopTimes[i];if(!s)return;s.name=$('opsStopName').value;s.riders=Math.max(0,Number($('opsStopRiders').value));s.miles=Math.max(.1,Number($('opsStopMiles').value));s.time=Number($('opsStopTime').value);opsRecalcRouteV15(r);state.ops15.routeHistory[r.id].push({year:state.year,text:`Stop ${s.name} edited; route recalculated.`});closeModal();autosaveGame();render()}
+function opsAddStopV15(){let r=state.routes.find(x=>Number(x.id)===Number(selectedRoute));if(!r)return;let last=r.ops15.stopTimes.at(-1);r.ops15.stopTimes.push({id:`${r.id}-${Date.now()}`,name:'New Community Stop',time:(last?.time||r.ops15.firstStop)+3,riders:4,miles:1.5,crossing:false,safety:'Normal'});opsRecalcRouteV15(r);state.ops15.routeHistory[r.id].push({year:state.year,text:'New stop added to route.'});autosaveGame();render()}
+function opsRemoveStopV15(i){let r=state.routes.find(x=>Number(x.id)===Number(selectedRoute));if(!r||r.ops15.stopTimes.length<=2)return alert('Route must retain at least two stops.');let [s]=r.ops15.stopTimes.splice(i,1);opsRecalcRouteV15(r);state.ops15.routeHistory[r.id].push({year:state.year,text:`Stop removed: ${s.name}.`});autosaveGame();render()}
+function opsMoveStopV15(i,d){let r=state.routes.find(x=>Number(x.id)===Number(selectedRoute)),a=r?.ops15.stopTimes,j=i+d;if(!a||j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];let t=a.map(x=>x.time).sort((x,y)=>x-y);a.forEach((x,k)=>x.time=t[k]);opsRecalcRouteV15(r);autosaveGame();render()}
+function opsRouteHistoryV15(id){ensureOpsV15();let r=state.routes.find(x=>Number(x.id)===Number(id)),hist=state.ops15.routeHistory[id]||[];openModal(`📚 Route ${id} History`,`<div class="alert">Institutional memory stays with the route as the district changes over decades.</div>${hist.slice().reverse().map(x=>`<div class="kv"><span>${x.year}</span><b>${x.text}</b></div>`).join('')}<div class="kv"><span>Created</span><b>${r.ops15.originalCreatedYear}</b></div>`)}
+function opsRouteOptimizerV15(){
+ ensureOpsV15();let recs=state.routes.map(r=>{let c=opsRouteCapacityV15(r),issues=[];if(c.pct>95)issues.push('capacity');if(r.ops15.onTimePct<94)issues.push('timing');if(r.ops15.deadheadMiles>5)issues.push('deadhead');return {r,issues}}).filter(x=>x.issues.length);
+ openModal('🧠 Route Optimizer',recs.length?recs.map(x=>`<div class="hr-job"><b>Route ${x.r.id}</b><div class="small">Review: ${x.issues.join(', ')}</div>${x.issues.includes('timing')?`<button class="btn" onclick="opsEarlierPulloutV15(${x.r.id})">Recommend 8-Min Earlier Pull-Out</button>`:''}</div>`).join(''):'<div class="alert">No significant route optimization problems detected today.</div>')
+}
+function opsEarlierPulloutV15(id){let r=state.routes.find(x=>Number(x.id)===Number(id));r.ops15.pullout-=8;r.ops15.stopTimes.forEach(s=>s.time-=8);r.ops15.onTimePct=Math.min(99,r.ops15.onTimePct+4);opsRecalcRouteV15(r);state.ops15.routeHistory[id].push({year:state.year,text:'Pull-out moved 8 minutes earlier after on-time performance review.'});closeModal();render()}
+function opsAdvanceTrafficV15(){ensureOpsV15();state.ops15.traffic.forEach(t=>{let roll=Math.random();if(roll<.08){t.level='Heavy';t.delay=6+Math.floor(Math.random()*7)}else if(roll<.28){t.level='Moderate';t.delay=2+Math.floor(Math.random()*4)}else{t.level=t.road.includes('Rural')?'Clear':'Light';t.delay=Math.floor(Math.random()*2)}});render()}
+function opsRouteCurrentDelayV15(r){
+ ensureOpsV15();let d=r.ops15.typicalDelay+state.ops15.weatherRoadImpact;
+ state.ops15.traffic.forEach(t=>{if(r.ops15.crossings&&t.road.includes('Railroad'))d+=t.delay*.8;else d+=t.delay*.13});
+ return Math.max(0,Math.round(d-2))
+}
+
+/* Dispatch */
+function renderDispatch(){
+ ensureOpsV15();if(!$('dispatchBoardV15'))return;
+ let routes=state.routes,late=routes.filter(r=>opsRouteCurrentDelayV15(r)>=5),uncovered=routes.filter(r=>!routeCoverage(r).ok),ready=routes.length-uncovered.length;
+ $('dispatchKpisV15').innerHTML=[['Routes Ready',`${ready}/${routes.length}`],['Delayed ≥5 min',late.length],['Open Escalations',state.ops15.escalations.filter(x=>!x.closed).length],['Radio Calls',state.ops15.radio.length],['Traffic',state.ops15.traffic.some(x=>x.delay>=6)?'Heavy':'Normal']].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ $('dispatchBoardV15').innerHTML=routes.map(r=>{let cov=routeCoverage(r),delay=opsRouteCurrentDelayV15(r),status=!cov.ok?'UNCOVERED':delay>=8?'LATE':delay>=4?'WATCH':'ON TIME',cls=!cov.ok||delay>=8?'bad':delay>=4?'warn':'';return `<div class="ops15-status"><div><span class="ops15-dot ${cls}"></span><b>${r.id}</b></div><div><b>${status}</b><br><span class="small">${r.temporaryDriver||r.driver||cov.reason}</span></div><div>Bus ${r.temporaryBus||r.bus||'—'}</div><div>${delay?`+${delay} min`:'0 min'}</div><div><button class="btn" onclick="selectRoute(${r.id});goView('routes')">Open</button></div></div>`}).join('');
+ $('dispatchEscalationsV15').innerHTML=state.ops15.escalations.filter(x=>!x.closed).map((x,i)=>`<div class="ops15-escalation ${x.major?'major':''}"><b>${x.title}</b><div>${x.text}</div><div class="small">${x.time||opsMinutesTextV15(state.simMinutes||315)}</div><button class="btn" onclick="opsResolveEscalationV15(${i})">Resolve</button></div>`).join('')||'<div class="ops15-escalation good"><b>No Director action required.</b><div>Dispatch is handling routine operations.</div></div>';
+ $('radioBox').innerHTML=(state.ops15.radio.slice(0,14).map(x=>`<div class="ops15-radio-line"><b>${x.unit}:</b> ${x.text} <span class="small">${x.time}</span></div>`).join('')||'<div class="ops15-radio-line"><b>BASE:</b> Radio quiet. Transportation Center is online.</div>');
+ $('trafficIntelV15').innerHTML=state.ops15.traffic.map(t=>`<div class="ops15-traffic"><span><b>${t.road}</b><br>${t.level}</span><b>${t.delay?`+${t.delay} min`:'Clear'}</b></div>`).join('');
+}
+function opsRadioV15(unit,text){ensureOpsV15();state.ops15.radio.unshift({unit,text,time:opsMinutesTextV15(state.simMinutes||315)});state.ops15.radio=state.ops15.radio.slice(0,40);v13Radio?.(`${unit}: ${text}`)}
+function opsDispatchTickV15(manual=false){
+ ensureOpsV15();if(manual)state.simMinutes=Math.min(1100,Number(state.simMinutes||315)+20);
+ let m=Number(state.simMinutes||315),out=state.routes.filter(r=>routeCoverage(r).ok);
+ if(m<360)opsRadioV15('DISPATCH','Drivers are checking in. Pre-trip inspections underway.');
+ else if(m<480){let r=out[Math.floor(Math.random()*Math.max(1,out.length))];if(r)opsRadioV15(`BUS ${r.temporaryBus||r.bus}`,`Route ${r.id}: ${Math.random()<.4?'Clear of last stop.':'Traffic moving normally.'}`)}
+ else if(m<850)opsRadioV15('BASE','Morning routes complete. Midday trips and shop work active.');
+ else if(m<1040){let r=out[Math.floor(Math.random()*Math.max(1,out.length))];if(r)opsRadioV15(`BUS ${r.temporaryBus||r.bus}`,`Route ${r.id}: ${Math.random()<.35?'Loaded and departing school.':'Running on schedule.'}`)}
+ else opsRadioV15('DISPATCH','Final route buses returning to the Transportation Center.');
+ render()
+}
+function opsSimulateRadioCallV15(){
+ ensureOpsV15();let r=state.routes[Math.floor(Math.random()*state.routes.length)],roll=Math.random();
+ if(roll<.68)opsRadioV15(`BUS ${r.temporaryBus||r.bus||r.id}`,['Clear of school.','Railroad crossing is open.','Running two minutes behind; traffic only.','Student item found; returning it to Dispatch.'][Math.floor(Math.random()*4)]);
+ else if(roll<.9){let text='Traffic delay is building near a major intersection. Dispatcher recommends approved detour.';opsRadioV15(`BUS ${r.temporaryBus||r.bus||r.id}`,text);state.ops15.escalations.unshift({title:`Route ${r.id} Delay Watch`,text:'Dispatcher is managing the detour. No Director decision required unless delay exceeds 15 minutes.',major:false,time:opsMinutesTextV15(state.simMinutes||315)})}
+ else{state.ops15.escalations.unshift({title:`Bus ${r.temporaryBus||r.bus} Mechanical Issue`,text:`Route ${r.id} reports a mechanical concern with students aboard. Dispatch has sent the service truck and is preparing a spare bus.`,major:true,time:opsMinutesTextV15(state.simMinutes||315)});state.ops15.performance.roadCalls++;opsRadioV15(`BUS ${r.temporaryBus||r.bus}`,'Dispatch, I need mechanical assistance. Bus is secured.');}
+ render()
+}
+function opsTrafficEventV15(){ensureOpsV15();let events=[['Railroad Crossings','Train blocking crossing',9],['Center Street','Construction lane closure',6],['US 30 / SR 15','Heavy traffic',8],['Rural Roads','Farm equipment / slow traffic',4]];let e=events[Math.floor(Math.random()*events.length)],t=state.ops15.traffic.find(x=>x.road===e[0]);if(t){t.level=e[1];t.delay=e[2]}opsRadioV15('DISPATCH',`${e[1]} reported on ${e[0]}. Route timing has been recalculated.`);render()}
+function opsResolveEscalationV15(i){let arr=state.ops15.escalations.filter(x=>!x.closed),x=arr[i];if(x)x.closed=true;render()}
+
+/* Maintenance + parts */
+function opsPMDueV15(b){opsEnsureBusV15(b);let miles=Number(b.miles||0),d=b.ops15.nextPM-miles;return {due:d<=0,soon:d<=800,milesTo:d}}
+function opsBuildShopBacklogV15(){
+ ensureOpsV15();let q=[];
+ state.buses.forEach(b=>{let pm=opsPMDueV15(b),x=b.ops15;if(pm.due)q.push({bus:b.id,type:'Preventive Maintenance',priority:pm.milesTo<-700?'High':'Normal',hours:2.5,part:'Oil Filters'});if(x.tirePct<25)q.push({bus:b.id,type:'Tire Replacement',priority:'High',hours:1.7,part:'Tires'});if(x.brakePct<30)q.push({bus:b.id,type:'Brake Service',priority:'High',hours:2.8,part:'Brake Sets'});if(x.inspectionDueDays<=7)q.push({bus:b.id,type:'State Inspection Prep',priority:'Normal',hours:1.5,part:null})});
+ state.ops15.shopBacklog=q;return q
+}
+function renderShopV8(){return renderShopV15()}
+function renderShopV15(){
+ ensureOpsV15();if(!$('shopKpis'))return;let q=opsBuildShopBacklogV15(),mechs=Math.max(1,(state.supportStaff||[]).filter(s=>String(s.role||'').includes('Mechanic')).length||2),bays=state.v13?.facility?.bays||3,capacity=Math.min(mechs,bays);
+ $('shopKpis').innerHTML=[['Shop Backlog',q.length],['Mechanics',mechs],['Bays',bays],['Daily Capacity',capacity+' jobs'],['Parts on Order',state.ops15.partOrders.length]].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ $('repairQueue').innerHTML=q.length?q.map(j=>`<div class="ops15-pm"><b>Bus ${j.bus}</b><span>${j.type}<br><span class="small">${j.priority} priority</span></span><span>${j.hours} hr</span><span>${j.part||'—'}</span><button class="btn" onclick="opsCompleteJobV15(${j.bus},'${j.type.replace(/'/g,"\\'")}')">Do Work</button></div>`).join(''):'<div class="alert">✅ No preventive maintenance backlog. Shop is caught up.</div>';
+ $('partsPanel').innerHTML=Object.entries(state.ops15.parts).map(([k,v])=>`<div class="ops15-part"><span><b>${k}</b></span><b>${v}</b><button class="btn" onclick="opsOrderPartV15('${k.replace(/'/g,"\\'")}')">Order</button></div>`).join('')+(state.ops15.partOrders.length?`<h4>On Order</h4>${state.ops15.partOrders.map(x=>`<div class="small">${x.part} × ${x.qty} • ETA ${x.eta} day(s)</div>`).join('')}`:'');
+ $('replacementPanel').innerHTML=state.buses.slice().sort((a,b)=>opsPMDueV15(a).milesTo-opsPMDueV15(b).milesTo).map(b=>{let pm=opsPMDueV15(b),pct=Math.max(0,Math.min(100,100-(pm.milesTo/5000*100)));return `<div class="ops15-pm"><b>${b.id}</b><span>Next PM ${pm.milesTo<=0?'<b>DUE</b>':pm.milesTo.toFixed(0)+' mi'}<div class="ops15-bar"><i style="width:${pct}%"></i></div></span><span>Tires ${b.ops15.tirePct}%</span><span>Brakes ${b.ops15.brakePct}%</span><span>Inspection ${b.ops15.inspectionDueDays}d</span></div>`}).join('');
+ let fuel=opsFuelSummaryV15();$('energyPanel').innerHTML=`<div class="kv"><span>Fleet route MPG</span><b>${fuel.avgMpg.toFixed(1)}</b></div><div class="kv"><span>Projected daily fuel</span><b>${fuel.gallons.toFixed(1)} gal-equiv.</b></div><div class="kv"><span>Projected daily route fuel cost</span><b>${v13Money(fuel.cost)}</b></div><div class="kv"><span>Estimated idle share</span><b>${fuel.idlePct}%</b></div><div class="small" style="margin-top:8px">Actual daily costs post when a transportation day is run.</div>`;
+}
+function opsCompleteJobV15(busId,type){
+ ensureOpsV15();let b=state.buses.find(x=>Number(x.id)===Number(busId));if(!b)return;let part=type.includes('Tire')?'Tires':type.includes('Brake')?'Brake Sets':type.includes('Preventive')?'Oil Filters':null;
+ if(part&&state.ops15.parts[part]<=0)return alert(`${part} are out of stock. Order parts first.`);
+ if(part)state.ops15.parts[part]--;
+ let cost=type.includes('Tire')?2200:type.includes('Brake')?1450:type.includes('Preventive')?620:350;
+ if(Number(state.operatingBudget||state.budget||0)<cost)return alert('Insufficient maintenance budget.');
+ if(state.operatingBudget!=null)state.operatingBudget-=cost;else state.budget-=cost;
+ if(type.includes('Tire'))b.ops15.tirePct=100;if(type.includes('Brake'))b.ops15.brakePct=100;if(type.includes('Preventive')){b.ops15.lastPM=Number(b.miles||0);b.ops15.nextPM=Number(b.miles||0)+b.ops15.pmInterval}if(type.includes('Inspection'))b.ops15.inspectionDueDays=365;
+ b.condition=Math.min(100,Number(b.condition||85)+6);state.ops15.dailyEconomics.maintenance+=cost;
+ if(state.v13?.busHistory?.[b.id])state.v13.busHistory[b.id].push({year:state.year,text:`${type} completed in district shop.`});
+ autosaveGame();render()
+}
+function opsRunShopDayV15(){ensureOpsV15();let q=opsBuildShopBacklogV15(),mechs=Math.max(1,(state.supportStaff||[]).filter(s=>String(s.role||'').includes('Mechanic')).length||2),bays=state.v13?.facility?.bays||3,cap=Math.min(mechs,bays),done=0;for(let j of q.slice(0,cap)){let part=j.part;if(part&&state.ops15.parts[part]<=0)continue;opsCompleteJobV15(j.bus,j.type);done++}notify?.(`Shop completed ${done} job${done===1?'':'s'} today.`);render()}
+function opsOrderPartV15(part){ensureOpsV15();let qty=part==='Tires'?8:part.includes('Brake')?4:12,cost=part==='Tires'?3200:part.includes('Brake')?1100:700;if(Number(state.operatingBudget||state.budget||0)<cost)return alert('Insufficient operating budget.');if(state.operatingBudget!=null)state.operatingBudget-=cost;else state.budget-=cost;state.ops15.partOrders.push({part,qty,eta:2+Math.floor(Math.random()*3)});autosaveGame();render()}
+function openPartsInventoryV15(){ensureOpsV15();openModal('📦 Parts Room',Object.entries(state.ops15.parts).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v} on hand</b></div>`).join('')+`<div class="small" style="margin-top:8px">Standardizing the fleet reduces the number of different parts the shop must keep on hand.</div>`)}
+function opsProcessPartOrdersV15(){ensureOpsV15();state.ops15.partOrders.forEach(x=>x.eta--);let arrived=state.ops15.partOrders.filter(x=>x.eta<=0);arrived.forEach(x=>{state.ops15.parts[x.part]=(state.ops15.parts[x.part]||0)+x.qty;opsRadioV15('SHOP',`${x.part} order arrived: ${x.qty} received.`)});state.ops15.partOrders=state.ops15.partOrders.filter(x=>x.eta>0)}
+function opsFuelSummaryV15(){
+ ensureOpsV15();let miles=0,gallons=0,weighted=0,count=0,idle=0;
+ state.routes.forEach(r=>{let b=state.buses.find(x=>Number(x.id)===Number(r.temporaryBus||r.bus));if(!b)return;opsEnsureBusV15(b);let m=r.ops15.dailyMiles,mpg=b.ops15.mpg; miles+=m;gallons+=m/Math.max(1,mpg);weighted+=mpg;idle+=b.ops15.idlePct;count++});
+ let price=Number(state.fuelPrices?.Diesel||3.45);return {miles,gallons,cost:gallons*price,avgMpg:count?weighted/count:0,idlePct:count?Math.round(idle/count):0}
+}
+
+/* Full transportation day */
+function runTransportationDay(){
+ ensureOpsV15();ensureHRV14?.();ensureRidersV16();syncBudgets?.();
+ let overCapacity=enforceCapacityV16();
+ if(overCapacity.length){openModal('🚫 Capacity Problem',`<div class="alert"><b>${overCapacity.length} route(s) exceed available bus capacity.</b><br>Students cannot be placed beyond the assigned bus capacity. Reassign riders, split the route, or assign a larger bus before running the day.</div>${overCapacity.map(x=>`<div class="r16-cap bad"><b>Route ${x.r.id}</b><br>AM ${x.am}/${x.c.cap} • PM ${x.pm}/${x.c.cap}</div>`).join('')}<button class="btn primary" onclick="closeModal();goView('riders')">Open Capacity Watch</button>`);return;}
+ if(state.summerMode)return alert('Regular route service is not running during Summer Mode. Start the new school year first.');
+ let uncovered=state.routes.filter(r=>!routeCoverage(r).ok);
+ if(uncovered.length){let subs=state.staff.filter(s=>s.status==='Substitute'&&!s.route),spares=state.buses.filter(b=>(b.designation==='Spare'||b.status==='Spare')&&!b.ops15?.outOfService);uncovered.forEach(r=>{if(!r.driver&&subs.length)r.temporaryDriver=subs.shift().name;if(!r.bus&&spares.length)r.temporaryBus=spares.shift().id})}
+ let still=state.routes.filter(r=>!routeCoverage(r).ok);
+ if(still.length&&!confirm(`${still.length} route(s) remain uncovered. Run the day anyway?`))return;
+ state.ops15.dailyEconomics={fuel:0,maintenance:0,labor:0,trips:0,totalMiles:0};
+ state.ops15.timeline=[
+  {time:'5:15 AM',text:'Transportation Center opens; drivers check in and begin pre-trip.'},
+  {time:'6:00 AM',text:'First route buses pull out.'},
+  {time:'7:00 AM',text:'Morning school arrivals and second-tier service.'},
+  {time:'8:30 AM',text:'Morning routes return; shop and trips take over.'},
+  {time:'2:15 PM',text:'Drivers report for afternoon service.'},
+  {time:'3:00 PM',text:'School dismissal routes begin.'},
+  {time:'5:15 PM',text:'Final routes return, fuel and shutdown.'}
+ ];
+ let totalMiles=0,totalDelay=0,late=0,roadCalls=0,served=0;
+ state.routes.forEach(r=>{
+  if(!routeCoverage(r).ok)return;
+  let b=state.buses.find(x=>Number(x.id)===Number(r.temporaryBus||r.bus));if(!b)return;opsEnsureBusV15(b);
+  let miles=r.ops15.dailyMiles,delay=opsRouteCurrentDelayV15(r)+Math.floor(Math.random()*3)-1;delay=Math.max(0,delay);
+  totalDelay+=delay;if(delay>=5)late++;served++;
+  let breakdownChance=Math.max(.002,(100-Number(b.condition||90))/1800 + (Number(b.miles||0)>180000?.008:0));
+  if(Math.random()<breakdownChance){roadCalls++;state.ops15.escalations.unshift({title:`Bus ${b.id} Road Call`,text:`Route ${r.id} experienced a mechanical road call. Service truck and spare-bus procedure were activated.`,major:true,time:'AM Route'});b.condition=Math.max(35,Number(b.condition||90)-5)}
+  b.miles=Number(b.miles||0)+miles;b.mileage=b.miles;totalMiles+=miles;
+  let gal=miles/Math.max(1,b.ops15.mpg),price=Number(state.fuelPrices?.[b.fuelType||'Diesel']||state.fuelPrices?.Diesel||3.45),cost=gal*price;
+  state.ops15.dailyEconomics.fuel+=cost;let tank=b.fuelType==='Propane'?70:b.fuelType==='Gasoline'?60:75;b.fuel=Math.max(8,Number(b.fuel??100)-(gal/tank*100));
+  b.ops15.tirePct=Math.max(0,b.ops15.tirePct-miles/1800);b.ops15.brakePct=Math.max(0,b.ops15.brakePct-miles/2600);b.ops15.batteryPct=Math.max(0,b.ops15.batteryPct-.03);b.ops15.inspectionDueDays--;
+  r.ops15.onTimePct=Math.max(70,Math.min(100,Math.round(r.ops15.onTimePct*.94+(delay<5?100:78)*.06)));r.ops15.late20=Math.max(0,Math.round(r.ops15.late20*.9)+(delay>=5?1:0));
+ });
+ state.ops15.dailyEconomics.totalMiles=totalMiles;
+ state.ops15.dailyEconomics.labor=Math.round(state.staff.length*6*Number(state.paySchedule?.driverStart||23.1)+(state.supportStaff||[]).length*8*26);
+ let dailyTotal=state.ops15.dailyEconomics.fuel+state.ops15.dailyEconomics.labor;
+ if(state.operatingBudget!=null)state.operatingBudget=Math.max(0,state.operatingBudget-dailyTotal);else state.budget=Math.max(0,state.budget-dailyTotal);
+ state.ops15.performance={onTime:served?Math.round((served-late)/served*100):0,lateRoutes:late,roadCalls,missedStops:0,avgDelay:served?Number((totalDelay/served).toFixed(1)):0,parentComplaints:Math.max(0,late-2)};
+ state.dailyStats.onTime=state.ops15.performance.onTime;
+ state.simMinutes=1050;opsProcessPartOrdersV15();opsBuildShopBacklogV15();
+ state.ops15.lastDayReport={date:formatGameDate(),...state.ops15.performance,miles:totalMiles,fuelCost:state.ops15.dailyEconomics.fuel,laborCost:state.ops15.dailyEconomics.labor};
+ opsRadioV15('DISPATCH',`Transportation day complete: ${served} routes served, ${totalMiles.toFixed(0)} route miles, ${state.ops15.performance.onTime}% on time.`);
+ try{autoFuelLowBusesV106?.()}catch(e){}
+ try{advanceCalendarDay?.()}catch(e){}
+ autosaveGame();render();opsEndOfDayReportV15()
+}
+function opsEndOfDayReportV15(){
+ let d=state.ops15.lastDayReport;openModal('🌙 Transportation Day Complete',`<div class="today-grid"><div class="panel"><div class="small">ON TIME</div><div class="big-kpi">${d.onTime}%</div></div><div class="panel"><div class="small">ROUTE MILES</div><div class="big-kpi">${d.miles.toFixed(0)}</div></div><div class="panel"><div class="small">LATE ROUTES</div><div class="big-kpi">${d.lateRoutes}</div></div><div class="panel"><div class="small">ROAD CALLS</div><div class="big-kpi">${d.roadCalls}</div></div></div><div class="ops15-econ" style="margin-top:10px"><div><div class="small">Route fuel</div><div class="ops15-cost">${v13Money(d.fuelCost)}</div></div><div><div class="small">Daily labor estimate</div><div class="ops15-cost">${v13Money(d.laborCost)}</div></div></div><div class="alert" style="margin-top:10px">${d.roadCalls?'Shop has received the road-call information and will assess affected buses.':'No major mechanical road calls were recorded today.'}</div>`)
+}
+function opsMorningDecisionV15(){
+ ensureOpsV15();let uncovered=state.routes.filter(r=>!routeCoverage(r).ok),pm=opsBuildShopBacklogV15(),traffic=state.ops15.traffic.filter(x=>x.delay>=5);
+ openModal('☕ 5:15 AM Director Brief',`<div class="today-grid"><div class="panel"><div class="small">ROUTES</div><div class="big-kpi">${state.routes.length-uncovered.length}/${state.routes.length}</div></div><div class="panel"><div class="small">SHOP ITEMS</div><div class="big-kpi">${pm.length}</div></div><div class="panel"><div class="small">TRAFFIC ISSUES</div><div class="big-kpi">${traffic.length}</div></div><div class="panel"><div class="small">WEATHER</div><div class="big-kpi">${state.weather?.temp||57}°</div></div></div><div class="alert">${uncovered.length?`${uncovered.length} route(s) need coverage before pull-out.`:'Dispatch reports all routes covered.'}</div><div class="actions"><button class="btn primary" onclick="closeModal();runTransportationDay()">Run Today</button><button class="btn" onclick="closeModal();goView('dispatch')">Go to Dispatch</button></div>`)
+}
+function renderOperations(){
+ ensureOpsV15();if(!$('opsKpisV15'))return;let p=state.ops15.performance,e=state.ops15.dailyEconomics,attention=state.ops15.escalations.filter(x=>!x.closed),q=opsBuildShopBacklogV15();
+ $('opsKpisV15').innerHTML=[['Simulation Time',opsMinutesTextV15(state.simMinutes||315)],['Routes',state.routes.length],['Fleet Ready',state.buses.filter(b=>!b.ops15.outOfService).length+'/'+state.buses.length],['On-Time',p.onTime+'%'],['Shop Backlog',q.length]].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ $('opsTimelineV15').innerHTML=`<div class="ops15-timeline">${(state.ops15.timeline.length?state.ops15.timeline:[{time:'5:15 AM',text:'Transportation Center opens.'},{time:'6:00 AM',text:'Morning routes pull out.'},{time:'8:30 AM',text:'Morning routes return.'},{time:'2:15 PM',text:'Afternoon drivers report.'},{time:'5:15 PM',text:'Final buses return and fuel.'}]).map(x=>`<div class="ops15-timeitem"><b>${x.time}</b><br>${x.text}</div>`).join('')}</div>`;
+ $('opsAttentionV15').innerHTML=attention.length?attention.map(x=>`<div class="ops15-escalation ${x.major?'major':''}"><b>${x.title}</b><div>${x.text}</div></div>`).join(''):'<div class="ops15-escalation good"><b>No Director action required.</b><div>Your staff are handling routine operations.</div></div>';
+ $('opsEconomicsV15').innerHTML=`<div class="ops15-econ"><div><div class="small">Last daily route fuel</div><div class="ops15-cost">${v13Money(e.fuel)}</div></div><div><div class="small">Last daily labor estimate</div><div class="ops15-cost">${v13Money(e.labor)}</div></div><div><div class="small">Last route miles</div><div class="ops15-cost">${Number(e.totalMiles||0).toFixed(0)}</div></div><div><div class="small">Maintenance posted today</div><div class="ops15-cost">${v13Money(e.maintenance)}</div></div></div>`;
+ $('opsPerformanceV15').innerHTML=`<div class="kv"><span>On-time performance</span><b>${p.onTime}%</b></div><div class="kv"><span>Average route delay</span><b>${p.avgDelay} min</b></div><div class="kv"><span>Routes ≥5 min late</span><b>${p.lateRoutes}</b></div><div class="kv"><span>Mechanical road calls</span><b>${p.roadCalls}</b></div><div class="kv"><span>Parent complaints generated</span><b>${p.parentComplaints}</b></div><div class="small" style="margin-top:8px">Performance now develops from routes, traffic, fleet condition and coverage rather than a single random score.</div>`;
+}
+
+/* Tie V15 rendering into the global page */
+function opsRenderAllV15(){ensureOpsV15();try{ensureRidersV16();renderRidersV16()}catch(e){console.error('V16 riders',e)}try{renderWorkforceV17()}catch(e){console.error('V17 workforce',e)}try{renderProcurementV18()}catch(e){console.error('V18 procurement',e)}try{renderAdminV19()}catch(e){console.error('V19 admin',e)}try{renderRoutes()}catch(e){console.error('V15 routes',e)}try{renderDispatch()}catch(e){console.error('V15 dispatch',e)}try{renderShopV15()}catch(e){console.error('V15 shop',e)}try{renderOperations()}catch(e){console.error('V15 operations',e)}}
+
+
+/* ===== V16 STUDENTS, HOUSEHOLDS & SPECIAL NEEDS ===== */
+function ensureRidersV16(){
+ state.riders16=state.riders16||{};
+ let R=state.riders16;
+ if(!R.households)R.households=[];
+ if(!R.students)R.students=[];
+ if(!R.requests)R.requests=[];
+ if(!R.specialNeedsCases)R.specialNeedsCases=[];
+ if(!R.nextHouseholdId)R.nextHouseholdId=1;
+ if(!R.nextStudentId)R.nextStudentId=1;
+ if(!R.lastGrowthYear)R.lastGrowthYear=state.year||2026;
+ if(!R.schoolRoster)R.schoolRoster=[
+   'Warsaw Community High School','Edgewood Middle School','Lakeview Middle School',
+   'Lincoln Elementary','Washington Elementary','Eisenhower Elementary','Jefferson Elementary',
+   'Harrison Elementary','Madison Elementary','Leesburg Elementary','Claypool Elementary','Special Programs'
+ ];
+ if(!R.seeded){riderSeedDistrictV16();R.seeded=true}
+ riderSyncRoutesV16();
+}
+function riderSeedDistrictV16(){
+ ensureOpsV15?.();
+ let R=state.riders16,first=['Emma','Liam','Olivia','Noah','Ava','Mason','Sophia','Ethan','Mia','Lucas','Ella','Jackson','Harper','Aiden','Grace','Logan','Chloe','Caleb','Lily','Owen'],
+ last=['Miller','Johnson','Davis','Smith','Garcia','Brown','Wilson','Martinez','Anderson','Taylor','Thomas','Moore','Martin','Lee','Thompson'],
+ streets=['Prairie Ridge Dr','Center St','Old Road 30','Winona Ave','CR 200 N','Market St','Husky Trail','Ranch Rd','Meadow Ln','Fox Farm Rd','Patterson Rd'];
+ let target=Math.max(70,(state.routes||[]).reduce((a,r)=>a+Number(r.ops15?.riders||0),0));
+ while(R.students.length<target){
+   let hid=R.nextHouseholdId++,surname=last[(hid*7)%last.length],count=1+((hid*3)%3===0?1:0),address=`${100+(hid*37)%850} ${streets[hid%streets.length]}`;
+   let hh={id:hid,name:`${surname} Household`,address,zone:['Urban','Suburban','Rural'][hid%3],students:[]};
+   R.households.push(hh);
+   for(let j=0;j<count && R.students.length<target;j++){
+      let sid=R.nextStudentId++,grade=(sid*3)%13,school=riderSchoolForGradeV16(grade,sid),special=(sid%29===0||sid%41===0);
+      let route=(state.routes||[])[sid%(state.routes||[]).length];
+      let s={id:sid,name:`${first[(sid*5)%first.length]} ${surname}`,grade,school,householdId:hid,routeAM:route?.id||null,routePM:route?.id||null,
+       ridesAM:sid%11!==0,ridesPM:sid%7!==0,pmDestination:sid%13===0?'After-school care':'Home',active:true,specialNeeds:special,
+       needs:special?riderGenerateNeedsV16(sid):null,stopName:route?.ops15?.stopTimes?.[sid%(route?.ops15?.stopTimes?.length||1)]?.name||address,
+       createdYear:state.year||2026,history:[{year:state.year||2026,text:'Student transportation record created.'}]};
+      R.students.push(s);hh.students.push(sid);if(special)R.specialNeedsCases.push(sid)
+   }
+ }
+}
+function riderSchoolForGradeV16(grade,sid){
+ if(grade>=9)return'Warsaw Community High School';
+ if(grade>=7)return sid%2?'Edgewood Middle School':'Lakeview Middle School';
+ return ['Lincoln Elementary','Washington Elementary','Eisenhower Elementary','Jefferson Elementary','Harrison Elementary','Madison Elementary','Leesburg Elementary','Claypool Elementary'][sid%8]
+}
+function riderGenerateNeedsV16(seed){
+ let modes=['Wheelchair','Aide/Monitor','Specialized Seating','Curb-to-Curb','Reduced Ride Time'];
+ let count=1+(seed%3===0?1:0);let arr=[];
+ for(let i=0;i<count;i++)arr.push(modes[(seed+i*2)%modes.length]);
+ return {requirements:[...new Set(arr)],wheelchair:arr.includes('Wheelchair'),aide:arr.includes('Aide/Monitor'),curbToCurb:arr.includes('Curb-to-Curb'),maxRideMinutes:arr.includes('Reduced Ride Time')?45:null}
+}
+function riderGradeLabelV16(g){return g===0?'K':String(g)}
+function riderSyncRoutesV16(){
+ if(!state.riders16)return;
+ (state.routes||[]).forEach(r=>{
+   if(!r.ops15)return;
+   let am=state.riders16.students.filter(s=>s.active&&s.ridesAM&&Number(s.routeAM)===Number(r.id)).length;
+   let pm=state.riders16.students.filter(s=>s.active&&s.ridesPM&&Number(s.routePM)===Number(r.id)).length;
+   r.ops15.ridersAM=am;r.ops15.ridersPM=pm;r.ops15.riders=Math.max(am,pm);
+   let cap=opsRouteCapacityV15?.(r);r.ops15.capacityPct=cap?.pct||0
+ })
+}
+function renderRidersV16(){
+ ensureRidersV16();if(!$('riderKpisV16'))return;
+ let R=state.riders16,active=R.students.filter(s=>s.active),special=active.filter(s=>s.specialNeeds),pending=R.requests.filter(x=>x.status==='Pending');
+ $('riderKpisV16').innerHTML=[
+  ['Active Riders',active.length],['Households',R.households.length],['Special Needs Riders',special.length],['Pending Requests',pending.length],
+  ['AM Riders',active.filter(s=>s.ridesAM).length],['PM Riders',active.filter(s=>s.ridesPM).length]
+ ].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ let sf=$('riderSchoolFilterV16');if(sf&&sf.options.length===1)sf.innerHTML='<option value="All">All Schools</option>'+R.schoolRoster.map(s=>`<option>${s}</option>`).join('');
+ let filter=sf?.value||'All';
+ let households=R.households.filter(h=>h.students.some(id=>{let s=R.students.find(x=>x.id===id);return s&&s.active&&(filter==='All'||s.school===filter)}));
+ $('householdListV16').innerHTML=households.slice(0,70).map(h=>`<div class="r16-house"><h4>${h.name}</h4><div class="small">${h.address} • ${h.zone}</div><div class="r16-students">${h.students.map(id=>{let s=R.students.find(x=>x.id===id);if(!s||!s.active||(filter!=='All'&&s.school!==filter))return'';return `<div class="r16-student ${s.specialNeeds?'special':''}" onclick="selectRiderV16(${s.id})"><b>${s.name}</b><br>Grade ${riderGradeLabelV16(s.grade)} • ${s.school.replace(' Elementary','')}</div>`}).join('')}</div></div>`).join('');
+ $('transportRequestsV16').innerHTML=R.requests.slice().reverse().map((q,idx)=>`<div class="r16-request ${q.status.toLowerCase()}"><b>${q.type}</b> — ${q.studentName||'Household'}<div>${q.details}</div><div class="small">Submitted day ${q.day} • ${q.status}</div>${q.status==='Pending'?`<div class="actions"><button class="btn primary" onclick="approveTransportRequestV16(${R.requests.indexOf(q)})">Approve</button><button class="btn" onclick="denyTransportRequestV16(${R.requests.indexOf(q)})">Deny</button></div>`:''}</div>`).join('')||'<div class="small">No transportation requests yet.</div>';
+ $('capacityWatchV16').innerHTML=(state.routes||[]).map(r=>{let c=opsRouteCapacityV15(r),am=r.ops15.ridersAM||0,pm=r.ops15.ridersPM||0,max=Math.max(am,pm),pct=c.cap?Math.round(max/c.cap*100):0,cls=pct>100?'bad':pct>90?'warn':'';return `<div class="r16-cap ${cls}"><b>Route ${r.id}</b><br>AM ${am}/${c.cap} • PM ${pm}/${c.cap} • Peak ${pct}%${pct>100?'<br><b>⚠ Capacity exceeded — action required</b>':pct>90?'<br><b>Capacity watch</b>':''}</div>`}).join('');
+ let first=active[0];if(first)selectRiderV16(first.id,false)
+}
+function selectRiderV16(id){
+ ensureRidersV16();let s=state.riders16.students.find(x=>x.id===id);if(!s)return;
+ let hh=state.riders16.households.find(h=>h.id===s.householdId);
+ $('riderTitleV16').textContent=s.name;
+ $('riderDetailV16').innerHTML=`<div class="r16-grid"><div class="r16-card"><b>School</b><br>${s.school}<br>Grade ${riderGradeLabelV16(s.grade)}</div><div class="r16-card"><b>Household</b><br>${hh?.address||'—'}<br>${hh?.zone||''}</div><div class="r16-card"><b>AM Transportation</b><br>${s.ridesAM?'Route '+s.routeAM:'Does not ride AM'}<br>${s.stopName}</div><div class="r16-card"><b>PM Transportation</b><br>${s.ridesPM?'Route '+s.routePM:'Does not ride PM'}<br>${s.pmDestination}</div></div>${s.specialNeeds?`<div class="r16-plan"><b>Special Transportation Plan</b><br>${s.needs.requirements.map(x=>`<span class="r16-badge">${x}</span>`).join('')}${s.needs.maxRideMinutes?`<br>Maximum planned ride: ${s.needs.maxRideMinutes} minutes`:''}</div>`:''}<h4>Transportation History</h4><div class="hr-timeline">${s.history.slice().reverse().map(x=>`<div><b>${x.year}</b> — ${x.text}</div>`).join('')}</div>`;
+ $('riderActionsV16').innerHTML=`<button class="btn" onclick="toggleRideV16(${id},'AM')">${s.ridesAM?'Remove AM':'Add AM'}</button><button class="btn" onclick="toggleRideV16(${id},'PM')">${s.ridesPM?'Remove PM':'Add PM'}</button><button class="btn" onclick="openStudentRouteChangeV16(${id})">Change Route</button>${s.specialNeeds?'<button class="btn" onclick="openSpecialNeedsBoardV16()">Open Special Needs Board</button>':''}`
+}
+function toggleRideV16(id,dir){let s=state.riders16.students.find(x=>x.id===id);if(!s)return;if(dir==='AM')s.ridesAM=!s.ridesAM;else s.ridesPM=!s.ridesPM;s.history.push({year:state.year,text:`${dir} transportation ${dir==='AM'?s.ridesAM:s.ridesPM?'enabled':'disabled'}.`});riderSyncRoutesV16();autosaveGame();render()}
+function riderGenerateGrowthV16(){
+ ensureRidersV16();let R=state.riders16,hid=R.nextHouseholdId++,surname=['Parker','Collins','Reed','Bennett','Myers','Fisher','Cooper','Ward'][hid%8],address=`${200+(hid*31)%700} ${['Prairie Ridge Dr','Meadow Ln','Fox Farm Rd','Husky Trail','CR 200 N'][hid%5]}`,hh={id:hid,name:`${surname} Household`,address,zone:hid%3===0?'Rural':'Suburban',students:[]};R.households.push(hh);
+ let count=1+(hid%3===0?1:0);for(let j=0;j<count;j++){let sid=R.nextStudentId++,grade=(sid*2)%13,route=(state.routes||[])[sid%(state.routes||[]).length],s={id:sid,name:`${['Maddie','Luke','Avery','Levi','Sophie','Nolan'][sid%6]} ${surname}`,grade,school:riderSchoolForGradeV16(grade,sid),householdId:hid,routeAM:route?.id||null,routePM:route?.id||null,ridesAM:true,ridesPM:true,pmDestination:'Home',active:true,specialNeeds:false,needs:null,stopName:address,createdYear:state.year||2026,history:[{year:state.year,text:'Moved into district and added to transportation.'}]};R.students.push(s);hh.students.push(sid)}
+ riderSyncRoutesV16();autosaveGame();render()
+}
+function openTransportRequestV16(){
+ ensureRidersV16();let riders=state.riders16.students.filter(s=>s.active).slice(0,80);
+ openModal('📝 New Transportation Request',`<label>Student<select id="trStudentV16">${riders.map(s=>`<option value="${s.id}">${s.name} — ${s.school}</option>`).join('')}</select></label><label>Request Type<select id="trTypeV16"><option>Address Change</option><option>Temporary Stop Change</option><option>Alternate PM Destination</option><option>New Rider</option><option>Stop Concern</option></select></label><label>Details<textarea id="trDetailsV16" rows="4">Parent/guardian submitted a transportation change request.</textarea></label><button class="btn primary" onclick="submitTransportRequestV16()">Submit Request</button>`)
+}
+function submitTransportRequestV16(){let s=state.riders16.students.find(x=>x.id===Number($('trStudentV16').value));state.riders16.requests.push({id:Date.now(),studentId:s?.id,studentName:s?.name,type:$('trTypeV16').value,details:$('trDetailsV16').value,day:state.day||1,status:'Pending'});closeModal();render()}
+function approveTransportRequestV16(i){
+ let q=state.riders16.requests[i],s=state.riders16.students.find(x=>x.id===q.studentId);if(!q||!s)return;q.status='Approved';
+ if(q.type==='New Rider'){s.ridesAM=true;s.ridesPM=true}
+ if(q.type==='Alternate PM Destination')s.pmDestination='Approved alternate destination';
+ if(q.type==='Temporary Stop Change')s.stopName='Temporary approved stop';
+ if(q.type==='Address Change'){let hh=state.riders16.households.find(h=>h.id===s.householdId);if(hh)hh.address='Updated district address'}
+ s.history.push({year:state.year,text:`Transportation request approved: ${q.type}.`});riderSyncRoutesV16();autosaveGame();render()
+}
+function denyTransportRequestV16(i){let q=state.riders16.requests[i];if(q)q.status='Denied';autosaveGame();render()}
+function openStudentRouteChangeV16(id){
+ let s=state.riders16.students.find(x=>x.id===id);openModal(`Change Route — ${s.name}`,`<label>AM Route<select id="amRouteV16">${state.routes.map(r=>`<option value="${r.id}" ${Number(s.routeAM)===Number(r.id)?'selected':''}>Route ${r.id}</option>`).join('')}</select></label><label>PM Route<select id="pmRouteV16">${state.routes.map(r=>`<option value="${r.id}" ${Number(s.routePM)===Number(r.id)?'selected':''}>Route ${r.id}</option>`).join('')}</select></label><button class="btn primary" onclick="saveStudentRouteChangeV16(${id})">Save Assignment</button>`)
+}
+function saveStudentRouteChangeV16(id){let s=state.riders16.students.find(x=>x.id===id);s.routeAM=Number($('amRouteV16').value);s.routePM=Number($('pmRouteV16').value);s.history.push({year:state.year,text:`Route assignment changed: AM ${s.routeAM}, PM ${s.routePM}.`});riderSyncRoutesV16();closeModal();autosaveGame();render()}
+function openSpecialNeedsBoardV16(){
+ ensureRidersV16();let arr=state.riders16.students.filter(s=>s.active&&s.specialNeeds);
+ openModal('♿ Special Needs Transportation Board',`<div class="alert">Nicole Grant can manage routine plan changes. The Director is alerted when capacity, equipment, aide coverage, or ride-time limits cannot be met.</div>${arr.map(s=>{let route=state.routes.find(r=>Number(r.id)===Number(s.routeAM)),bus=state.buses.find(b=>Number(b.id)===Number(route?.bus)),spec=state.v13?.busSpecs?.[bus?.id]||{},issues=[];if(s.needs.wheelchair&&Number(spec.wheelchair||0)<=0)issues.push('No wheelchair positions on assigned bus');if(s.needs.aide&&!String(route?.aide||'').trim())issues.push('Aide/monitor required');if(s.needs.maxRideMinutes&&route?.ops15&&(route.ops15.returnGarage-route.ops15.firstStop)>s.needs.maxRideMinutes)issues.push('Ride time exceeds plan');return `<div class="r16-plan"><b>${s.name}</b> — ${s.school}<br>${s.needs.requirements.map(x=>`<span class="r16-badge">${x}</span>`).join('')}<div class="small">AM Route ${s.routeAM} • PM Route ${s.routePM}</div>${issues.length?`<div style="margin-top:5px"><b>⚠ ${issues.join(' • ')}</b></div>`:'<div class="small">✓ Current assignment appears compatible.</div>'}</div>`}).join('')}`)
+}
+function enforceCapacityV16(){
+ ensureRidersV16();let over=[];
+ state.routes.forEach(r=>{let c=opsRouteCapacityV15(r),am=r.ops15.ridersAM||0,pm=r.ops15.ridersPM||0;if(Math.max(am,pm)>c.cap)over.push({r,c,am,pm})});
+ return over
+}
+function opsRouteCapacityV15(r){
+ let b=state.buses.find(x=>Number(x.id)===Number(r.temporaryBus||r.bus)),cap=Number(state.v13?.busSpecs?.[b?.id]?.capacity||b?.capacity||72);
+ let riders=Math.max(Number(r.ops15?.ridersAM||r.ops15?.riders||0),Number(r.ops15?.ridersPM||r.ops15?.riders||0));
+ return {riders,cap,pct:cap?Math.round(riders/cap*100):0}
+}
+function riderAdvanceYearV16(){
+ ensureRidersV16();let R=state.riders16;
+ R.students.forEach(s=>{if(!s.active)return;s.grade++;if(s.grade>12){s.active=false;s.history.push({year:state.year,text:'Graduated and removed from regular transportation.'})}else{s.school=riderSchoolForGradeV16(s.grade,s.id);s.history.push({year:state.year,text:`Advanced to grade ${riderGradeLabelV16(s.grade)} at ${s.school}.`})}});
+ let growth=2+Math.floor(Math.random()*5);for(let i=0;i<growth;i++)riderGenerateGrowthV16();
+ riderSyncRoutesV16()
+}
+function renderRiderRouteStatsV16(){
+ riderSyncRoutesV16()
+}
+
+
+const yearEndPreV16=yearEnd;
+yearEnd=function(){let oldY=state.year;let result=yearEndPreV16.apply(this,arguments);try{if(state.year!==oldY)riderAdvanceYearV16()}catch(e){console.error('V16 year progression',e)}return result}
+
+
+/* ===== V17 WORKFORCE & FINANCE ===== */
+function ensureWorkforceV17(){
+ state.workforce17=state.workforce17||{};
+ let W=state.workforce17;
+ if(!W.salarySchedule)W.salarySchedule={0:23.10,1:23.55,3:24.40,5:25.30,10:26.70,15:27.80};
+ if(!W.subAvailability)W.subAvailability={};
+ if(!W.routeKnowledge)W.routeKnowledge={};
+ if(!W.training)W.training={};
+ if(!W.payrollHistory)W.payrollHistory=[];
+ if(!W.retirementNotices)W.retirementNotices=[];
+ (state.staff||[]).forEach((s,i)=>{
+   if(!W.subAvailability[s.name]&&s.status==='Substitute')W.subAvailability[s.name]={mon:true,tue:i%2===0,wed:true,thu:i%3!==0,fri:true,am:true,pm:i%4!==0};
+   if(!W.routeKnowledge[s.name]){W.routeKnowledge[s.name]={};(state.routes||[]).forEach((r,ri)=>W.routeKnowledge[s.name][r.id]=Math.max(0,Math.min(5,Math.floor(((s.years||0)+ri+i)%6))))}
+   if(!W.training[s.name])W.training[s.name]={cdlDays:180+(i*23)%420,physicalDays:90+(i*31)%360,inservice: i%7!==0,evacuation:i%5!==0,wheelchair:s.name.includes('Denise')||i%6===0,defensive:true}
+   if(s.pay==null)s.pay=wfRateForYearsV17(s.years||0)
+ })
+}
+function wfRateForYearsV17(y){ensureWorkforceV17?.();let S=state.workforce17?.salarySchedule||{0:23.1};let keys=Object.keys(S).map(Number).sort((a,b)=>a-b),k=0;keys.forEach(x=>{if(y>=x)k=x});return Number(S[k])}
+function wfKnowledgeStarsV17(name,routeId){let n=state.workforce17.routeKnowledge?.[name]?.[routeId]||0;return'★'.repeat(n)+'☆'.repeat(5-n)}
+function renderWorkforceV17(){
+ ensureWorkforceV17();if(!$('wfKpisV17'))return;
+ let drivers=(state.staff||[]),subs=drivers.filter(s=>s.status==='Substitute'),openTraining=drivers.filter(s=>{let t=state.workforce17.training[s.name];return t&&(t.cdlDays<45||t.physicalDays<45||!t.inservice)}),ret=drivers.filter(s=>Number(s.age||0)>=62);
+ $('wfKpisV17').innerHTML=[['Drivers',drivers.length],['Substitutes',subs.length],['Training Due',openTraining.length],['Retirement Watch',ret.length],['Avg Driver Pay','$'+(drivers.reduce((a,s)=>a+Number(s.pay||0),0)/Math.max(1,drivers.length)).toFixed(2)]].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ $('wfDriverBoardV17').innerHTML=drivers.slice().sort((a,b)=>(b.years||0)-(a.years||0)).map(s=>{let r=(state.routes||[]).find(x=>x.driver===s.name||x.temporaryDriver===s.name);return `<div class="v17-row"><b>${s.years||0} yr</b><span><b>${s.name}</b><br><span class="small">${s.status} • ${r?'Route '+r.id:'Unassigned'}</span></span><span>$${Number(s.pay||0).toFixed(2)}/hr</span><span class="v17-stars">${r?wfKnowledgeStarsV17(s.name,r.id):'—'}</span></div>`}).join('');
+ $('wfSubBoardV17').innerHTML=subs.map(s=>{let a=state.workforce17.subAvailability[s.name];return `<div class="v17-sub"><b>${s.name}</b><div class="small">${['Mon','Tue','Wed','Thu','Fri'].map((d,i)=>a[d.toLowerCase()]?`✓ ${d}`:`× ${d}`).join(' • ')}<br>${a.am?'AM':''}${a.am&&a.pm?' / ':''}${a.pm?'PM':''}</div><div class="small">Strongest known routes: ${Object.entries(state.workforce17.routeKnowledge[s.name]||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([r,v])=>`R${r} ${'★'.repeat(v)}`).join(' • ')}</div></div>`}).join('')||'<div class="small">No substitutes in pool.</div>';
+ let pay=wfPayrollSummaryV17();
+ $('wfPayrollPanelV17').innerHTML=`<div class="v17-paygrid"><div class="v17-paybox"><div class="small">Driver wages</div><b>${v13Money(pay.driverWages)}</b></div><div class="v17-paybox"><div class="small">Overtime</div><b>${v13Money(pay.overtime)}</b></div><div class="v17-paybox"><div class="small">Trip pay</div><b>${v13Money(pay.tripPay)}</b></div><div class="v17-paybox"><div class="small">Training</div><b>${v13Money(pay.trainingPay)}</b></div><div class="v17-paybox"><div class="small">Benefits</div><b>${v13Money(pay.benefits)}</b></div><div class="v17-paybox"><div class="small">Annual payroll</div><b>${v13Money(pay.total)}</b></div></div>`;
+ $('wfRetirementPanelV17').innerHTML=drivers.filter(s=>Number(s.age||0)>=60).sort((a,b)=>b.age-a.age).map(s=>`<div class="v17-sub"><b>${s.name}</b> — Age ${s.age}<div class="small">${s.years||0} years service • ${Number(s.age)>=65?'Eligible/likely retirement':'Retirement planning window'}</div><button class="btn" onclick="wfSubmitRetirementNoticeV17('${s.name.replace(/'/g,"\\'")}')">Create Retirement Notice</button></div>`).join('')||'<div class="small">No near-term retirement watch items.</div>';
+}
+function wfPayrollSummaryV17(){
+ ensureWorkforceV17();let drivers=state.staff||[],driverWages=0,overtime=0,tripPay=0,trainingPay=0;
+ drivers.forEach(s=>{let hrs=s.status==='Substitute'?650:1080,rate=Number(s.pay||wfRateForYearsV17(s.years||0));driverWages+=hrs*rate;let routes=(state.routes||[]).filter(r=>r.driver===s.name).length;if(routes>1)overtime+=80*rate*1.5;if(s.trip)tripPay+=28*rate;let t=state.workforce17.training[s.name];if(t&&!t.inservice)trainingPay+=8*rate});
+ let support=(state.supportStaff||[]).reduce((a,s)=>a+(2080*(Number(s.pay||26))),0),benefits=(driverWages+support)*.31,total=driverWages+support+overtime+tripPay+trainingPay+benefits;
+ return {driverWages,support,overtime,tripPay,trainingPay,benefits,total}
+}
+function wfOpenPayrollV17(){let p=wfPayrollSummaryV17();openModal('💰 Transportation Payroll',`<div class="v17-paygrid">${[['Driver wages',p.driverWages],['Support wages',p.support],['Overtime',p.overtime],['Trip pay',p.tripPay],['Training pay',p.trainingPay],['Benefits',p.benefits],['TOTAL',p.total]].map(x=>`<div class="v17-paybox"><div class="small">${x[0]}</div><div class="ops15-cost">${v13Money(x[1])}</div></div>`).join('')}</div><div class="small" style="margin-top:8px">Costs are generated from actual employee rates, guaranteed hours, overtime/trip assumptions and benefits.</div>`)}
+function wfOpenRouteBidV17(){
+ ensureWorkforceV17();let drivers=(state.staff||[]).filter(s=>s.status!=='Substitute').slice().sort((a,b)=>(b.years||0)-(a.years||0)),routes=(state.routes||[]).slice();
+ let html='<div class="alert">Drivers bid in seniority order. Preferences use route knowledge, route length, special-needs status and current assignment.</div>';
+ drivers.forEach((s,i)=>{let choices=routes.map(r=>({r,score:(state.workforce17.routeKnowledge[s.name]?.[r.id]||0)*10-(r.ops15?.dailyMiles||0)*.03+(r.driver===s.name?8:0)+(r.specialNeeds&&s.name.includes('Denise')?12:0)})).sort((a,b)=>b.score-a.score);html+=`<div class="v17-sub"><b>${i+1}. ${s.name}</b> — ${s.years||0} years<div class="small">Top preference: Route ${choices[0]?.r.id||'—'} • ${choices[0]?wfKnowledgeStarsV17(s.name,choices[0].r.id):''}</div><button class="btn" onclick="wfBidAssignV17('${s.name.replace(/'/g,"\\'")}',${choices[0]?.r.id||0})">Award Top Available Preference</button></div>`});openModal('📋 Annual Route Bid',html)
+}
+function wfBidAssignV17(name,routeId){let route=state.routes.find(r=>Number(r.id)===Number(routeId));if(!route)return;state.routes.forEach(r=>{if(r.driver===name)r.driver=null});if(route.driver){let other=state.routes.find(r=>!r.driver);if(other)other.driver=route.driver}route.driver=name;let s=state.staff.find(x=>x.name===name);if(s)s.route=route.id;closeModal();autosaveGame();render()}
+function wfOpenTrainingV17(){ensureWorkforceV17();openModal('🎓 Training Compliance',(state.staff||[]).map(s=>{let t=state.workforce17.training[s.name];let issues=[];if(t.cdlDays<45)issues.push('CDL expiring');if(t.physicalDays<45)issues.push('Physical expiring');if(!t.inservice)issues.push('Annual in-service due');if(!t.evacuation)issues.push('Evacuation drill due');return `<div class="v17-sub"><b>${s.name}</b><div class="small">CDL ${t.cdlDays}d • Physical ${t.physicalDays}d • In-service ${t.inservice?'✓':'DUE'} • Evacuation ${t.evacuation?'✓':'DUE'}</div>${issues.length?`<b>⚠ ${issues.join(' • ')}</b>`:'<span class="small">✓ Compliant</span>'}<br><button class="btn" onclick="wfCompleteTrainingV17('${s.name.replace(/'/g,"\\'")}')">Complete Due Training</button></div>`}).join(''))}
+function wfCompleteTrainingV17(name){let t=state.workforce17.training[name];if(!t)return;t.cdlDays=Math.max(t.cdlDays,365);t.physicalDays=Math.max(t.physicalDays,365);t.inservice=true;t.evacuation=true;t.defensive=true;closeModal();render()}
+function wfSubmitRetirementNoticeV17(name){let s=state.staff.find(x=>x.name===name);if(!s)return;state.workforce17.retirementNotices.push({name,year:state.year||2026,finalDay:'Last student day of school',years:s.years||0});notify?.(`${name} submitted a retirement notice for the end of the school year.`);render()}
+
+/* ===== V18 FLEET PROCUREMENT & SAFETY ===== */
+function ensureFleetV18(){
+ state.fleet18=state.fleet18||{};let F=state.fleet18;
+ if(!F.projects)F.projects=[];
+ if(!F.safetyCases)F.safetyCases=[];
+ if(!F.inspections)F.inspections=[];
+ if(!F.vendorHistory)F.vendorHistory={};
+ if(!F.nextProjectId)F.nextProjectId=18001;
+ (state.buses||[]).forEach((b,i)=>{if(!b.v18)b.v18={warrantyUntil:(Number(b.year||2020)+5),originalPrice:Number(b.price||120000+(i%5)*6500),deliveryYear:Number(b.year||2020),gps:true,cameras:8,stopArmCamera:i%3===0,inspectionStatus:'Current'}})
+}
+function renderProcurementV18(){
+ ensureFleetV18();if(!$('fpKpisV18'))return;let F=state.fleet18,active=F.projects.filter(p=>!['Delivered','Closed'].includes(p.status)),due=state.buses.filter(b=>Number(state.year||2026)-Number(b.year||2020)>=12),warranty=state.buses.filter(b=>Number(state.year||2026)<=Number(b.v18.warrantyUntil)).length;
+ $('fpKpisV18').innerHTML=[['Open Projects',active.length],['Replacement Due',due.length],['Under Warranty',warranty],['Safety Cases',F.safetyCases.filter(x=>x.status!=='Closed').length],['Inspection Pass Rate',fpInspectionRateV18()+'%']].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ $('fpProjectsV18').innerHTML=F.projects.slice().reverse().map(p=>{let stages=['Capital Request','Board Approval','Specifications','RFP','Vendor Award','Factory Order','Production','Dealer Prep','Delivery'];let si=stages.indexOf(p.status);return `<div class="v18-project ${p.status==='Delivered'?'good':p.status==='Board Denied'?'bad':'warn'}"><b>${p.title}</b><div class="small">${p.qty} bus(es) • ${p.type} • Budget ${v13Money(p.budget)}</div><div class="v18-stagebar">${stages.map((s,i)=>`<span class="${i<si?'done':i===si?'current':''}">${s}</span>`).join('')}</div><div class="actions">${p.status!=='Delivered'&&p.status!=='Board Denied'?`<button class="btn primary" onclick="fpAdvanceProjectV18(${p.id})">Advance Project</button>`:''}<button class="btn" onclick="fpOpenProjectV18(${p.id})">Open</button></div></div>`}).join('')||'<div class="small">No capital projects yet.</div>';
+ $('fpForecastV18').innerHTML=state.buses.slice().sort((a,b)=>((state.year||2026)-a.year)-((state.year||2026)-b.year)).reverse().slice(0,12).map(b=>{let age=(state.year||2026)-Number(b.year||2020),score=Math.round(age*5+Number(b.miles||0)/10000+(100-Number(b.condition||90)));return `<div class="v18-row"><b>${b.id}</b><span>${b.year} ${b.make||b.model||'Bus'}<br><span class="small">${Number(b.miles||0).toFixed(0)} mi • Condition ${b.condition||90}%</span></span><span>${age} yr</span><span>${score>90?'Replace':score>65?'Plan':'Keep'}</span></div>`}).join('');
+ $('fpSafetyCasesV18').innerHTML=F.safetyCases.slice().reverse().map((c,i)=>`<div class="v18-project ${c.severity==='Major'?'bad':'warn'}"><b>${c.type} — Bus ${c.bus}</b><div>${c.summary}</div><div class="small">GPS ${c.gpsChecked?'reviewed':'pending'} • Camera ${c.cameraChecked?'reviewed':'pending'} • ${c.status}</div>${c.status!=='Closed'?`<button class="btn" onclick="fpInvestigateSafetyV18(${i})">Investigate</button>`:''}</div>`).join('')||'<div class="small">No open safety cases.</div>';
+ $('fpWarrantyV18').innerHTML=state.buses.map(b=>`<div class="v18-row"><b>${b.id}</b><span>${b.year} ${b.make||b.model||'Bus'}</span><span>${Number(state.year)<=Number(b.v18.warrantyUntil)?'Warranty':'District Cost'}</span><span>${b.v18.inspectionStatus}</span></div>`).join('');
+}
+function fpStartCapitalRequestV18(){ensureFleetV18();openModal('🚌 New Capital Request',`<label>Quantity<input id="fpQtyV18" type="number" min="1" max="12" value="2"></label><label>Bus Type<select id="fpTypeV18"><option>Conventional Type C</option><option>Front Engine Type D</option><option>Rear Engine / Pusher</option><option>Type A / Mini</option></select></label><label>Estimated Budget<input id="fpBudgetV18" type="number" value="300000"></label><button class="btn primary" onclick="fpCreateProjectV18()">Create Capital Request</button>`)}
+function fpCreateProjectV18(){let F=state.fleet18,id=F.nextProjectId++,qty=Number($('fpQtyV18').value),type=$('fpTypeV18').value,budget=Number($('fpBudgetV18').value);F.projects.push({id,title:`FY${state.year||2026} Bus Replacement`,qty,type,budget,status:'Capital Request',bids:[],vendor:null,etaMonths:null,history:[`Capital request created in ${state.year||2026}`]});closeModal();render()}
+function fpAdvanceProjectV18(id){
+ let p=state.fleet18.projects.find(x=>x.id===id);if(!p)return;
+ let stages=['Capital Request','Board Approval','Specifications','RFP','Vendor Award','Factory Order','Production','Dealer Prep','Delivery'];
+ let i=stages.indexOf(p.status);
+ if(p.status==='Board Approval'&&Math.random()<.08){p.status='Board Denied';p.history.push('Board denied request.');render();return}
+ if(p.status==='RFP'){p.bids=[{vendor:'Midwest Bus Sales',price:fpVendorPriceV18(p,'A'),months:7,warranty:5},{vendor:'Hoosier School Bus',price:fpVendorPriceV18(p,'B'),months:9,warranty:6},{vendor:'Great Lakes Bus',price:fpVendorPriceV18(p,'C'),months:6,warranty:4}];p.status='Vendor Award';p.history.push('Three compliant vendor bids received.');render();return}
+ if(p.status==='Vendor Award'&&!p.vendor){p.vendor=p.bids.slice().sort((a,b)=>a.price-b.price)[0];p.etaMonths=p.vendor.months}
+ if(i<stages.length-1){p.status=stages[i+1];p.history.push(`Advanced to ${p.status}.`);if(p.status==='Production')p.etaMonths=Math.max(2,p.etaMonths||6);if(p.status==='Delivery')fpDeliverProjectV18(p)}
+ render()
+}
+function fpVendorPriceV18(p,k){let base=p.type.includes('Pusher')?205000:p.type.includes('Front')?175000:p.type.includes('Mini')?105000:145000;return Math.round(base*p.qty*(k==='A'?.99:k==='B'?1.02:1.04))}
+function fpOpenProjectV18(id){let p=state.fleet18.projects.find(x=>x.id===id);if(!p)return;openModal(`📑 ${p.title}`,`<div class="kv"><span>Status</span><b>${p.status}</b></div><div class="kv"><span>Type</span><b>${p.type}</b></div><div class="kv"><span>Quantity</span><b>${p.qty}</b></div><div class="kv"><span>Budget</span><b>${v13Money(p.budget)}</b></div>${p.bids?.length?`<h4>Vendor Bids</h4>${p.bids.map(b=>`<div class="v18-project"><b>${b.vendor}</b><div>${v13Money(b.price)} • Delivery ${b.months} months • ${b.warranty}-year warranty</div><button class="btn" onclick="fpAwardVendorV18(${p.id},'${b.vendor.replace(/'/g,"\\'")}')">Award</button></div>`).join('')}`:''}<h4>History</h4>${p.history.map(x=>`<div class="small">${x}</div>`).join('')}`)}
+function fpAwardVendorV18(id,vendor){let p=state.fleet18.projects.find(x=>x.id===id);p.vendor=p.bids.find(b=>b.vendor===vendor);p.etaMonths=p.vendor.months;p.history.push(`Awarded to ${vendor} for ${v13Money(p.vendor.price)}.`);closeModal();render()}
+function fpOpenFactoryBoardV18(){ensureFleetV18();openModal('🏭 Factory Tracker',state.fleet18.projects.filter(p=>['Factory Order','Production','Dealer Prep'].includes(p.status)).map(p=>`<div class="v18-project"><b>${p.title}</b><div class="small">${p.vendor?.vendor||'Vendor pending'} • ETA ${p.etaMonths||'—'} months • ${p.status}</div><button class="btn" onclick="fpFactoryMonthV18(${p.id})">Advance One Month</button></div>`).join('')||'<div class="alert">No buses are currently in factory/dealer production.</div>')}
+function fpFactoryMonthV18(id){let p=state.fleet18.projects.find(x=>x.id===id);if(!p)return;p.etaMonths=Math.max(0,(p.etaMonths||1)-1);if(p.etaMonths===0){p.status='Delivery';fpDeliverProjectV18(p)}else if(p.etaMonths<=1)p.status='Dealer Prep';else p.status='Production';closeModal();render()}
+function fpDeliverProjectV18(p){
+ let max=Math.max(60,...state.buses.map(b=>Number(b.id)||0));
+ for(let i=0;i<p.qty;i++){let id=++max,price=(p.vendor?.price||p.budget)/p.qty,b={id,year:(state.year||2026),make:p.type.includes('Pusher')?'Transit Coach':'School Bus',model:p.type,fuelType:'Diesel',miles:250+Math.floor(Math.random()*400),condition:100,fuel:100,status:'Spare',designation:'Spare',capacity:p.type.includes('Mini')?24:p.type.includes('Pusher')?84:72,price};state.buses.push(b);ensureOpsV15?.();opsEnsureBusV15(b,state.buses.length-1);ensureFleetV18();b.v18={warrantyUntil:(state.year||2026)+(p.vendor?.warranty||5),originalPrice:price,deliveryYear:state.year||2026,gps:true,cameras:8,stopArmCamera:true,inspectionStatus:'Delivery Inspection Passed'};if(state.v13?.busHistory)state.v13.busHistory[id]=[{year:state.year,text:`Delivered from ${p.vendor?.vendor||'vendor'} under ${p.title}.`}];}
+ p.status='Delivered';p.history.push(`${p.qty} bus(es) delivered and entered fleet.`);
+}
+function fpRunInspectionWeekV18(){ensureFleetV18();let passed=0,failed=0;state.buses.forEach(b=>{let risk=(100-Number(b.condition||90))+(b.ops15?.brakePct<30?20:0)+(b.ops15?.tirePct<25?20:0),pass=Math.random()*100>risk*.45;b.v18.inspectionStatus=pass?'PASS':'OUT OF SERVICE';state.fleet18.inspections.push({year:state.year,bus:b.id,pass});if(pass)passed++;else{failed++;b.ops15.outOfService=true}});openModal('🧾 State Inspection Week',`<div class="today-grid"><div class="panel"><div class="small">PASS</div><div class="big-kpi">${passed}</div></div><div class="panel"><div class="small">OUT OF SERVICE</div><div class="big-kpi">${failed}</div></div></div><div class="alert">${failed?'Failed buses were removed from service and added to shop attention.':'100% first-pass inspection rate — excellent fleet readiness.'}</div>`);render()}
+function fpInspectionRateV18(){let a=state.fleet18?.inspections||[];if(!a.length)return 100;return Math.round(a.filter(x=>x.pass).length/a.length*100)}
+function fpCreateSafetyCaseV18(bus,type='Parent / GPS Investigation',severity='Minor'){ensureFleetV18();state.fleet18.safetyCases.push({bus,type,severity,summary:type.includes('Accident')?'Vehicle incident requires GPS/camera review and preventability determination.':'Complaint requires GPS and camera verification.',gpsChecked:false,cameraChecked:false,status:'Open'})}
+function fpInvestigateSafetyV18(i){let c=state.fleet18.safetyCases.slice().reverse()[i];if(!c)return;c.gpsChecked=true;c.cameraChecked=true;c.status='Closed';c.summary+=' Review completed; findings documented.';render()}
+
+/* ===== V19 ADMINISTRATION & GROWTH ===== */
+function ensureAdminV19(){
+ state.admin19=state.admin19||{};let A=state.admin19;
+ if(!A.reputation)A.reputation={Parents:86,Drivers:78,Schools:90,Administration:85,Board:82};
+ if(!A.goals)A.goals={onTime:96,inspection:95,vacancies:3,budgetVariance:2,complaints:10};
+ if(!A.budgetDraft)A.budgetDraft=null;
+ if(!A.boardItems)A.boardItems=[];
+ if(!A.facilities)A.facilities={shopBays:state.v13?.facility?.bays||3,busParking:40,employeeParking:28,partsStorage:70,fuelTank:12000,washBay:true,chargers:0};
+ if(!A.projects)A.projects=[];
+ if(!A.growth)A.growth=[
+  {id:1,name:'Northwest Warsaw Development',stage:'Planning',households:18,students:12,yearStarted:state.year||2026},
+  {id:2,name:'Winona Lake Infill',stage:'Early Build',households:10,students:7,yearStarted:state.year||2026}
+ ];
+ if(!A.news)A.news=[{year:state.year||2026,text:'Transportation department begins long-range operations modernization.'}]
+}
+function renderAdminV19(){
+ ensureAdminV19();ensureWorkforceV17();ensureFleetV18();if(!$('adKpisV19'))return;
+ let p=state.ops15?.performance||{},vac=(state.routes||[]).filter(r=>!r.driver).length,ins=fpInspectionRateV18(),pay=wfPayrollSummaryV17(),variance=state.operatingBudget?Math.abs((state.operatingBudget-(state.schoolYearBudget||state.operatingBudget))/(state.schoolYearBudget||1))*100:0;
+ let scores=[['On-Time Performance',p.onTime||96,state.admin19.goals.onTime],['Inspection Pass Rate',ins,state.admin19.goals.inspection],['Driver Coverage',Math.max(0,100-vac*8),Math.max(0,100-state.admin19.goals.vacancies*8)],['Budget Control',Math.max(0,100-variance*3),94],['Training Compliance',adTrainingComplianceV19(),95]];
+ let overall=Math.round(scores.reduce((a,x)=>a+x[1],0)/scores.length);
+ $('adKpisV19').innerHTML=[['Director Score',overall],['Operating Budget',v13Money(state.operatingBudget||state.budget||0)],['Board Support',state.admin19.reputation.Board+'%'],['Growth Projects',state.admin19.growth.length],['Facility Projects',state.admin19.projects.filter(x=>x.status!=='Complete').length]].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+ $('adScorecardV19').innerHTML=scores.map(x=>`<div class="v19-score"><span><b>${x[0]}</b><div class="v19-meter"><i style="width:${Math.max(0,Math.min(100,x[1]))}%"></i></div></span><b>${Math.round(x[1])}</b></div>`).join('');
+ $('adReputationV19').innerHTML=Object.entries(state.admin19.reputation).map(([k,v])=>`<div class="v19-rep"><span><b>${k}</b><div class="v19-meter"><i style="width:${v}%"></i></div></span><b>${v}%</b></div>`).join('');
+ let d=state.admin19.budgetDraft||adMakeBudgetDraftV19();
+ $('adBudgetPanelV19').innerHTML=`<div class="v19-box"><div class="kv"><span>Payroll & benefits</span><b>${v13Money(d.payroll)}</b></div><div class="kv"><span>Fuel</span><b>${v13Money(d.fuel)}</b></div><div class="kv"><span>Maintenance / parts</span><b>${v13Money(d.maintenance)}</b></div><div class="kv"><span>Training</span><b>${v13Money(d.training)}</b></div><div class="kv"><span>Capital / buses</span><b>${v13Money(d.capital)}</b></div><div class="kv"><span>Facilities</span><b>${v13Money(d.facilities)}</b></div><div class="kv"><span>Contingency</span><b>${v13Money(d.contingency)}</b></div><hr><div class="kv"><span><b>TOTAL REQUEST</b></span><b>${v13Money(d.total)}</b></div></div>`;
+ let f=state.admin19.facilities;$('adFacilitiesV19').innerHTML=`<div class="kv"><span>Shop bays</span><b>${f.shopBays}</b></div><div class="kv"><span>Bus parking capacity</span><b>${f.busParking}</b></div><div class="kv"><span>Employee parking</span><b>${f.employeeParking}</b></div><div class="kv"><span>Parts storage</span><b>${f.partsStorage}%</b></div><div class="kv"><span>Fuel tank</span><b>${f.fuelTank.toLocaleString()} gal</b></div><div class="kv"><span>Wash bay</span><b>${f.washBay?'Yes':'No'}</b></div><div class="kv"><span>EV chargers</span><b>${f.chargers}</b></div><button class="btn" onclick="adStartFacilityProjectV19()">Start Facility Project</button>`;
+ $('adGrowthNewsV19').innerHTML=state.admin19.growth.map(g=>`<div class="v19-growth"><b>${g.name}</b><div class="small">${g.stage} • ${g.households} households • ${g.students} projected students</div><button class="btn" onclick="adAdvanceSpecificGrowthV19(${g.id})">Advance</button></div>`).join('')+`<h4>Community News</h4>${state.admin19.news.slice().reverse().slice(0,8).map(n=>`<div class="v19-news"><b>${n.year}</b> — ${n.text}</div>`).join('')}`;
+}
+function adTrainingComplianceV19(){let arr=Object.values(state.workforce17?.training||{});if(!arr.length)return 100;return Math.round(arr.filter(t=>t.inservice&&t.evacuation&&t.cdlDays>30&&t.physicalDays>30).length/arr.length*100)}
+function adMakeBudgetDraftV19(){let pay=wfPayrollSummaryV17(),fuel=(state.ops15?.dailyEconomics?.fuel||800)*180,maintenance=Math.max(70000,state.buses.length*8500),training=(state.staff.length+state.supportStaff.length)*950,capital=(state.fleet18?.projects||[]).filter(p=>!['Delivered','Board Denied'].includes(p.status)).reduce((a,p)=>a+(p.vendor?.price||p.budget||0),0),facilities=(state.admin19?.projects||[]).filter(x=>x.status!=='Complete').reduce((a,p)=>a+p.cost,0),contingency=(pay.total+fuel+maintenance)*.04,total=pay.total+fuel+maintenance+training+capital+facilities+contingency;return {payroll:pay.total,fuel,maintenance,training,capital,facilities,contingency,total}}
+function adOpenBudgetBuilderV19(){state.admin19.budgetDraft=adMakeBudgetDraftV19();let d=state.admin19.budgetDraft;openModal('💼 Next-Year Transportation Budget',`<div class="alert">Prepare the request before presenting it to the CFO and School Board.</div>${Object.entries(d).filter(([k])=>k!=='total').map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v13Money(v)}</b></div>`).join('')}<div class="kv"><span><b>Total request</b></span><b>${v13Money(d.total)}</b></div><div class="actions"><button class="btn primary" onclick="adSubmitBudgetV19()">Submit to CFO</button></div>`)}
+function adSubmitBudgetV19(){let d=state.admin19.budgetDraft||adMakeBudgetDraftV19(),cut=Math.random()<.35?0.04+Math.random()*.05:0,approved=Math.round(d.total*(1-cut));state.admin19.boardItems.push({type:'Budget',requested:d.total,approved,status:'CFO Reviewed'});closeModal();openModal('📊 CFO Review',`<div class="alert">${cut?`CFO recommends a ${Math.round(cut*100)}% reduction before board submission.`:'CFO supports the requested transportation budget.'}</div><div class="kv"><span>Requested</span><b>${v13Money(d.total)}</b></div><div class="kv"><span>Recommended</span><b>${v13Money(approved)}</b></div><button class="btn primary" onclick="closeModal();adOpenBoardMeetingV19()">Take to Board</button>`)}
+function adOpenBoardMeetingV19(){ensureAdminV19();let item=state.admin19.boardItems.at(-1);openModal('🏛️ School Board Meeting',`<div class="alert"><b>Transportation Agenda</b><br>${item?`${item.type} request: ${v13Money(item.approved||item.requested)}`:'No pending budget item; board will review general transportation performance.'}</div><div class="hr-question"><b>Board Member:</b> Why should we approve this request?</div><div class="actions"><button class="btn" onclick="adBoardResponseV19('growth')">Enrollment & route growth</button><button class="btn" onclick="adBoardResponseV19('fleet')">Fleet age & reliability</button><button class="btn" onclick="adBoardResponseV19('service')">Safety & service performance</button></div>`)}
+function adBoardResponseV19(reason){let rep=state.admin19.reputation,bonus=reason==='service'?(state.ops15?.performance?.onTime||96)>=95?5:1:reason==='fleet'?3:2;rep.Board=Math.min(100,rep.Board+bonus);let pass=Math.random()*100<rep.Board;let item=state.admin19.boardItems.at(-1);if(item){item.status=pass?'Approved':'Returned for Revision';if(pass){state.schoolYearBudget=item.approved||item.requested;state.operatingBudget=state.schoolYearBudget}}closeModal();openModal('Board Decision',`<div class="alert"><b>${pass?'APPROVED':'RETURNED FOR REVISION'}</b><br>${pass?'Transportation request approved.':'Board requested changes before approval.'}</div>`);render()}
+function adStartFacilityProjectV19(){openModal('🏗️ Facility Project',`<div class="v19-box"><b>Fourth Shop Bay</b><div class="small">$450,000 • 8 months</div><button class="btn" onclick="adCreateFacilityProjectV19('Fourth Shop Bay',450000,8)">Start</button></div><div class="v19-box"><b>Bus Parking Expansion</b><div class="small">$220,000 • 5 months</div><button class="btn" onclick="adCreateFacilityProjectV19('Bus Parking Expansion',220000,5)">Start</button></div><div class="v19-box"><b>Training/Admin Addition</b><div class="small">$780,000 • 12 months</div><button class="btn" onclick="adCreateFacilityProjectV19('Training/Admin Addition',780000,12)">Start</button></div><div class="v19-box"><b>EV Charging Yard</b><div class="small">$320,000 • 6 months</div><button class="btn" onclick="adCreateFacilityProjectV19('EV Charging Yard',320000,6)">Start</button></div>`)}
+function adCreateFacilityProjectV19(name,cost,months){state.admin19.projects.push({id:Date.now(),name,cost,months,status:'Design / Bid'});closeModal();render()}
+function adAdvanceGrowthV19(){let g=state.admin19.growth[Math.floor(Math.random()*state.admin19.growth.length)];if(g)adAdvanceSpecificGrowthV19(g.id)}
+function adAdvanceSpecificGrowthV19(id){let g=state.admin19.growth.find(x=>x.id===id);if(!g)return;let stages=['Planning','Early Build','Homes Occupied','Established','Mature'];let i=stages.indexOf(g.stage);if(i<stages.length-1)g.stage=stages[i+1];g.households+=5+Math.floor(Math.random()*10);g.students+=3+Math.floor(Math.random()*7);state.admin19.news.push({year:state.year||2026,text:`${g.name} advanced to ${g.stage}; transportation demand is increasing.`});for(let j=0;j<Math.max(1,Math.floor(g.students/20));j++)riderGenerateGrowthV16?.();render()}
+
+
+/* ===== V20 LIVING SIMULATION ENGINE ===== */
+function ensureLivingV20(){
+ ensureV13?.();ensureOpsV15?.();ensureRidersV16?.();ensureWorkforceV17?.();ensureAdminV19?.();
+ state.living20=state.living20||{};let L=state.living20;
+ if(!L.dayKey)L.dayKey='';
+ if(!L.attendance)L.attendance={};
+ if(!L.routeStatus)L.routeStatus={};
+ if(!L.feed)L.feed=[];
+ if(!L.inbox)L.inbox=[];
+ if(!L.authority)L.authority={repairLimit:2500,overtimeLimit:4,dispatchCoverage:true,parentCases:true,training:true,specialNeeds:true};
+ if(!L.train)L.train={active:false,until:0,lastDay:''};
+ if(!L.construction)L.construction=[{road:'Center Street',delay:3,untilYear:(state.year||2026)+1,active:true}];
+ if(!L.pullout)L.pullout={score:100,scheduled:0,covered:0,onTime:0,spares:0,late:0};
+ if(!L.awards)L.awards=[];
+ if(!L.history)L.history=[{year:state.year||2026,text:'Living Simulation Engine activated for Warsaw Transportation.'}];
+ if(!L.fuelQueue)L.fuelQueue=[];
+ if(!L.shopMoves)L.shopMoves=[];
+ if(!L.lastTickMinute)L.lastTickMinute=Number(state.simMinutes||315);
+ v20BeginDayIfNeeded()
+}
+function v20DayKey(){try{return formatGameDate()}catch(e){return `${state.year||2026}-${state.day||1}`}}
+function v20Feed(text,important=false){
+ ensureLivingV20();state.living20.feed.unshift({time:v13Time(),text,important});state.living20.feed=state.living20.feed.slice(0,45);
+ if(important)v13Radio?.(text)
+}
+function v20Inbox(from,subject,body,urgent=false,auto=false){
+ ensureLivingV20();state.living20.inbox.unshift({id:Date.now()+Math.random(),from,subject,body,urgent,status:auto?'Handled by Staff':'Open',time:v13Time()});
+ state.living20.inbox=state.living20.inbox.slice(0,60)
+}
+function v20BeginDayIfNeeded(){
+ let L=state.living20,key=v20DayKey();if(L.dayKey===key)return;
+ L.dayKey=key;L.attendance={};L.routeStatus={};L.feed=[];L.fuelQueue=[];L.shopMoves=[];L.pullout={score:100,scheduled:(state.routes||[]).length,covered:0,onTime:0,spares:0,late:0};
+ let regular=(state.staff||[]).filter(s=>s.status!=='Former');
+ regular.forEach((s,i)=>{
+   let calloff=(s.status!=='Substitute' && Math.random()<.025);
+   L.attendance[s.name]={present:!calloff,calloff,arrival:310+(i*3)%38,phase:'home'};
+   if(calloff){v20Feed(`CALL-OFF: ${s.name} reported absent.`,true);v20Inbox('Dispatch',`${s.name} called off`,`Route coverage is being checked automatically.`,true,state.v13?.delegation?.dispatch!==false&&L.authority.dispatchCoverage)}
+ });
+ (state.routes||[]).forEach(r=>L.routeStatus[r.id]={phase:'parked',delay:0,boardedAM:0,boardedPM:0,subUsed:false,completedAM:false,completedPM:false});
+ v20AutoCoverRoutes();
+ v20Feed(`Transportation Center opened for ${key}.`);
+}
+function v20WeekdayKey(){
+ try{let d=new Date(state.gameDate||'2026-08-24T00:00:00');return ['sun','mon','tue','wed','thu','fri','sat'][d.getDay()]}catch(e){return 'mon'}
+}
+function v20AutoCoverRoutes(){
+ let L=state.living20,weekday=v20WeekdayKey();
+ (state.routes||[]).forEach(r=>{
+   let assigned=(state.staff||[]).find(s=>s.name===r.driver),absent=assigned&&L.attendance[assigned.name]?.calloff;
+   if(!r.driver||absent){
+     let subs=(state.staff||[]).filter(s=>{
+       if(s.status!=='Substitute')return false;
+       let a=state.workforce17?.subAvailability?.[s.name]||{};let att=L.attendance[s.name];
+       return att?.present!==false && a[weekday]!==false && !Object.values(state.routes||[]).some(rr=>rr.temporaryDriver===s.name)
+     }).sort((a,b)=>(state.workforce17?.routeKnowledge?.[b.name]?.[r.id]||0)-(state.workforce17?.routeKnowledge?.[a.name]?.[r.id]||0));
+     if(subs.length && L.authority.dispatchCoverage){
+       r.temporaryDriver=subs[0].name;L.routeStatus[r.id].subUsed=true;L.pullout.spares++;v20Feed(`DISPATCH: ${subs[0].name} assigned to Route ${r.id} for coverage.`);
+     } else if(!r.temporaryDriver){v20Inbox('Dispatch',`Route ${r.id} uncovered`,`No available substitute can cover Route ${r.id}. Director action is required.`,true,false)}
+   }
+ })
+}
+function v20DriverForRoute(r){return r.temporaryDriver||r.driver}
+function v20BusForRoute(r){return state.buses.find(b=>Number(b.id)===Number(r.temporaryBus||r.bus))}
+function v20RoutePhase(r,m){
+ let x=r.ops15||{},pull=Number(x.pullout||355),first=Number(x.firstStop||375),arr=Number(x.schoolArrival||425),back=Number(x.returnGarage||445),pmPull=Number(x.pmPullout||860),pmBack=Number(x.pmReturn||1020);
+ if(m<pull-25)return'parked';
+ if(m<pull)return'pretrip';
+ if(m<first)return'departing';
+ if(m<arr)return'am-route';
+ if(m<back)return'school';
+ if(m<pmPull-30)return'parked-midday';
+ if(m<pmPull)return'pm-pretrip';
+ if(m<pmBack-35)return'pm-route';
+ if(m<pmBack)return'returning';
+ if(m<pmBack+18)return'fuel';
+ return'parked'
+}
+function v20TrafficDelayForRoute(r){
+ let d=0;(state.ops15?.traffic||[]).forEach(t=>d+=Number(t.delay||0)*.16);
+ if(state.living20.train.active&&r.ops15?.crossings)d+=8;
+ state.living20.construction.filter(x=>x.active).forEach(x=>d+=x.delay*.25);
+ let w=String(state.weather?.condition||state.weather?.type||'').toLowerCase();if(w.includes('snow'))d+=4;if(w.includes('rain'))d+=2;if(w.includes('fog'))d+=3;
+ return Math.round(d)
+}
+function v20Tick(minutes=1){
+ ensureLivingV20();let L=state.living20,old=Number(state.simMinutes||315),m=Math.min(1439,old+minutes);state.simMinutes=m;
+ v20BeginDayIfNeeded();
+ // rare railroad train
+ if(!L.train.active && m>=370 && m<=1010 && Math.random()<.006*minutes){
+   L.train.active=true;L.train.until=m+7+Math.floor(Math.random()*8);L.train.lastDay=L.dayKey;
+   let tr=(state.ops15?.traffic||[]).find(t=>t.road==='Railroad Crossings');if(tr){tr.level='TRAIN BLOCKING';tr.delay=9}
+   v20Feed('🚂 TRAIN: Railroad crossing blocked. Dispatch is recalculating affected routes.',true);
+ }
+ if(L.train.active&&m>=L.train.until){L.train.active=false;let tr=(state.ops15?.traffic||[]).find(t=>t.road==='Railroad Crossings');if(tr){tr.level='Normal';tr.delay=0};v20Feed('🚂 Railroad crossing has cleared.')}
+ (state.routes||[]).forEach(r=>{
+   let rs=L.routeStatus[r.id]||(L.routeStatus[r.id]={phase:'parked',delay:0,boardedAM:0,boardedPM:0}),phase=v20RoutePhase(r,m),prior=rs.phase;
+   rs.phase=phase;rs.delay=v20TrafficDelayForRoute(r);
+   let drv=v20DriverForRoute(r),att=drv?L.attendance[drv]:null;
+   if(att)att.phase=phase;
+   if(prior!==phase){
+     if(phase==='pretrip')v20Feed(`${drv||'Uncovered driver'} begins pre-trip on Bus ${r.temporaryBus||r.bus}.`);
+     if(phase==='departing'){
+       if(drv && att?.present!==false){L.pullout.covered++;L.pullout.onTime++;v20Feed(`Bus ${r.temporaryBus||r.bus} pulls out for Route ${r.id}.`)}
+       else{L.pullout.late++;L.pullout.score=Math.max(0,L.pullout.score-12);v20Feed(`⚠ Route ${r.id} missed scheduled pull-out.`,true)}
+     }
+     if(phase==='am-route'){let riders=Number(r.ops15?.ridersAM||r.ops15?.riders||0);rs.boardedAM=riders;v20Feed(`Route ${r.id}: ${riders} AM riders boarding across scheduled stops.`)}
+     if(phase==='school'){
+       rs.completedAM=true;if(rs.delay>=7){L.pullout.score=Math.max(0,L.pullout.score-3);v20Inbox('School Office',`Route ${r.id} late arrival`,`Bus arrived approximately ${rs.delay} minutes behind schedule. School was notified automatically.`,false,true)}
+     }
+     if(phase==='pm-route'){rs.boardedPM=Number(r.ops15?.ridersPM||r.ops15?.riders||0);v20Feed(`Route ${r.id}: PM dismissal service underway.`)}
+     if(phase==='returning')rs.completedPM=true;
+     if(phase==='fuel'){let b=v20BusForRoute(r);if(b&&Number(b.fuel||100)<70&&!L.fuelQueue.includes(b.id)){L.fuelQueue.push(b.id);v20Feed(`Bus ${b.id} enters fuel queue after Route ${r.id}.`)}}
+     if(phase==='parked'&&prior==='fuel'){let b=v20BusForRoute(r);if(b&&L.fuelQueue.includes(b.id)){b.fuel=100;L.fuelQueue=L.fuelQueue.filter(x=>x!==b.id);v20Feed(`Bus ${b.id} fueled and returned to parking space.`)}}
+   }
+   let b=v20BusForRoute(r);
+   if(b&&(phase==='am-route'||phase==='pm-route')&&Math.random()<.0006*minutes*Math.max(1,(100-Number(b.condition||90))/10)){
+      if(!L.routeStatus[r.id].mechanical){L.routeStatus[r.id].mechanical=true;fpCreateSafetyCaseV18?.(b.id,'Mechanical Road Call','Minor');v20Inbox('Dispatch',`Bus ${b.id} mechanical issue`,`Route ${r.id} is secured. Service truck and spare-bus procedure are underway.`,true,false);v20Feed(`🚨 Bus ${b.id} reports a mechanical issue with Route ${r.id}.`,true)}
+   }
+ });
+ v20UpdateStaffPhases(m);
+ v20AutoDelegation();
+ v20EvaluatePullout();
+ if(m>=1100&&old<1100)v20EndDayMemory();
+ L.lastTickMinute=m;
+ try{renderV13World(window.v13view||'campus')}catch(e){console.error('V20 visual tick',e)}
+ try{if($('dispatch')?.classList.contains('active'))renderDispatch()}catch(e){}
+}
+function v20UpdateStaffPhases(m){
+ let L=state.living20;(state.staff||[]).forEach((s,i)=>{let a=L.attendance[s.name];if(!a)return;if(a.calloff){a.phase='absent';return}if(m<a.arrival)a.phase='home';else if(!s.route&&s.status==='Substitute'&&!Object.values(state.routes||[]).some(r=>r.temporaryDriver===s.name))a.phase='driver-room';else if(a.phase==='home')a.phase='driver-room'});
+}
+function v20AutoDelegation(){
+ let L=state.living20;
+ // training staff handles routine upcoming expirations
+ if(L.authority.training && state.v13?.delegation?.hr!==false){
+   Object.entries(state.workforce17?.training||{}).forEach(([name,t])=>{if((t.cdlDays<25||t.physicalDays<25||!t.inservice)&&!t.v20Scheduled){t.v20Scheduled=true;v20Inbox('Terry Lawson','Training scheduled',`${name} has been placed on the next compliance training/renewal schedule.`,false,true)}})
+ }
+ // Mike auto-approves low-cost routine PM
+ if(state.v13?.delegation?.shop!==false){
+   let q=opsBuildShopBacklogV15?.()||[];let job=q.find(j=>!j.v20Seen);
+   if(job){job.v20Seen=true;let est=job.type.includes('Tire')?2200:job.type.includes('Brake')?1450:620;if(est<=L.authority.repairLimit)v20Inbox('Mike Evans',`Routine shop work — Bus ${job.bus}`,`${job.type} estimated at ${v13Money(est)}. Approved under your ${v13Money(L.authority.repairLimit)} authority limit.`,false,true)}
+ }
+}
+function v20EvaluatePullout(){
+ let L=state.living20,m=Number(state.simMinutes||315);if(m<430)return;
+ let scheduled=L.pullout.scheduled,covered=(state.routes||[]).filter(r=>v20DriverForRoute(r)).length;
+ L.pullout.covered=covered;let uncovered=Math.max(0,scheduled-covered),score=100-uncovered*12-L.pullout.late*4;
+ if(L.train.active)score-=2;L.pullout.score=Math.max(0,Math.min(100,score))
+}
+function v20EndDayMemory(){
+ let L=state.living20,p=L.pullout;
+ L.history.push({year:state.year||2026,text:`${L.dayKey}: ${p.covered}/${p.scheduled} routes covered; morning pull-out score ${p.score}.`});
+ if(p.score===100&&!L.awards.some(a=>a.key===`perfect-${state.year}`)){L.awards.push({key:`perfect-${state.year}`,year:state.year,title:'Perfect Pull-Out Day'});v20Feed('🏆 Achievement: Perfect Pull-Out Day.',true)}
+ let on=state.ops15?.performance?.onTime||96;if(on>=98&&!L.awards.some(a=>a.key===`ontime-${state.year}`)){L.awards.push({key:`ontime-${state.year}`,year:state.year,title:'98% On-Time Excellence'});}
+}
+function v20ActorPositions(){
+ let L=state.living20,actors=[],i=0;
+ (state.staff||[]).filter(s=>s.status!=='Former').forEach(s=>{
+   let a=L.attendance[s.name]||{},phase=a.phase||'home';if(phase==='home'||phase==='absent')return;
+   let x=9+(i%6)*5,y=135+Math.floor(i/6)*28;
+   if(phase==='driver-room'){x=22+(i%4)*4;y=170}
+   if(phase==='pretrip'||phase==='pm-pretrip'){let r=state.routes.find(r=>v20DriverForRoute(r)===s.name),bi=Math.max(0,state.buses.findIndex(b=>Number(b.id)===Number(r?.temporaryBus||r?.bus)));x=58+(bi%4)*9;y=110+Math.floor(bi/4)*78}
+   if(['departing','am-route','school','pm-route','returning'].includes(phase))return;
+   actors.push({name:s.name,x,y,kind:'driver'});i++
+ });
+ (state.supportStaff||[]).slice(0,8).forEach((s,j)=>actors.push({name:s.name,x:11+(j%4)*7,y:125+Math.floor(j/4)*26,kind:String(s.role||'').includes('Mechanic')?'mechanic':'office'}));
+ return actors
+}
+function v20WeatherOverlay(){
+ let w=String(state.weather?.condition||state.weather?.type||'').toLowerCase();
+ if(w.includes('snow'))return'<div class="v20-snow"></div>';
+ if(w.includes('rain')||w.includes('storm'))return'<div class="v20-rain"></div>';
+ return''
+}
+function v20CurrentSchoolScene(){
+ let m=Number(state.simMinutes||315),r=(state.routes||[]).find(r=>['am-route','school','pm-route'].includes(state.living20.routeStatus?.[r.id]?.phase));
+ if(!r)return'<b>🏫 School / Stop Activity</b><br><span class="small">No active loading scene at this moment.</span>';
+ let rs=state.living20.routeStatus[r.id],pm=rs.phase==='pm-route',n=Math.min(12,pm?rs.boardedPM:rs.boardedAM);
+ return `<b>🏫 Route ${r.id} Live Loading</b><br><span class="small">${pm?'PM dismissal':'Morning pickup'} • ${pm?rs.boardedPM:rs.boardedAM} riders</span><div class="v20-kids">${Array.from({length:n},()=>'<span class="v20-kid">🧒</span>').join('')}</div>`
+}
+function v13Advance(){
+ ensureLivingV20();if(state.v13.paused)return;v20Tick(Math.max(1,Number(state.v13.speed||1)))
+}
+function v13Toolbar(){
+ ensureLivingV20();let ready=state.buses.filter(b=>Number(b.condition||100)>=50&&!b.ops15?.outOfService).length,L=state.living20;
+ return `<div class="v13-toolbar"><span class="v20-livebadge"><i></i> LIVE SIM</span><span class="v13-clock">${v13Time()}</span><span class="stat">📅 ${v13Date()}</span><span class="stat">🚌 ${ready}/${state.buses.length} ready</span><span class="stat">📻 ${L.inbox.filter(x=>x.status==='Open').length} open</span><span class="stat">⭐ Pull-out ${L.pullout.score}</span><span class="stat">🌤 ${state.weather?.temp||57}°F</span><button class="btn v13-speed ${state.v13.speed===0?'active':''}" onclick="v13SetSpeed(0)">⏸</button>${[1,2,4,8].map(x=>`<button class="btn v13-speed ${state.v13.speed===x&&!state.v13.paused?'active':''}" onclick="v13SetSpeed(${x})">${x}×</button>`).join('')}<button class="btn" onclick="v13Advance()">+1 Tick</button></div>`
+}
+function v13Campus(){
+ ensureLivingV20();let L=state.living20,actors=v20ActorPositions(),shop=state.buses.filter(b=>v13BusWorldStatus(b)==='shop');
+ return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn primary" onclick="renderV13World('campus')">🏢 Living Campus</button><button class="btn" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="v20OpenInbox()">📥 Director Inbox</button><button class="btn" onclick="v20MorningBoard()">☕ Pull-Out Board</button><button class="btn" onclick="v13Delegation()">🧠 Authority</button><button class="btn" onclick="v20History()">🏆 History</button></div>
+ <div class="v20-campus">${v20WeatherOverlay()}${L.train.active?'<div class="v20-train">🚂 FREIGHT TRAIN — CROSSING BLOCKED</div>':''}
+ <div class="v20-road main"></div><div class="v20-road drive"></div>
+ <div class="v20-building"><div class="sign">WARSAW COMMUNITY SCHOOLS • TRANSPORTATION CENTER</div><div class="v20-rooms"><div class="v20-room" onclick="v13Room('Director')">👔<br><b>Director</b><br>Inbox • Board</div><div class="v20-room" onclick="v13Room('Dispatch')">📻<br><b>Dispatch</b><br>Live coverage</div><div class="v20-room" onclick="v13Room('Drivers')">☕<br><b>Driver Room</b><br>Check-in • bids</div><div class="v20-room" onclick="v13Room('Training')">🎓<br><b>Training</b><br>CDL • compliance</div></div></div>
+ <div class="v20-garage">${[0,1,2].map(i=>`<div class="v20-bay" onclick="v13Room('Shop')"><b>SHOP BAY ${i+1}</b>${shop[i]?`<div class="v13-buswrap">${v13BusSVG(shop[i])}</div>`:'<div style="margin-top:20px">AVAILABLE</div>'}</div>`).join('')}</div>
+ <div class="v20-lot">${state.buses.map((b,i)=>{let r=state.routes.find(r=>Number(r.temporaryBus||r.bus)===Number(b.id)),phase=r?L.routeStatus[r.id]?.phase:'parked',lot=['parked','pretrip','pm-pretrip','parked-midday'].includes(phase)||!r;return `<div class="v20-space">${lot?`<div class="v13-buswrap" onclick="v13OpenBus(${b.id})">${v13BusSVG(b)}</div>`:`<div class="v20-empty">BUS ${b.id}<br>${phase?.toUpperCase()||'OUT'}</div>`}<span class="v13-space-label">SPACE ${b.id}</span></div>`}).join('')}</div>
+ <div class="v20-wash">🧼 BUS WASH<br><span class="small">Visible wash / salt removal</span></div><div class="v20-fuel">⛽ FUEL ISLAND<br><span class="small">${L.fuelQueue.length?`Queue: ${L.fuelQueue.map(x=>'Bus '+x).join(', ')}`:'No queue'}</span></div>
+ ${actors.map(a=>`<div class="v20-actor" style="left:${a.x}%;top:${a.y}px"><div class="v20-person ${a.kind}">${a.name.split(' ').map(x=>x[0]).join('').slice(0,2)}</div><label>${a.name.split(' ')[0]}</label></div>`).join('')}
+ ${(state.staff||[]).filter(s=>L.attendance[s.name]?.present).slice(0,12).map((s,i)=>`<div class="v20-car" style="left:${4+(i%8)*4.3}%;top:${360+Math.floor(i/8)*20}px"></div>`).join('')}
+ <div class="v20-schoolscene">${v20CurrentSchoolScene()}</div>
+ <div class="v20-livepanel"><div><b>📻 LIVE OPERATIONS</b><div class="v20-feed">${L.feed.slice(0,7).map(x=>`<div>${x.important?'⚠ ':''}${x.time} — ${x.text}</div>`).join('')||'Department is quiet.'}</div></div><div><b>MORNING PULL-OUT</b><div class="v20-score">${L.pullout.score}</div>${L.pullout.covered}/${L.pullout.scheduled} covered • ${L.pullout.spares} sub assignment(s)</div><div><b>DIRECTOR ATTENTION</b><div class="v20-score">${L.inbox.filter(x=>x.status==='Open').length}</div>${L.inbox.filter(x=>x.status==='Handled by Staff').length} item(s) auto-handled</div></div>
+ </div></div>`
+}
+function v13Warsaw(){
+ ensureLivingV20();let L=state.living20,osm='https://www.openstreetmap.org/export/embed.html?bbox=-85.94%2C41.18%2C-85.76%2C41.31&layer=mapnik&marker=41.261%2C-85.844';
+ let buses=(state.routes||[]).slice(0,16).map((r,i)=>{let b=v20BusForRoute(r);if(!b)return'';let rs=L.routeStatus[r.id],active=['departing','am-route','school','pm-route','returning'].includes(rs?.phase);if(!active)return'';let m=Number(state.simMinutes||315),phase=((m-315)/780+i*.117)%1,left=12+Math.abs(Math.sin(phase*6.28+i))*76,top=12+Math.abs(Math.cos(phase*5.1+i))*72;return `<div class="v13-mapbus" style="left:${left}%;top:${top}%" onclick="v13OpenBus(${b.id})">${v13BusSVG(b)}</div>`}).join('');
+ let events=`${L.train.active?'<div class="v20-map-event" style="left:48%;top:51%">🚂 Train blocking crossing</div>':''}${L.construction.filter(x=>x.active).map((x,i)=>`<div class="v20-map-event" style="left:${35+i*12}%;top:${36+i*8}%">🚧 ${x.road}<br>+${x.delay} min</div>`).join('')}`;
+ return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn" onclick="renderV13World('campus')">🏢 Living Campus</button><button class="btn primary" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="goView('routes')">🛣️ Route Management</button><button class="btn" onclick="v20OpenInbox()">📥 Inbox</button></div><div class="v13-map"><iframe loading="lazy" src="${osm}" title="Warsaw Indiana map"></iframe><div class="v13-map-overlay">${buses}${events}<div class="v13-routebadge"><b>WARSAW, INDIANA — LIVE</b><br>Buses appear only while actually dispatched.<br>Traffic, construction, trains and weather feed the route-delay engine.</div></div></div></div>`
+}
+function v20OpenInbox(){
+ ensureLivingV20();let L=state.living20;openModal('📥 Director Inbox',`<div class="alert">Routine issues can be handled automatically by your staff. Open items require Director attention.</div>${L.inbox.map((x,i)=>`<div class="v20-inbox-row ${x.urgent?'urgent':''} ${x.status!=='Open'?'done':''}"><b>${x.from} — ${x.subject}</b><div>${x.body}</div><div class="small">${x.time} • ${x.status}</div>${x.status==='Open'?`<button class="btn" onclick="v20ResolveInbox(${i})">Resolve / Approve</button>`:''}</div>`).join('')||'<div class="small">Inbox is clear.</div>'}`)
+}
+function v20ResolveInbox(i){let x=state.living20.inbox[i];if(x)x.status='Resolved by Director';closeModal();renderV13World(window.v13view||'campus')}
+function v20MorningBoard(){
+ ensureLivingV20();let L=state.living20,uncovered=(state.routes||[]).filter(r=>!v20DriverForRoute(r)),late=Object.values(L.routeStatus).filter(x=>x.delay>=5).length;
+ openModal('☕ Morning Pull-Out Board',`<div class="today-grid"><div class="panel"><div class="small">SCORE</div><div class="big-kpi">${L.pullout.score}</div></div><div class="panel"><div class="small">COVERED</div><div class="big-kpi">${L.pullout.covered}/${L.pullout.scheduled}</div></div><div class="panel"><div class="small">SUBS USED</div><div class="big-kpi">${L.pullout.spares}</div></div><div class="panel"><div class="small">DELAY WATCH</div><div class="big-kpi">${late}</div></div></div><div class="alert">${uncovered.length?`${uncovered.length} route(s) still require coverage.`:'All routes currently have driver coverage.'}</div><div class="v20-flow"><span>Employee arrives</span><b>→</b><span>Driver room</span><b>→</b><span>Pre-trip</span><b>→</b><span>Pull-out</span><b>→</b><span>Students</span><b>→</b><span>School</span><b>→</b><span>Return/Fuel</span></div>`)
+}
+function v13Delegation(){
+ ensureLivingV20();let d=state.v13.delegation,L=state.living20.authority;
+ openModal('🧠 Delegation & Authority',`<div class="alert">Set how much routine authority your team has. Major exceptions still come to the Director.</div>
+ ${[['dispatch','Dana / Dispatch handles routine route coverage'],['shop','Mike / Shop handles routine repairs'],['hr','Terry / HR handles routine training scheduling']].map(x=>`<label class="card" style="display:block;margin:7px 0"><input type="checkbox" ${d[x[0]]?'checked':''} onchange="state.v13.delegation.${x[0]}=this.checked;autosaveGame()"> <b>${x[1]}</b></label>`).join('')}
+ <div class="v20-authority"><span><b>Shop approval limit</b><br><span class="small">Repairs at or below this amount are handled automatically.</span></span><input type="number" value="${L.repairLimit}" onchange="state.living20.authority.repairLimit=Number(this.value);autosaveGame()"></div>
+ <div class="v20-authority"><span><b>Overtime approval threshold</b><br><span class="small">Hours above this amount require Director approval.</span></span><input type="number" value="${L.overtimeLimit}" onchange="state.living20.authority.overtimeLimit=Number(this.value);autosaveGame()"></div>
+ <label class="card" style="display:block;margin:7px 0"><input type="checkbox" ${L.parentCases?'checked':''} onchange="state.living20.authority.parentCases=this.checked"> Jenna handles routine parent cases</label>
+ <label class="card" style="display:block;margin:7px 0"><input type="checkbox" ${L.specialNeeds?'checked':''} onchange="state.living20.authority.specialNeeds=this.checked"> Nicole handles routine special-needs changes</label>`)
+}
+function v20History(){
+ ensureLivingV20();let L=state.living20;openModal('🏆 Transportation History & Awards',`<h3>Awards</h3>${L.awards.map(a=>`<div class="v19-news">🏆 <b>${a.year} — ${a.title}</b></div>`).join('')||'<div class="small">No V20 awards earned yet.</div>'}<h3>Department Memory</h3>${L.history.slice().reverse().slice(0,30).map(x=>`<div class="v19-news"><b>${x.year}</b> — ${x.text}</div>`).join('')}`)
+}
+
 /* V13.1 startup guard + living clock */
 window.addEventListener('load',()=>{
  try{ensureV13();renderV13World(window.v13view||'campus')}catch(e){console.error('V13.1 load guard',e)}
  if(!window.v13ClockTimer)window.v13ClockTimer=setInterval(()=>{
   try{if(state?.v13&&!state.v13.paused&&$('world12')?.classList.contains('active'))v13Advance()}catch(e){console.error('V13 clock',e)}
- },5000);
+ },1000);
 });
+
+window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
 
 render();
 </script>
