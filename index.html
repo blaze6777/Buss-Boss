@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V20.0 — Living Simulation Engine</title>
+<title>School Transportation Tycoon — Tycoon Web V20.1 — Visual World Hotfix</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -413,7 +413,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V20.0 — Living Simulation Engine</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V20.1 — Visual World Hotfix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -2356,7 +2356,16 @@ function v13Warsaw(){
  let buses=state.routes.slice(0,12).map((r,i)=>{let b=state.buses.find(x=>Number(x.id)===Number(r.bus));if(!b)return'';let m=Number(state.simMinutes||315),phase=((m-315)/725+i*.09)%1,left=18+Math.abs(Math.sin(phase*6.28+i))*66,top=20+Math.abs(Math.cos(phase*5.4+i))*62;return `<div class="v13-mapbus" style="left:${left}%;top:${top}%" onclick="v13OpenBus(${b.id})">${v13BusSVG(b)}</div>`}).join('');
  return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn" onclick="renderV13World('campus')">🏢 Campus</button><button class="btn primary" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="goView('routes')">🛣️ Route Management</button></div><div class="v13-map"><iframe loading="lazy" src="${osm}" title="Warsaw Indiana map"></iframe><div class="v13-map-overlay">${buses}<div class="v13-routebadge"><b>WARSAW, INDIANA</b><br>Real map beneath the simulation layer<br>Numbered buses move as game time advances.</div></div></div></div>`;
 }
-function renderV13World(view='campus'){ensureV13();window.v13view=view;let e=$('world12body');if(e)e.innerHTML=view==='warsaw'?v13Warsaw():v13Campus()}
+function renderV13World(view='campus'){
+ window.v13view=view;let e=$('world12body');if(!e)return;
+ try{
+   ensureV13();ensureLivingV20?.();
+   e.innerHTML=view==='warsaw'?v13Warsaw():v13Campus();
+ }catch(err){
+   console.error('Visual World render error',err);
+   e.innerHTML=`<div class="alert"><b>Visual World recovered from a render problem.</b><br>${String(err?.message||err)}<br><button class="btn primary" onclick="window.v13view='campus';renderV13World('campus')">Retry Visual World</button></div>`;
+ }
+}
 function v13MorningBrief(){
  ensureV13();let shop=state.buses.filter(b=>v13BusWorldStatus(b)==='shop'),open=state.routes.filter(r=>!r.driver||!r.bus);
  openModal('☕ Good Morning, Director',`<div class="v13-daycard"><h3>${v13Date()} • ${v13Time()}</h3><p>Transportation is preparing for today's operation.</p></div><div class="v13-daycard ${open.length?'v13-alert':'v13-good'}"><b>🚌 Fleet:</b> ${state.buses.length-shop.length}/${state.buses.length} available<br><b>🔧 Shop:</b> ${shop.length?shop.map(b=>'Bus '+b.id).join(', '):'No buses currently held in shop'}<br><b>👨‍✈️ Coverage:</b> ${open.length?open.length+' route(s) need attention':'All permanent route assignments appear covered'}<br><b>📻 Latest:</b> ${state.v13.radio[0]}</div><div class="actions"><button class="btn primary" onclick="closeModal();renderV13World('campus')">Enter Transportation Center</button><button class="btn" onclick="closeModal();runTransportationDay()">Run Full Day</button></div>`);
@@ -5226,6 +5235,9 @@ yearEnd=function(){let oldY=state.year;let result=yearEndPreV16.apply(this,argum
 
 /* ===== V17 WORKFORCE & FINANCE ===== */
 function ensureWorkforceV17(){
+ if(state._wf17Initializing)return;
+ state._wf17Initializing=true;
+ try{
  state.workforce17=state.workforce17||{};
  let W=state.workforce17;
  if(!W.salarySchedule)W.salarySchedule={0:23.10,1:23.55,3:24.40,5:25.30,10:26.70,15:27.80};
@@ -5240,8 +5252,9 @@ function ensureWorkforceV17(){
    if(!W.training[s.name])W.training[s.name]={cdlDays:180+(i*23)%420,physicalDays:90+(i*31)%360,inservice: i%7!==0,evacuation:i%5!==0,wheelchair:s.name.includes('Denise')||i%6===0,defensive:true}
    if(s.pay==null)s.pay=wfRateForYearsV17(s.years||0)
  })
+ } finally { state._wf17Initializing=false; }
 }
-function wfRateForYearsV17(y){ensureWorkforceV17?.();let S=state.workforce17?.salarySchedule||{0:23.1};let keys=Object.keys(S).map(Number).sort((a,b)=>a-b),k=0;keys.forEach(x=>{if(y>=x)k=x});return Number(S[k])}
+function wfRateForYearsV17(y){let S=state.workforce17?.salarySchedule||{0:23.1,1:23.55,3:24.40,5:25.30,10:26.70,15:27.80};let keys=Object.keys(S).map(Number).sort((a,b)=>a-b),k=0;keys.forEach(x=>{if(y>=x)k=x});return Number(S[k])}
 function wfKnowledgeStarsV17(name,routeId){let n=state.workforce17.routeKnowledge?.[name]?.[routeId]||0;return'★'.repeat(n)+'☆'.repeat(5-n)}
 function renderWorkforceV17(){
  ensureWorkforceV17();if(!$('wfKpisV17'))return;
