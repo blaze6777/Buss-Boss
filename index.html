@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V13.0 — Living Transportation Department</title>
+<title>School Transportation Tycoon — Tycoon Web V13.1 — Visual World Hotfix</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -278,7 +278,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V13.0 — Living Transportation Department</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V13.1 — Visual World Hotfix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -2209,6 +2209,7 @@ function renderWorld12(mode){renderV13World(mode==='map'?'warsaw':'campus')}
 
 function render(){
  ensureRealCalendar();
+ try{if($('world12body'))renderV13World(window.v13view||'campus')}catch(e){console.error('V13 Visual World startup',e);$('world12body').innerHTML='<div class="alert">Visual World recovered from a startup issue. Use System Check if another section still has a problem.</div>'}
  $('budget').textContent=money(state.budget);$('busCount').textContent=state.buses.length;$('driverCount').textContent=state.staff.length;$('boardScore').textContent=state.board;
  $('clockText').textContent=formatGameDate()+' • '+minsToTime(state.simMinutes||315)+' • School Year '+state.year;
  renderBuses();renderAlerts();renderRoutes();renderApplicants();renderStaff();renderTrips();renderFleet();renderDispatch();renderReports();renderLog();renderInbox();renderFacilities();renderHistory();
@@ -2220,7 +2221,7 @@ function render(){
  if(typeof renderStudents==='function')renderStudents();
  if(typeof renderDepartment==='function')renderDepartment();
  renderDistrictV8();renderPeopleV8();renderShopV8();renderBoardV8();renderTycoon();
- if($('world12body'))renderWorld12(window.world12mode||'campus');
+ try{if($('world12body'))renderV13World(window.v13view||'campus')}catch(e){console.error('V13 Visual World refresh',e)}
 }
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(b.dataset.view).classList.add('active')});
 
@@ -4361,6 +4362,14 @@ document.addEventListener('click',function(e){
  if(!btn)return;
  e.preventDefault();
  activateViewV103(btn.getAttribute('data-view'),btn);
+});
+
+/* V13.1 startup guard + living clock */
+window.addEventListener('load',()=>{
+ try{ensureV13();renderV13World(window.v13view||'campus')}catch(e){console.error('V13.1 load guard',e)}
+ if(!window.v13ClockTimer)window.v13ClockTimer=setInterval(()=>{
+  try{if(state?.v13&&!state.v13.paused&&$('world12')?.classList.contains('active'))v13Advance()}catch(e){console.error('V13 clock',e)}
+ },5000);
 });
 
 render();
