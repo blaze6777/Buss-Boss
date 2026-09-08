@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V22.2 — Workforce & Route Integration</title>
+<title>School Transportation Tycoon — Tycoon Web V22.3 — School-Year Funding Fix</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V22.2 — Workforce & Route Integration</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V22.3 — School-Year Funding Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -6936,10 +6936,14 @@ function renderApplicants(){
 /* ===== V22 GARAGE COMMAND CENTER + SCHOOL-YEAR FINANCE ===== */
 function ensureFinanceV22(){
   state.finance22=state.finance22||{schoolYear:null,annualOperating:0,openingOperating:0,spentOperating:0,annualCapital:0,openingCapital:0,supplemental:0,ledger:[],authorizedPositions:[]};
-  let F=state.finance22,yr=String(state.year||'2026');
-  if(F.schoolYear!==yr){
-    let drivers=(state.staff||[]).filter(s=>s.status!=='Retired').length;
-    let support=(state.supportStaff||[]).filter(s=>s.status==='Active').length;
+  let F=state.finance22;
+  let rawYear=String(state.year||state.gameDate||'2026');
+  let match=rawYear.match(/\d{4}/);
+  let yr=match?match[0]:String(new Date().getFullYear());
+  let schoolDay=Math.max(1,Number(state.schoolDay||1));
+  function calcAnnual(){
+    let drivers=(state.staff||[]).filter(s=>!['Retired','Resigned','Terminated'].includes(s.status)).length;
+    let support=(state.supportStaff||[]).filter(s=>s.status==='Active'||!s.status).length;
     let routes=(state.routes||[]).filter(r=>r.active!==false).length;
     let riders=(state.students||[]).filter(s=>s.ridesAM||s.ridesPM).length || Number(state.tycoon?.transportRiders||700);
     let payroll=drivers*46500+support*57000;
@@ -6947,13 +6951,26 @@ function ensureFinanceV22(){
     let fuelMaint=(state.buses||[]).length*18500;
     let riderOps=riders*110;
     let reserve=Math.round((payroll+routeOps+fuelMaint+riderOps)*.10);
-    let annual=Math.max(1450000,Math.round((payroll+routeOps+fuelMaint+riderOps+reserve)/1000)*1000);
+    return Math.max(1450000,Math.round((payroll+routeOps+fuelMaint+riderOps+reserve)/1000)*1000)
+  }
+  let needsNewYear=F.schoolYear!==yr;
+  let needsRepair=!Number.isFinite(Number(state.operatingBudget))||Number(state.operatingBudget)<=0;
+  let annualMissing=!Number.isFinite(Number(F.annualOperating))||Number(F.annualOperating)<=0;
+  if(needsNewYear||annualMissing){
+    let annual=calcAnnual();
     F.schoolYear=yr;F.annualOperating=annual;F.openingOperating=annual;F.spentOperating=0;F.supplemental=0;
     state.operatingBudget=annual;state.budget=annual;
     F.openingCapital=Number(state.capitalBudget||0);F.annualCapital=F.openingCapital;
-    F.ledger.unshift({date:state.gameDate||'',type:'Board Appropriation',fund:'Operating',amount:annual,note:`School-year operating appropriation for ${yr}`});
+    F.ledger=F.ledger||[];F.ledger.unshift({date:state.gameDate||'',type:'Board Appropriation',fund:'Operating',amount:annual,note:`School-year operating appropriation for ${yr}`});
     syncBudgets?.();
     try{log(`School board adopted ${money(annual)} transportation operating budget for ${yr}.`)}catch(e){}
+  }else if(needsRepair&&schoolDay<=10){
+    let annual=Number(F.annualOperating||calcAnnual());
+    let repaired=Math.max(0,annual-Number(F.spentOperating||0));
+    state.operatingBudget=repaired;state.budget=repaired;F.openingOperating=Number(F.openingOperating||annual);
+    F.ledger=F.ledger||[];F.ledger.unshift({date:state.gameDate||'',type:'Funding Repair',fund:'Operating',amount:repaired,note:`Restored missing school-year operating funds for ${yr}`});
+    syncBudgets?.();
+    try{log(`Operating Fund restored to ${money(repaired)} for the ${yr} school year.`)}catch(e){}
   }
   return F
 }
@@ -7259,7 +7276,7 @@ function renderGarageCommandV22(){
       <div><div class="small">FUNDED VACANCIES</div><div class="v22-money">${v22AuthorizedPositions().filter(p=>p.status==='Vacant').length}</div><div class="small">Authorized positions</div></div>
     </div>
     <div class="v22-alertgrid">${(alerts.length?alerts.slice(0,4):[{sev:'good',title:'Morning operation ready',detail:'No major issues currently require Director attention.'}]).map(x=>`<div class="v22-alert ${x.sev}"><b>${x.title}</b><div class="small">${x.detail}</div></div>`).join('')}</div>
-    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
+    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v223RepairOperatingFund()">💰 Repair Operating Fund</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
 }
 
 
@@ -7560,6 +7577,20 @@ if(typeof v203HireFromPosting==='function' && !window._v222HireWrapped){
     }
     v222SyncPositions();v222SyncRouteAssignments();return result
   }
+}
+
+
+function v223RepairOperatingFund(){
+  let F=ensureFinanceV22();
+  if(Number(state.operatingBudget||0)>0){
+    return openModal('Operating Fund',`Your Operating Fund currently has <b>${money(state.operatingBudget||0)}</b> available.`)
+  }
+  let annual=Number(F.annualOperating||1450000);
+  let repaired=Math.max(0,annual-Number(F.spentOperating||0));
+  state.operatingBudget=repaired;state.budget=repaired;syncBudgets?.();
+  F.ledger=F.ledger||[];F.ledger.unshift({date:state.gameDate||'',type:'Manual Funding Repair',fund:'Operating',amount:repaired,note:'Restored missing annual operating appropriation'});
+  autosaveGame?.();render?.();
+  openModal('Operating Fund Restored',`The school-year operating appropriation has been restored.<br><br><b>Operating Fund: ${money(repaired)}</b>`)
 }
 
 /* ===== V21.5 BALANCED-START MIGRATION ===== */
