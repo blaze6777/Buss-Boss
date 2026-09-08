@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.8 — Dedicated Next Day</title>
+<title>School Transportation Tycoon — Tycoon Web V21.9 — Realistic Hiring</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -426,6 +426,31 @@ button,.btn,select,input{touch-action:manipulation}
 .v203-tag{display:inline-block;padding:3px 6px;border-radius:999px;background:#eaf0f4;font-size:8px;font-weight:800;margin-right:4px}
 .v203-empty{padding:14px;border:1px dashed #b7c1c7;border-radius:8px;background:#fbfcfd;font-size:9px}
 
+
+/* V21.9 Realistic Hiring / Posting ATS */
+.v219-posting{border:1px solid var(--line);border-radius:12px;background:#fff;margin:10px 0;overflow:hidden}
+.v219-post-head{padding:12px;background:#f5f8fa;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.v219-post-title{font-size:15px;font-weight:900;margin-bottom:3px}
+.v219-post-meta{font-size:9px;color:#5c6973;line-height:1.5}
+.v219-post-body{padding:11px}
+.v219-pipeline{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:10px 0}
+.v219-stage{border:1px solid #d7dfe4;border-radius:8px;background:#f8fafb;padding:7px;text-align:center;min-width:0}
+.v219-stage b{font-size:14px;display:block}.v219-stage span{font-size:7px;color:#65737d}
+.v219-stage.current{background:#edf5fb;border-color:#96b5cc}
+.v219-appgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-top:9px}
+.v219-appcard{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.v219-appcard:hover{border-color:#9eb3c2}
+.v219-appname{font-size:12px;font-weight:900;margin-bottom:5px}
+.v219-badge{display:inline-block;border-radius:999px;padding:3px 7px;background:#edf2f5;font-size:8px;font-weight:800;margin:0 4px 4px 0}
+.v219-badge.stage{background:#e6f0f7}.v219-badge.good{background:#e9f6ec}.v219-badge.warn{background:#fff4df}
+.v219-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.v219-jobdesc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.v219-jobdesc>div{border:1px solid #e0e6ea;border-radius:8px;padding:8px;background:#fbfcfd}
+.v219-timeline{border-left:2px solid #d5dde3;margin:8px 0 8px 8px;padding-left:12px}
+.v219-timeline div{font-size:8px;margin:6px 0}
+.v219-reject{opacity:.68}
+@media(max-width:900px){.v219-pipeline{grid-template-columns:repeat(3,1fr)}.v219-jobdesc{grid-template-columns:1fr}}
+
 /* V21 Connected District Simulation */
 .v21-hub{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
 .v21-card{border:1px solid var(--line);border-radius:10px;padding:9px;background:#f8fafb;min-height:90px}
@@ -467,7 +492,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.8 — Dedicated Next Day</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.9 — Realistic Hiring</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -6589,6 +6614,179 @@ function v218NextDay(){
     console.error('V21.8 next day failed',e);
     alert('Could not advance the calendar. '+(e?.message||e))
   }
+}
+
+
+/* ===== V21.9 REALISTIC POSTINGS + HIRING PIPELINE ===== */
+function v219EnsurePostingDetails(){
+  ensurePostingApplicantsV203();
+  (state.hr203.postings||[]).forEach(p=>{
+    let r=String(p.role||'School Bus Driver').toLowerCase();
+    if(!p.location)p.location='Warsaw Community Schools Transportation Center';
+    if(!p.schedule)p.schedule=r.includes('sub')?'As needed • School days':r.includes('mechanic')?'Full-time • Day shift':r.includes('dispatcher')?'School days • Split/dispatch coverage':r.includes('aide')?'School days • Route schedule':'School days • Split shift';
+    if(!p.pay){
+      if(r.includes('mechanic'))p.pay='$24–$31/hr';
+      else if(r.includes('dispatcher'))p.pay='$22–$28/hr';
+      else if(r.includes('secretary')||r.includes('office'))p.pay='$20–$26/hr';
+      else if(r.includes('aide')||r.includes('monitor'))p.pay='$17–$21/hr';
+      else p.pay='$23.10+/hr';
+    }
+    if(!p.summary)p.summary=r.includes('driver')?'Safely transport students on assigned school bus routes and trips while providing dependable, professional service.':r.includes('mechanic')?'Inspect, diagnose, repair, and maintain the district school bus fleet.':r.includes('aide')?'Support safe student transportation, including students who may need additional assistance.':'Support daily transportation operations and reliable student service.';
+    if(!p.qualifications){
+      p.qualifications=r.includes('driver')?['Valid driver license','Ability to obtain/maintain CDL with school bus endorsements','Safe driving record','Reliable attendance']:r.includes('mechanic')?['Fleet or automotive maintenance experience','Valid driver license','Ability to work safely around buses and shop equipment']:['Strong communication','Reliable attendance','Ability to work in a school transportation environment']
+    }
+    if(!p.postedDate)p.postedDate=state.gameDate||'2026-08-24';
+  })
+}
+function v219Stages(){return ['Applied','Phone Screen','Interview','References','Conditional Offer','Checks / CDL','Orientation']}
+function v219StageLabel(s){
+  return {'Checks / CDL':'Background / CDL','Conditional Offer':'Offer'}[s]||s
+}
+function v219StageCounts(apps){
+  let out={};v219Stages().forEach(s=>out[s]=0);out.Hired=0;out.Rejected=0;
+  apps.forEach(a=>{let s=a.stage||'Applied';if(out[s]===undefined)out[s]=0;out[s]++});return out
+}
+function v219PostingStatusBadge(p){
+  let filled=Number(p.filled||0),open=Number(p.openings||1);
+  return p.status==='Closed'?'Closed':p.status==='Filled'||filled>=open?'Filled':`${Math.max(0,open-filled)} opening${Math.max(0,open-filled)===1?'':'s'}`
+}
+function v219ApplicantAction(a){
+  let id=String(a.applicantId).replace(/'/g,"\\'");
+  let s=a.stage||'Applied';
+  if(s==='Hired'||s==='Rejected')return `<button class="btn" onclick="v203OpenApplicant('${id}')">Open File</button>`;
+  let labels={
+    'Applied':'Move to Phone Screen',
+    'Phone Screen':'Schedule Interview',
+    'Interview':'Check References',
+    'References':'Prepare Conditional Offer',
+    'Conditional Offer':'Begin Background / CDL Checks',
+    'Checks / CDL':'Send to Orientation',
+    'Orientation':'Hire Candidate'
+  };
+  return `<button class="btn primary" onclick="v219MoveApplicant('${id}')">${labels[s]||'Continue'}</button><button class="btn" onclick="v203OpenApplicant('${id}')">Open File</button><button class="btn" onclick="v219RejectApplicant('${id}')">Reject</button>`
+}
+function v219MoveApplicant(applicantId){
+  v219EnsurePostingDetails();
+  let a=(state.hr203.applicants||[]).find(x=>String(x.applicantId)===String(applicantId));if(!a)return;
+  let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(a.postingId));if(!p)return;
+  let stages=v219Stages(),i=stages.indexOf(a.stage||'Applied');
+  if(i<0)i=0;
+  a.timeline=a.timeline||[];
+  if(a.stage==='Interview'){
+    let I=state.connected21?.interviews?.[a.applicantId];
+    if(I&&I.revealed<I.questions?.length)return v21ApplicantInterview(a.applicantId)
+  }
+  if(i===stages.length-1){
+    a.stage='Hired';a.timeline.push({day:state.gameDate||'',event:`Hired for posting #${p.postingId}: ${p.role}`});
+    v203HireFromPosting(a)
+  }else{
+    let next=stages[i+1];
+    a.stage=next;a.timeline.push({day:state.gameDate||'',event:`Moved to ${v219StageLabel(next)}`})
+  }
+  autosaveGame?.();v203ViewPosting(p.postingId)
+}
+function v219RejectApplicant(applicantId){
+  let a=(state.hr203?.applicants||[]).find(x=>String(x.applicantId)===String(applicantId));if(!a)return;
+  a.stage='Rejected';a.status='Rejected';a.timeline=a.timeline||[];a.timeline.push({day:state.gameDate||'',event:'Application closed — not selected'});
+  autosaveGame?.();v203ViewPosting(a.postingId)
+}
+function v203OpenApplicantBoard(){
+  v219EnsurePostingDetails();
+  let H=state.hr203, posts=H.postings.filter(p=>p.status!=='Closed');
+  openModal('💼 Transportation Careers — Active Job Postings',
+    `<div class="alert"><b>Applicants belong to the posting they actually applied for.</b><br>Each posting has its own candidate pool and hiring pipeline. A substitute applicant will not appear under a regular driver, mechanic, or office posting.</div>
+     <div class="actions"><button class="btn primary" onclick="v203CreatePosting()">+ Create Job Posting</button></div>
+     ${posts.map(p=>{
+       let apps=v203ApplicantsForPosting(p.postingId),c=v219StageCounts(apps),active=apps.filter(a=>!['Rejected','Hired'].includes(a.stage)).length;
+       return `<div class="v219-posting">
+         <div class="v219-post-head">
+           <div><div class="v219-post-title">${p.role}</div><div class="v219-post-meta">${p.employmentType||'Regular'} • ${p.location}<br>Posting #${p.postingId} • Posted ${p.postedDate} • ${p.pay}</div></div>
+           <span class="v219-badge ${p.status==='Filled'?'good':''}">${v219PostingStatusBadge(p)}</span>
+         </div>
+         <div class="v219-post-body">
+           <div class="small">${p.summary}</div>
+           <div class="v219-pipeline">
+             <div class="v219-stage"><b>${c.Applied||0}</b><span>Applied</span></div>
+             <div class="v219-stage"><b>${c['Phone Screen']||0}</b><span>Phone Screen</span></div>
+             <div class="v219-stage"><b>${c.Interview||0}</b><span>Interview</span></div>
+             <div class="v219-stage"><b>${c.References||0}</b><span>References</span></div>
+             <div class="v219-stage"><b>${c['Conditional Offer']||0}</b><span>Offer</span></div>
+             <div class="v219-stage"><b>${c['Checks / CDL']||0}</b><span>Checks / CDL</span></div>
+             <div class="v219-stage"><b>${c.Orientation||0}</b><span>Orientation</span></div>
+           </div>
+           <div class="small">${active} active candidate${active===1?'':'s'} • ${c.Hired||0} hired • ${c.Rejected||0} not selected</div>
+           <div class="v219-actions"><button class="btn primary" onclick="v203ViewPosting(${p.postingId})">Open Posting</button><button class="btn" onclick="v203SimulateApplicant(${p.postingId})">Receive New Application</button><button class="btn" onclick="v203ClosePosting(${p.postingId})">Close Posting</button></div>
+         </div>
+       </div>`
+     }).join('')||'<div class="v203-empty">No active job postings. Create a posting to begin recruiting.</div>'}`
+  )
+}
+function v203ViewPosting(postingId){
+  v219EnsurePostingDetails();
+  let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(postingId));if(!p)return;
+  let apps=v203ApplicantsForPosting(postingId), counts=v219StageCounts(apps);
+  let active=apps.filter(a=>!['Rejected','Hired'].includes(a.stage));
+  openModal(`💼 ${p.role}`,
+    `<div class="v219-posting">
+       <div class="v219-post-head"><div><div class="v219-post-title">${p.role}</div><div class="v219-post-meta">${p.employmentType||'Regular'} • ${p.location}<br>Posting #${p.postingId} • Posted ${p.postedDate} • ${p.pay}</div></div><span class="v219-badge">${v219PostingStatusBadge(p)}</span></div>
+       <div class="v219-post-body">
+         <div class="v219-jobdesc"><div><b>Position Summary</b><div class="small">${p.summary}</div></div><div><b>Schedule</b><div class="small">${p.schedule}<br>${p.pay}</div></div></div>
+         <div style="margin-top:8px"><b>Minimum Qualifications</b><div class="small">${(p.qualifications||[]).map(x=>'• '+x).join('<br>')}</div></div>
+       </div>
+     </div>
+     <div class="v219-pipeline">
+       ${v219Stages().map(s=>`<div class="v219-stage ${counts[s]?'current':''}"><b>${counts[s]||0}</b><span>${v219StageLabel(s)}</span></div>`).join('')}
+     </div>
+     <div class="section-head"><div><h3 style="margin:0">Candidates for this posting</h3><div class="small">Only people who applied to posting #${p.postingId} appear below.</div></div><button class="btn primary" onclick="v203SimulateApplicant(${p.postingId})">+ Receive Application</button></div>
+     ${active.length?`<div class="v219-appgrid">${active.map(a=>{
+       let cdl=a.cdl?'CDL':'CDL sponsorship needed';
+       return `<div class="v219-appcard">
+         <div class="v219-appname">${a.name||'Applicant'}</div>
+         <span class="v219-badge stage">${v219StageLabel(a.stage||'Applied')}</span><span class="v219-badge">${a.source||'District Careers'}</span>
+         <div class="small">${a.experience||0} years experience • ${cdl}</div>
+         <div class="small" style="margin-top:5px">${a.notes||''}</div>
+         <div class="v219-actions">${v219ApplicantAction(a)}</div>
+       </div>`
+     }).join('')}</div>`:`<div class="v203-empty">No active candidates for this posting yet.</div>`}
+     ${(counts.Hired||counts.Rejected)?`<details style="margin-top:10px"><summary><b>Closed candidates (${(counts.Hired||0)+(counts.Rejected||0)})</b></summary><div class="v219-appgrid">${apps.filter(a=>['Hired','Rejected'].includes(a.stage)).map(a=>`<div class="v219-appcard ${a.stage==='Rejected'?'v219-reject':''}"><div class="v219-appname">${a.name}</div><span class="v219-badge ${a.stage==='Hired'?'good':''}">${a.stage}</span><div class="v219-actions"><button class="btn" onclick="v203OpenApplicant('${String(a.applicantId).replace(/'/g,"\\'")}')">Open File</button></div></div>`).join('')}</div></details>`:''}
+     <div class="actions" style="margin-top:10px"><button class="btn" onclick="v203OpenApplicantBoard()">← All Job Postings</button></div>`
+  )
+}
+function v203AdvanceApplicant(applicantId){v219MoveApplicant(applicantId)}
+function v203OpenApplicant(applicantId){
+  v219EnsurePostingDetails();
+  let a=(state.hr203?.applicants||[]).find(x=>String(x.applicantId)===String(applicantId));if(!a)return;
+  let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(a.postingId));if(!p)return;
+  a.timeline=a.timeline||[];
+  let id=String(a.applicantId).replace(/'/g,"\\'");
+  openModal(`👤 ${a.name}`,
+    `<div class="v219-posting">
+      <div class="v219-post-head"><div><div class="v219-post-title">${a.name}</div><div class="v219-post-meta">Applied specifically to ${p.role}<br>Posting #${p.postingId} • ${p.employmentType||'Regular'} • ${p.pay}</div></div><span class="v219-badge stage">${v219StageLabel(a.stage||'Applied')}</span></div>
+      <div class="v219-post-body">
+        <div class="v219-jobdesc"><div><b>Application</b><div class="small">${a.experience||0} years experience<br>${a.cdl?'CDL on application':'CDL not currently listed'}<br>Source: ${a.source||'District Careers'}</div></div><div><b>Applicant Notes</b><div class="small">${a.notes||'No additional notes.'}</div></div></div>
+        ${a.timeline.length?`<div style="margin-top:10px"><b>Hiring Activity</b><div class="v219-timeline">${a.timeline.slice().reverse().map(t=>`<div><b>${t.day||''}</b> — ${t.event}</div>`).join('')}</div></div>`:''}
+      </div>
+     </div>
+     <div class="v219-actions">${a.stage==='Interview'?`<button class="btn primary" onclick="v21ApplicantInterview('${id}')">Conduct Interview</button>`:''}${v219ApplicantAction(a)}<button class="btn" onclick="v203ViewPosting(${p.postingId})">Back to Posting</button></div>`
+  )
+}
+function v203SimulateApplicant(postingId){
+  v219EnsurePostingDetails();
+  let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(postingId));if(!p||p.status==='Closed'||p.status==='Filled')return;
+  let first=['Megan','Ryan','Julie','Thomas','Kayla','Brian','Erin','Adam','Heather','Jason','Nicole','Scott','Angela','Derek','Rachel','Emily','Marcus','Laura','Kevin','Brittany'];
+  let last=['Miller','Johnson','Campbell','Foster','Reed','Nelson','Collins','Baker','Turner','Hughes','Carter','Morgan','Parker','Young','Evans','Snyder','Ramirez','Wilson'];
+  let t=v203RoleTemplate(p),a={
+    applicantId:`A${Date.now()}${Math.floor(Math.random()*99)}`,
+    name:`${first[Math.floor(Math.random()*first.length)]} ${last[Math.floor(Math.random()*last.length)]}`,
+    postingId:p.postingId,
+    appliedFor:p.role,
+    employmentType:p.employmentType,
+    stage:'Applied',status:'Active',source:t.source,experience:t.exp,cdl:t.cdl,notes:t.note,
+    applicationDay:v20DayKey?.()||'',applicationDate:state.gameDate||'',timeline:[{day:state.gameDate||'',event:`Application received for posting #${p.postingId} — ${p.role}`}]
+  };
+  state.hr203.applicants.push(a);
+  if(state.hr14)state.hr14.applicants=state.hr203.applicants;
+  autosaveGame?.();v203ViewPosting(postingId)
 }
 
 /* ===== V21.5 BALANCED-START MIGRATION ===== */
