@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.6 — Full Bus Purchase Options</title>
+<title>School Transportation Tycoon — Tycoon Web V21.7 — Next Day Fix</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -467,7 +467,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.6 — Full Bus Purchase Options</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.7 — Next Day Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -5157,11 +5157,31 @@ function runTransportationDay(){
  state.ops15.lastDayReport={date:formatGameDate(),...state.ops15.performance,miles:totalMiles,fuelCost:state.ops15.dailyEconomics.fuel,laborCost:state.ops15.dailyEconomics.labor};
  opsRadioV15('DISPATCH',`Transportation day complete: ${served} routes served, ${totalMiles.toFixed(0)} route miles, ${state.ops15.performance.onTime}% on time.`);
  try{autoFuelLowBusesV106?.()}catch(e){}
- try{advanceCalendarDay?.()}catch(e){}
+ // V21.7: the V15 day runner now advances to the NEXT SCHOOL DAY, matching the older
+ // full-day runner. This skips weekends/holidays and refreshes daily systems.
+ try{
+   state.day=Number(state.day||0)+1;
+   state.schoolDay=Number(state.schoolDay||0)+1;
+   if(state.schoolDay>=Number(state.schoolDaysPerYear||180)+(state.v11?.makeupDays||0)){
+     if(typeof yearEnd==='function'){yearEnd();return}
+   }
+   if(typeof advanceToNextSchoolDay==='function')advanceToNextSchoolDay();
+   else advanceCalendarDay();
+   state.simMinutes=315;state.dispatchStep=0;
+   (state.buses||[]).forEach(b=>b.liveStatus='Parked / Pre-Trip');
+   try{maybeMaintenanceEvent?.()}catch(e){}
+   try{reconcileTemporaryCoverage?.()}catch(e){}
+   try{if(Math.random()<.35)generateTrip?.()}catch(e){}
+   try{if(Math.random()<.25)generateApplicant?.()}catch(e){}
+   try{if(Math.random()<.3)createDriverCalloff?.()}catch(e){}
+ }catch(e){
+   console.error('V21.7 next-day advance failed',e);
+   try{advanceCalendarDay()}catch(e2){}
+ }
  autosaveGame();render();opsEndOfDayReportV15()
 }
 function opsEndOfDayReportV15(){
- let d=state.ops15.lastDayReport;openModal('🌙 Transportation Day Complete',`<div class="today-grid"><div class="panel"><div class="small">ON TIME</div><div class="big-kpi">${d.onTime}%</div></div><div class="panel"><div class="small">ROUTE MILES</div><div class="big-kpi">${d.miles.toFixed(0)}</div></div><div class="panel"><div class="small">LATE ROUTES</div><div class="big-kpi">${d.lateRoutes}</div></div><div class="panel"><div class="small">ROAD CALLS</div><div class="big-kpi">${d.roadCalls}</div></div></div><div class="ops15-econ" style="margin-top:10px"><div><div class="small">Route fuel</div><div class="ops15-cost">${v13Money(d.fuelCost)}</div></div><div><div class="small">Daily labor estimate</div><div class="ops15-cost">${v13Money(d.laborCost)}</div></div></div><div class="alert" style="margin-top:10px">${d.roadCalls?'Shop has received the road-call information and will assess affected buses.':'No major mechanical road calls were recorded today.'}</div>`)
+ let d=state.ops15.lastDayReport;openModal('🌙 Transportation Day Complete',`<div class="today-grid"><div class="panel"><div class="small">ON TIME</div><div class="big-kpi">${d.onTime}%</div></div><div class="panel"><div class="small">ROUTE MILES</div><div class="big-kpi">${d.miles.toFixed(0)}</div></div><div class="panel"><div class="small">LATE ROUTES</div><div class="big-kpi">${d.lateRoutes}</div></div><div class="panel"><div class="small">ROAD CALLS</div><div class="big-kpi">${d.roadCalls}</div></div></div><div class="ops15-econ" style="margin-top:10px"><div><div class="small">Route fuel</div><div class="ops15-cost">${v13Money(d.fuelCost)}</div></div><div><div class="small">Daily labor estimate</div><div class="ops15-cost">${v13Money(d.laborCost)}</div></div></div><div class="alert" style="margin-top:10px">${d.roadCalls?'Shop has received the road-call information and will assess affected buses.':'No major mechanical road calls were recorded today.'}</div><div class="v21-good" style="margin-top:10px"><b>Next operating day:</b> ${formatGameDate()}<br><span class="small">The calendar has advanced and buses are reset for morning pre-trip.</span></div>`)
 }
 function opsMorningDecisionV15(){
  ensureOpsV15();let uncovered=state.routes.filter(r=>!routeCoverage(r).ok),pm=opsBuildShopBacklogV15(),traffic=state.ops15.traffic.filter(x=>x.delay>=5);
