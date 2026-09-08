@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.2 — Visible Route Builder</title>
+<title>School Transportation Tycoon — Tycoon Web V21.3 — Capacity & Route Visibility Fix</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -460,7 +460,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.2 — Visible Route Builder</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.3 — Capacity & Route Visibility Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -4971,10 +4971,10 @@ function opsRouteCapacityV15(r){
  let b=state.buses.find(x=>Number(x.id)===Number(r.temporaryBus||r.bus)),cap=Number(state.v13?.busSpecs?.[b?.id]?.capacity||b?.capacity||72);return {riders:r.ops15.riders,cap,pct:cap?Math.round(r.ops15.riders/cap*100):0}
 }
 function renderRoutes(){
- ensureOpsV15();if(!$('routeCards'))return;
+ ensureOpsV15();v213NormalizeAllRoutes?.();if(!$('routeCards'))return;
  let totalMiles=state.routes.reduce((a,r)=>a+r.ops15.dailyMiles,0),avgOn=Math.round(state.routes.reduce((a,r)=>a+r.ops15.onTimePct,0)/Math.max(1,state.routes.length)),cross=state.routes.reduce((a,r)=>a+r.ops15.crossings,0);
  if($('routeOpsKpis'))$('routeOpsKpis').innerHTML=[['Active Routes',state.routes.length],['Daily Route Miles',totalMiles.toFixed(0)],['Avg On-Time',avgOn+'%'],['Rail Crossings',cross],['Route Riders',state.routes.reduce((a,r)=>a+r.ops15.riders,0)]].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
- if($('routeOpsBoard'))$('routeOpsBoard').innerHTML=state.routes.map(r=>{let c=opsRouteCapacityV15(r),delay=opsRouteCurrentDelayV15(r),cls=delay>=8?'bad':delay>=4?'warn':'';return `<div class="ops15-status" onclick="selectRoute(${r.id})"><div><span class="ops15-dot ${cls}"></span><b>${r.id}</b></div><div><b>${r.ops15.routeType}</b><br><span class="small">${r.ops15.schools.join(' → ')}</span></div><div>${r.ops15.riders}/${c.cap} riders</div><div>${r.ops15.dailyMiles} mi/day</div><div>${delay?`+${delay} min`:'On time'}</div></div>`}).join('');
+ if($('routeOpsBoard'))$('routeOpsBoard').innerHTML=state.routes.map(r=>{let c=opsRouteCapacityV15(r),delay=opsRouteCurrentDelayV15(r),over=c.cap&&r.ops15.riders>c.cap,cls=over?'bad':delay>=8?'bad':delay>=4?'warn':'';return `<div class="ops15-status ${over?'ops15-over':''}" onclick="selectRoute(${r.id})"><div><span class="ops15-dot ${cls}"></span><b>${r.id}</b></div><div><b>${r.ops15.routeType}</b><br><span class="small">${r.ops15.schools.join(' → ')}</span></div><div><b>${r.ops15.riders}/${c.cap} riders</b>${over?'<br><span class="status bad">OVER CAPACITY</span>':''}</div><div>${r.ops15.dailyMiles} mi/day</div><div>${delay?`+${delay} min`:'On time'}</div></div>`}).join('');
  $('routeCards').innerHTML=state.routes.map(r=>{let c=opsRouteCapacityV15(r);return `<button class="card ${c.pct>100?'ops15-over':''}" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>Route ${r.id}</b><div class="small">${r.ops15.routeType} • Bus ${r.temporaryBus||r.bus||'—'} • ${r.temporaryDriver||r.driver||'No driver'}</div><div style="margin-top:7px">${r.ops15.schools.map(s=>`<span class="ops15-schooltag">${s}</span>`).join('')}</div><div class="small">${r.ops15.riders}/${c.cap} riders • ${r.ops15.dailyMiles} mi/day • ${r.ops15.onTimePct}% on-time</div></button>`}).join('');
  if(!state.routes.some(r=>Number(r.id)===Number(selectedRoute))&&state.routes.length)selectedRoute=state.routes[0].id;
  if(state.routes.length)selectRoute(Number(selectedRoute),false);
@@ -5656,9 +5656,17 @@ function ensureRouteBalanceV202(){
   }
 }
 function v202RouteCapacity(r){
-  try{return Number(opsRouteCapacityV15(r)||0)}catch(e){
-    let b=(state.buses||[]).find(x=>Number(x.id)===Number(r?.temporaryBus||r?.bus));
-    return Number(b?.capacity||72)
+  let assignedId=Number(r?.temporaryBus||r?.bus);
+  let b=(state.buses||[]).find(x=>Number(x.id)===assignedId);
+  let specCap=Number(state.v13?.busSpecs?.[b?.id]?.capacity||0);
+  let busCap=Number(b?.capacity||0);
+  try{
+    let c=opsRouteCapacityV15?.(r);
+    let cap=Number(c?.cap||c||specCap||busCap||0);
+    return Number.isFinite(cap)&&cap>0?cap:0
+  }catch(e){
+    let cap=Number(specCap||busCap||0);
+    return Number.isFinite(cap)&&cap>0?cap:0
   }
 }
 function v202RouteRiders(r){
@@ -5669,10 +5677,11 @@ function v202OverloadedRoutes(){
   try{riderSyncRoutesV16?.()}catch(e){}
   return (state.routes||[]).map(r=>{
     let cap=v202RouteCapacity(r), riders=v202RouteRiders(r), pct=cap?Math.round(riders/cap*100):0;
-    return {r,cap,riders,pct,over:riders>cap,near:pct>=90}
+    return {r,cap,riders,pct,over:cap>0&&riders>cap,near:cap>0&&pct>=90,noBus:cap<=0}
   }).sort((a,b)=>b.pct-a.pct)
 }
 function v202OpenCapacityCenter(){
+  v213NormalizeAllRoutes?.();
   let rows=v202OverloadedRoutes();
   openModal('🚌 Route Capacity & Relief Center',
     `<div class="alert"><b>Marcus Reed — Route Coordinator</b><br>The game will recommend relief routes when a bus is overloaded or consistently above 90% capacity. No changes are made until you approve them.</div>
@@ -5680,8 +5689,8 @@ function v202OpenCapacityCenter(){
      ${rows.map(x=>`<div class="v202-caprow">
        <b>Route ${x.r.id}</b>
        <span><div class="v202-capbar ${x.over?'bad':x.near?'warn':''}"><i style="width:${Math.min(100,x.pct)}%"></i></div><span class="small">${x.r.ops15?.schools?.join(', ')||x.r.ops15?.school||'District route'}</span></span>
-       <b>${x.riders}/${x.cap}</b>
-       <span>${x.over?`<button class="btn primary" onclick="v202PlanRelief(${Number(x.r.id)})">Create Relief Route</button>`:x.near?`<button class="btn" onclick="v202PlanRelief(${Number(x.r.id)})">Review Split</button>`:'✓ Balanced'}</span>
+       <b>${x.riders}/${x.cap||'No bus'}</b>
+       <span>${!x.cap?`<button class="btn" onclick="closeModal();goView('routes');selectRoute(${Number(x.r.id)})">Assign Bus</button>`:x.over?`<button class="btn primary" onclick="v202PlanRelief(${Number(x.r.id)})">Create Relief Route</button>`:x.near?`<button class="btn" onclick="v202PlanRelief(${Number(x.r.id)})">Review Split</button>`:'✓ Balanced'}</span>
      </div>`).join('')}`
   )
 }
@@ -6258,6 +6267,58 @@ function v21ProcessDay(){
 }
 
 
+
+/* ===== V21.3 ROUTE DATA NORMALIZATION ===== */
+function v213NormalizeRoute(r,i=0){
+  if(!r)return;
+  if(!r.ops15)opsEnsureRouteV15?.(r,i);
+  r.ops15=r.ops15||{};
+  if(!Array.isArray(r.ops15.schools)){
+    if(r.specialNeeds)r.ops15.schools=['Special Programs'];
+    else if(r.ops15.school)r.ops15.schools=[r.ops15.school];
+    else r.ops15.schools=['District route'];
+  }
+  if(!r.ops15.routeType)r.ops15.routeType=r.specialNeeds?'Special Needs':'District Route';
+  if(!Array.isArray(r.ops15.stopTimes)){
+    let legacy=Array.isArray(r.ops15.stops)?r.ops15.stops:[];
+    r.ops15.stopTimes=legacy.map((s,idx)=>({
+      id:s.id||`R${r.id}-S${idx+1}`,
+      name:s.name||s.stop||`Stop ${idx+1}`,
+      time:Number(s.time||r.ops15.firstStop||375)+idx*4,
+      riders:Number(s.riders||0),
+      miles:Number(s.miles||1.5),
+      crossing:!!s.crossing,
+      safety:s.safety||'Normal'
+    }))
+  }
+  if(!Array.isArray(r.ops15.stops))r.ops15.stops=r.ops15.stopTimes.map(s=>({...s}));
+  if(r.ops15.onTimePct==null)r.ops15.onTimePct=96;
+  if(r.ops15.crossings==null)r.ops15.crossings=0;
+  if(r.ops15.deadheadMiles==null)r.ops15.deadheadMiles=3;
+  if(r.ops15.serviceDays==null)r.ops15.serviceDays=180;
+  if(r.ops15.typicalDelay==null)r.ops15.typicalDelay=1;
+  if(r.ops15.firstStop==null)r.ops15.firstStop=375;
+  if(r.ops15.pullout==null)r.ops15.pullout=r.ops15.firstStop-18;
+  if(r.ops15.schoolArrival==null)r.ops15.schoolArrival=r.ops15.firstStop+45;
+  if(r.ops15.returnGarage==null)r.ops15.returnGarage=r.ops15.schoolArrival+18;
+  if(r.ops15.pmPullout==null)r.ops15.pmPullout=860;
+  if(r.ops15.pmReturn==null)r.ops15.pmReturn=1020;
+  try{opsRecalcRouteV15?.(r)}catch(e){}
+  // Preserve explicit AM/PM rider counts where rider records are the source of truth.
+  let actual=v202GetStudentsForRoute?.(r.id)||[];
+  if(actual.length){
+    let am=actual.filter(s=>s.ridesAM!==false&&Number(s.routeAM)===Number(r.id)).length;
+    let pm=actual.filter(s=>s.ridesPM!==false&&Number(s.routePM)===Number(r.id)).length;
+    r.ops15.ridersAM=am;r.ops15.ridersPM=pm;r.ops15.riders=Math.max(am,pm);
+  }else{
+    if(r.ops15.ridersAM==null)r.ops15.ridersAM=Number(r.ops15.riders||0);
+    if(r.ops15.ridersPM==null)r.ops15.ridersPM=Number(r.ops15.riders||0)
+  }
+}
+function v213NormalizeAllRoutes(){
+  (state.routes||[]).forEach((r,i)=>v213NormalizeRoute(r,i))
+}
+
 /* ===== V21.1 MANUAL ROUTE BUILDER + EXPANDED FLEET ===== */
 function ensureRouteBuilderV211(){
   ensureRouteBalanceV202?.();ensureConnectedV21?.();
@@ -6344,27 +6405,33 @@ function v211CommitSplit(){
       movedStudents.push(s)
     }
   });
-  let sourceStops=(source.ops15?.stops||[]);
+  v213NormalizeRoute(source);
+  let sourceStops=(source.ops15?.stopTimes||source.ops15?.stops||[]);
   let movedStops=sourceStops.filter(s=>selected.has(s.name||s.stop));
-  source.ops15.stops=sourceStops.filter(s=>!selected.has(s.name||s.stop));
-  nr.ops15.stops=movedStops.map((s,i)=>({...s,id:s.id||`R${P.newRoute}-S${i+1}`}));
-  if(!nr.ops15.stops.length){
-    nr.ops15.stops=P.stops.map((name,i)=>({id:`R${P.newRoute}-S${i+1}`,name,riders:movedStudents.filter(s=>(s.stopName||s.stop||'Unassigned Stop')===name).length,miles:i===0?2.5:1.4,time:Number(source.ops15?.firstStop||375)+i*5,safety:'OK'}))
+  let keptStops=sourceStops.filter(s=>!selected.has(s.name||s.stop));
+  source.ops15.stopTimes=keptStops.map(s=>({...s}));
+  source.ops15.stops=keptStops.map(s=>({...s}));
+  nr.ops15.stopTimes=movedStops.map((s,i)=>({...s,id:`R${P.newRoute}-S${i+1}`}));
+  if(!nr.ops15.stopTimes.length){
+    nr.ops15.stopTimes=P.stops.map((name,i)=>({id:`R${P.newRoute}-S${i+1}`,name,riders:movedStudents.filter(s=>(s.stopName||s.stop||'Unassigned Stop')===name).length,miles:i===0?2.5:1.4,time:Number(source.ops15?.firstStop||375)+i*5,crossing:false,safety:'Normal'}))
   }
+  nr.ops15.stops=nr.ops15.stopTimes.map(s=>({...s}));
+  nr.active=true;
   state.routes.push(nr);
+  v213NormalizeRoute(source);v213NormalizeRoute(nr);
   let d=(state.staff||[]).find(s=>s.name===P.driver);if(d)d.route=P.newRoute;
   try{riderSyncRoutesV16?.();opsRecalcRouteV15?.(source);opsRecalcRouteV15?.(nr)}catch(e){}
   state.routeBuilder211.history.push({year:state.year||2026,source:P.sourceRoute,newRoute:P.newRoute,stops:P.stops.slice(),students:movedStudents.length});
   v21CreateReliefWorkflow?.(P.sourceRoute,P.newRoute,movedStudents.length,P.busId,P.driver);
-  autosaveGame?.();closeModal();
+  autosaveGame?.();renderRoutes?.();closeModal();
   openModal('✅ New Route Created',`<div class="v21-good"><b>Route ${P.newRoute} created successfully.</b><br>${P.stops.length} stop(s) and ${movedStudents.length} student(s) were moved from Route ${P.sourceRoute}.</div><div class="actions"><button class="btn primary" onclick="closeModal();goView('routes')">Open Routes</button><button class="btn" onclick="closeModal();v211OpenRouteBuilder()">Create Another</button></div>`);
   render?.()
 }
 function v211CreateEmptyRoute(){
   let n=Number($('v211NewRouteNo').value)||v211NextRouteNo();if((state.routes||[]).some(r=>Number(r.id)===n)){alert('That route number already exists.');return}
   let name=$('v211NewRouteName').value||`Route ${n}`;
-  let r={id:n,name,driver:null,bus:null,temporaryDriver:null,temporaryBus:null,active:false,createdYear:state.year||2026,ops15:{riders:0,ridersAM:0,ridersPM:0,dailyMiles:0,stops:[],routeType:'New / Unassigned',history:[`Created manually in ${state.year||2026}.`]}};
-  state.routes.push(r);state.routeBuilder211.history.push({year:state.year||2026,newRoute:n,empty:true});autosaveGame?.();closeModal();
+  let r={id:n,name,driver:null,bus:null,temporaryDriver:null,temporaryBus:null,active:false,createdYear:state.year||2026,ops15:{riders:0,ridersAM:0,ridersPM:0,dailyMiles:0,deadheadMiles:0,stops:[],stopTimes:[],schools:['District route'],routeType:'New / Unassigned',onTimePct:100,crossings:0,typicalDelay:0,firstStop:375,pullout:357,schoolArrival:420,returnGarage:438,pmPullout:860,pmReturn:1020,serviceDays:180,history:[`Created manually in ${state.year||2026}.`]}};
+  state.routes.push(r);v213NormalizeRoute(r);state.routeBuilder211.history.push({year:state.year||2026,newRoute:n,empty:true});autosaveGame?.();renderRoutes?.();closeModal();
   openModal('✅ Empty Route Created',`<div class="v21-good"><b>Route ${n} created.</b><br>It is inactive until you add stops, a bus, and a driver.</div>`)
 }
 function v211OpenBusCatalog(){
@@ -6411,7 +6478,7 @@ window.addEventListener('load',()=>{
  },1000);
 });
 
-window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureRouteBuilderV211();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
+window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureRouteBuilderV211();v213NormalizeAllRoutes();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
 
 render();
 </script>
