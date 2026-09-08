@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.11 — Capital Fund Bus Purchases</title>
+<title>School Transportation Tycoon — Tycoon Web V22.2 — Workforce & Route Integration</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -451,6 +451,40 @@ button,.btn,select,input{touch-action:manipulation}
 .v219-reject{opacity:.68}
 @media(max-width:900px){.v219-pipeline{grid-template-columns:repeat(3,1fr)}.v219-jobdesc{grid-template-columns:1fr}}
 
+
+
+
+/* V22.2 Workforce & Route Integration */
+.v222-card{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;background:#fff}
+.v222-row{display:grid;grid-template-columns:1.1fr .9fr .9fr .9fr auto;gap:8px;align-items:center}
+.v222-chip{display:inline-block;padding:2px 7px;border-radius:999px;background:#eef2f5;font-size:12px;margin-right:4px}
+.v222-chain{border-left:4px solid #6c8799;padding:9px 11px;margin:8px 0;background:#f8fbfc;border-radius:8px}
+.v222-pay{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.v222-pay>div{border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff}
+@media(max-width:900px){.v222-row{grid-template-columns:1fr 1fr}.v222-pay{grid-template-columns:1fr 1fr}}
+
+/* V22.1 Integrated Department Management */
+.v221-attn{display:grid;grid-template-columns:42px 1fr auto;gap:9px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:9px;margin:7px 0;background:#fff}
+.v221-attn.bad{background:#fff1f1}.v221-attn.warn{background:#fff8e8}.v221-attn.good{background:#eff8f0}
+.v221-num{font-size:22px;font-weight:900;text-align:center}
+.v221-goal{border:1px solid var(--line);border-radius:9px;padding:9px;margin:7px 0;background:#fbfcfd}
+.v221-progress{height:7px;background:#e6ebee;border-radius:999px;overflow:hidden;margin-top:5px}.v221-progress span{display:block;height:100%;background:currentColor}
+.v221-workorder{border-left:4px solid #8599a8;background:#fff;border-radius:8px;padding:9px;margin:7px 0}
+.v221-proc{border:1px solid var(--line);border-radius:9px;padding:9px;margin:7px 0;background:#fbfcfd}
+.v221-reportgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.v221-metric{border:1px solid var(--line);border-radius:8px;padding:9px;background:#fff}
+@media(max-width:900px){.v221-reportgrid{grid-template-columns:repeat(2,1fr)}}
+
+/* V22 Garage Command Center */
+.v22-command-grid{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:8px;margin-top:10px}
+.v22-money{font-size:18px;font-weight:900}
+.v22-budgetbar{height:8px;border-radius:999px;background:#e7ecef;overflow:hidden;margin-top:6px}
+.v22-budgetbar span{display:block;height:100%;background:currentColor}
+.v22-alertgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:7px;margin-top:10px}
+.v22-alert{border:1px solid var(--line);border-radius:9px;padding:9px;background:#fafcfd}
+.v22-alert.warn{background:#fff8e8}.v22-alert.bad{background:#fff0f0}.v22-alert.good{background:#edf8ef}
+@media(max-width:1000px){.v22-command-grid{grid-template-columns:repeat(3,1fr)}}
+
 /* V21 Connected District Simulation */
 .v21-hub{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
 .v21-card{border:1px solid var(--line);border-radius:10px;padding:9px;background:#f8fafb;min-height:90px}
@@ -492,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.11 — Capital Fund Bus Purchases</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V22.2 — Workforce & Route Integration</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -503,9 +537,9 @@ button,.btn,select,input{touch-action:manipulation}
   </div>
 
   <div class="nav">
-    <button class="active" data-view="world12">🚌 Visual World</button>
+    
     <button data-view="today">Command Center</button>
-    <button data-view="garage">Garage</button>
+    <button data-view="garage" class="active">Garage / Command Center</button>
     <button data-view="routes">Routes</button>
     <button data-view="district">District Map</button>
     <button data-view="department">Department</button>
@@ -532,7 +566,7 @@ button,.btn,select,input{touch-action:manipulation}
   
 
 
-<section id="world12" class="view active">
+<section id="world12" class="view">
  <div class="section-head"><div><h2>🚌 Living Warsaw Transportation Department</h2><div class="small">Watch it operate. Step in when the Director is actually needed.</div></div></div>
  <div id="world12body"></div>
 </section>
@@ -563,7 +597,9 @@ button,.btn,select,input{touch-action:manipulation}
   <aside class="panel"><h2 style="margin-top:0">Opening Day Checklist</h2><div id="openingChecklist"></div></aside>
  </div>
 </section>
-<section id="garage" class="view">
+<section id="garage" class="view active">
+  <div class="panel" id="garageCommandV22" style="margin-bottom:12px"></div>
+
   <div class="grid2">
     <div class="panel">
       <div class="section-head">
@@ -2520,7 +2556,7 @@ function render(){
  try{if($('world12body'))renderV13World(window.v13view||'campus')}catch(e){console.error('V13 Visual World startup',e);$('world12body').innerHTML='<div class="alert">Visual World recovered from a startup issue. Use System Check if another section still has a problem.</div>'}
  $('budget').textContent=money(state.budget);$('busCount').textContent=state.buses.length;$('driverCount').textContent=state.staff.length;$('boardScore').textContent=state.board;
  $('clockText').textContent=formatGameDate()+' • '+minsToTime(state.simMinutes||315)+' • School Year '+state.year;
- renderBuses();renderAlerts();renderRoutes();renderApplicants();renderStaff();renderTrips();renderFleet();renderDispatch();renderReports();renderLog();renderInbox();renderFacilities();renderHistory();
+ renderBuses();renderAlerts();renderRoutes();renderApplicants();renderStaff();try{renderGarageCommandV22()}catch(e){console.error('V22 Garage Command',e)};renderTrips();renderFleet();renderDispatch();renderReports();renderLog();renderInbox();renderFacilities();renderHistory();
  if(typeof renderAssignments==='function')renderAssignments();
  if(typeof renderTraining==='function')renderTraining();
  if(typeof renderOperations==='function')renderOperations();
@@ -3751,7 +3787,7 @@ function summerReadinessV115(){
  let uncovered=(state.routes||[]).filter(r=>!r.driver||!r.bus);
  return {uncovered,missingDrivers:uncovered.filter(r=>!r.driver),missingBuses:uncovered.filter(r=>!r.bus),ready:uncovered.length===0};
 }
-function startNewSchoolYearV115(){
+function startNewSchoolYearV115(){try{v222ProcessNewYear?.()}catch(e){console.error(e)};
  ensureAssignmentFields();ensureV4Data();ensureUXData();
  let check=summerReadinessV115();
  if(!check.ready&&!confirm(`${check.uncovered.length} route(s) still need a permanent driver or bus. Start anyway? You can cover them from the Command Center.`))return;
@@ -3815,7 +3851,7 @@ function openTripArchiveYearV113(index){
      </div>`).join('') || '<div class="small">No trips recorded.</div>'
  );
 }
-function yearEnd(){
+function yearEnd(){try{v222ProcessNewYear?.()}catch(e){console.error(e)};
  ensureV4Data();let archivedTripsV113=archiveTripsForYearV113();annualDepartmentProgression();annualTycoonFinance();growDistrictAnnually();annualV10Systems();state.tycoon.yearsManaged=(state.tycoon.yearsManaged||0)+1;
  state.formerStaff=state.formerStaff||[];
  let departures=[];
@@ -6599,7 +6635,7 @@ function v218NextDay(){
     try{if(Math.random()<.18)generateTrip?.()}catch(e){}
     try{if(Math.random()<.22)createDriverCalloff?.()}catch(e){}
 
-    autosaveGame?.();
+    v221ApplicantCompetition?.();v222ProcessDaily?.();autosaveGame?.();
     render?.();
 
     let msg=`Advanced from ${before} to ${state.gameDate}.`;
@@ -6896,6 +6932,636 @@ function renderApplicants(){
   if($('candidateActions'))$('candidateActions').innerHTML='<button class="btn primary" onclick="v203OpenApplicantBoard()">Open Job Postings</button>'
 }
 
+
+/* ===== V22 GARAGE COMMAND CENTER + SCHOOL-YEAR FINANCE ===== */
+function ensureFinanceV22(){
+  state.finance22=state.finance22||{schoolYear:null,annualOperating:0,openingOperating:0,spentOperating:0,annualCapital:0,openingCapital:0,supplemental:0,ledger:[],authorizedPositions:[]};
+  let F=state.finance22,yr=String(state.year||'2026');
+  if(F.schoolYear!==yr){
+    let drivers=(state.staff||[]).filter(s=>s.status!=='Retired').length;
+    let support=(state.supportStaff||[]).filter(s=>s.status==='Active').length;
+    let routes=(state.routes||[]).filter(r=>r.active!==false).length;
+    let riders=(state.students||[]).filter(s=>s.ridesAM||s.ridesPM).length || Number(state.tycoon?.transportRiders||700);
+    let payroll=drivers*46500+support*57000;
+    let routeOps=routes*28500;
+    let fuelMaint=(state.buses||[]).length*18500;
+    let riderOps=riders*110;
+    let reserve=Math.round((payroll+routeOps+fuelMaint+riderOps)*.10);
+    let annual=Math.max(1450000,Math.round((payroll+routeOps+fuelMaint+riderOps+reserve)/1000)*1000);
+    F.schoolYear=yr;F.annualOperating=annual;F.openingOperating=annual;F.spentOperating=0;F.supplemental=0;
+    state.operatingBudget=annual;state.budget=annual;
+    F.openingCapital=Number(state.capitalBudget||0);F.annualCapital=F.openingCapital;
+    F.ledger.unshift({date:state.gameDate||'',type:'Board Appropriation',fund:'Operating',amount:annual,note:`School-year operating appropriation for ${yr}`});
+    syncBudgets?.();
+    try{log(`School board adopted ${money(annual)} transportation operating budget for ${yr}.`)}catch(e){}
+  }
+  return F
+}
+function v22OperatingSpend(amount,category,note=''){
+  ensureFinanceV22();let F=state.finance22,a=Math.max(0,Number(amount||0));
+  state.operatingBudget=Math.max(0,Number(state.operatingBudget||0)-a);state.budget=state.operatingBudget;
+  F.spentOperating+=a;F.ledger.unshift({date:state.gameDate||'',type:'Expense',fund:'Operating',amount:-a,note:category+(note?' — '+note:'')});
+  syncBudgets?.()
+}
+function v22SupplementalOperating(item,amount){
+  ensureFinanceV22();let F=state.finance22,a=Number(amount||0);
+  state.operatingBudget=Number(state.operatingBudget||0)+a;state.budget=state.operatingBudget;
+  F.annualOperating+=a;F.supplemental+=a;F.ledger.unshift({date:state.gameDate||'',type:'Supplemental Appropriation',fund:'Operating',amount:a,note:item});
+  syncBudgets?.()
+}
+function v22BudgetPace(){
+  let F=ensureFinanceV22(),days=Math.max(1,Number(state.schoolDay||1)),total=Math.max(1,Number(state.schoolDaysPerYear||180)),pct=Math.min(1,days/total);
+  let expected=F.annualOperating*pct,actual=F.spentOperating;
+  return {days,total,expected,actual,diff:expected-actual,pct}
+}
+function v22AuthorizedPositions(){
+  ensureFinanceV22();let F=state.finance22;
+  if(!F.authorizedPositions.length){
+    (state.staff||[]).forEach((s,i)=>F.authorizedPositions.push({id:`DRV-${i+1}`,role:s.status==='Substitute'?'Substitute Bus Driver':'Bus Driver',status:'Filled',employee:s.name,funded:true}));
+    (state.supportStaff||[]).forEach((s,i)=>F.authorizedPositions.push({id:`SUP-${i+1}`,role:s.role||'Support Staff',status:s.status==='Active'?'Filled':'Vacant',employee:s.status==='Active'?s.name:null,funded:true}))
+  }
+  return F.authorizedPositions
+}
+function v22RequestPosition(role='Bus Driver'){
+  openModal('Request Funded Position',`<div class="alert">A new permanent position requires board authorization. Replacement hiring for an already-authorized vacant position does not.</div><label>Position<select id="v22posRole"><option>Bus Driver</option><option>Substitute Bus Driver</option><option>Dispatcher</option><option>Bus Mechanic</option><option>Bus Aide/Monitor</option><option>Transportation Secretary</option><option>Safety Coordinator</option></select></label><label>Annual authorization<input id="v22posCost" type="number" value="54000"></label><button class="btn primary" onclick="v22SubmitPositionRequest()">Submit to Board</button>`)
+}
+function v22SubmitPositionRequest(){
+  let role=$('v22posRole').value,cost=Number($('v22posCost').value||0),chance=(Number(state.board||70)+Number(state.reputation||70))/200,ok=Math.random()<chance;
+  if(ok){
+    let P=v22AuthorizedPositions(),id=`AUTH-${Date.now()}`;P.push({id,role,status:'Vacant',employee:null,funded:true,annualAuthorization:cost});
+    v22SupplementalOperating(`${role} position authorization`,cost);
+    closeModal();openModal('Board Approval',`<div class="v21-good"><b>${role} authorized.</b><br>${money(cost)} was added to the annual Operating Fund and a funded vacancy is now available to post.</div>`)
+  }else{closeModal();openModal('Board Decision',`The board tabled the request for a new ${role} position.`)}
+  autosaveGame?.();render?.()
+}
+function v22GarageAlerts(){
+  let a=[],routes=(state.routes||[]).filter(r=>r.active!==false);
+  let uncovered=routes.filter(r=>!r.driver).length;
+  let shop=(state.buses||[]).filter(b=>/shop|out of service|maintenance/i.test(String(b.status||'')+' '+String(b.liveStatus||''))).length;
+  let over=routes.filter(r=>{try{return Number(r.ops15?.riders||0)>Number(v202RouteCapacity(r)||0)}catch(e){return false}}).length;
+  let vac=v22AuthorizedPositions().filter(p=>p.status==='Vacant').length;
+  if(uncovered)a.push({c:'bad',t:`${uncovered} uncovered route${uncovered===1?'':'s'}`,d:'Assign a regular or substitute driver before pull-out.'});
+  if(shop)a.push({c:'warn',t:`${shop} bus${shop===1?'':'es'} unavailable`,d:'Check the shop and spare fleet.'});
+  if(over)a.push({c:'warn',t:`${over} route${over===1?'':'s'} over capacity`,d:'Move stops, assign a larger bus, or create relief.'});
+  if(vac)a.push({c:'warn',t:`${vac} funded vacanc${vac===1?'y':'ies'}`,d:'Create/open postings and recruit applicants.'});
+  if(!a.length)a.push({c:'good',t:'Morning operation ready',d:'No major issues currently require Director attention.'});
+  return a
+}
+function renderGarageCommandV22(){
+  if(!$('garageCommandV22'))return;let F=ensureFinanceV22(),pace=v22BudgetPace(),alerts=v22GarageAlerts();
+  let remaining=Number(state.operatingBudget||0),annual=Number(F.annualOperating||1),spent=Math.max(0,F.spentOperating),sp=Math.min(100,spent/annual*100);
+  let routes=(state.routes||[]).filter(r=>r.active!==false),covered=routes.filter(r=>r.driver).length;
+  $('garageCommandV22').innerHTML=`
+    <div class="section-head"><div><h2 style="margin:0">🚌 Transportation Command Center</h2><div class="small">${formatGameDate()} • ${minsToTime(state.simMinutes||315)} • School Day ${Number(state.schoolDay||1)} of ${Number(state.schoolDaysPerYear||180)}</div></div>
+    <div class="actions"><button class="btn primary" onclick="runTransportationDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div></div>
+    <div class="v22-command-grid">
+      <div><div class="small">OPERATING REMAINING</div><div class="v22-money">${money(remaining)}</div><div class="small">${money(spent)} spent of ${money(annual)}</div><div class="v22-budgetbar"><span style="width:${sp}%"></span></div></div>
+      <div><div class="small">BUDGET PACE</div><div class="v22-money">${pace.diff>=0?money(pace.diff)+' under':money(Math.abs(pace.diff))+' over'}</div><div class="small">Expected spend ${money(pace.expected)}</div></div>
+      <div><div class="small">CAPITAL FUND</div><div class="v22-money">${money(state.capitalBudget||0)}</div><div class="small">Buses & major projects</div></div>
+      <div><div class="small">ROUTE COVERAGE</div><div class="v22-money">${covered}/${routes.length}</div><div class="small">Regular morning routes</div></div>
+      <div><div class="small">FLEET READY</div><div class="v22-money">${(state.buses||[]).filter(b=>!/shop|out of service|maintenance/i.test(String(b.status||'')+' '+String(b.liveStatus||''))).length}/${(state.buses||[]).length}</div><div class="small">Available buses</div></div>
+      <div><div class="small">FUNDED VACANCIES</div><div class="v22-money">${v22AuthorizedPositions().filter(p=>p.status==='Vacant').length}</div><div class="small">Authorized positions</div></div>
+    </div>
+    <div class="v22-alertgrid">${alerts.map(x=>`<div class="v22-alert ${x.c}"><b>${x.t}</b><div class="small">${x.d}</div></div>`).join('')}</div>
+    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v22RequestPosition()">➕ Request Position</button><button class="btn" onclick="openBoardRequests()">🏛️ Board Funding</button><button class="btn" onclick="openSchoolYearBudgetV113()">💰 Annual Budget</button><button class="btn" onclick="openFleetReplacementPlanV11()">🚌 Fleet Plan</button></div>`
+}
+function v2110PostBoardFunding(item,cost){
+  syncBudgets?.();ensureFinanceV22();let c=Number(cost||0),name=String(item||'').toLowerCase(),destination='Operating';
+  if(name.includes('bus')||name.includes('capital')||name.includes('fleet')){
+    state.capitalBudget=Number(state.capitalBudget||0)+c;destination='Capital';
+    state.finance22.annualCapital=Number(state.finance22.annualCapital||0)+c
+  }else{
+    v22SupplementalOperating(item,c);destination='Operating'
+  }
+  syncBudgets?.();state.boardFundingLedger=state.boardFundingLedger||[];
+  state.boardFundingLedger.unshift({date:state.gameDate||'',year:state.year||2026,item,cost:c,fund:destination});return destination
+}
+
+
+/* ===== V22.1 INTEGRATED DEPARTMENT MANAGEMENT ===== */
+function ensureV221(){
+  ensureFinanceV22?.();
+  state.v221=state.v221||{
+    goals:[],workOrders:[],procurements:[],attentionIndex:0,annualReports:[],
+    enrollmentForecast:[],boardAgenda:[],lastForecastYear:null,lastGoalsYear:null,lastReportYear:null
+  };
+  let V=state.v221,yr=String(state.year||'2026');
+  if(V.lastGoalsYear!==yr){
+    V.lastGoalsYear=yr;
+    V.goals=[
+      {id:'ontime',title:'On-Time Performance',target:95,type:'min',unit:'%',value:Number(state.dailyStats?.onTime||96)},
+      {id:'budget',title:'Finish Within Operating Budget',target:0,type:'max',unit:' projected over',value:0},
+      {id:'vacancies',title:'Keep Funded Vacancies at 2 or Fewer',target:2,type:'max',unit:' vacancies',value:0},
+      {id:'fleet',title:'Reduce High-Risk Fleet',target:2,type:'max',unit:' buses',value:0}
+    ];
+  }
+  if(V.lastForecastYear!==yr){
+    V.lastForecastYear=yr;
+    let schools=['Harrison','Eisenhower','Jefferson','Leesburg','Lincoln','Madison','Washington','Claypool'];
+    V.enrollmentForecast=schools.map((s,i)=>({school:s,change:-18+Math.floor(Math.random()*82),confidence:70+Math.floor(Math.random()*21)}));
+  }
+  return V
+}
+function v221BudgetProjection(){
+  let F=ensureFinanceV22(),days=Math.max(1,Number(state.schoolDay||1)),total=Math.max(1,Number(state.schoolDaysPerYear||180));
+  let spent=Number(F.spentOperating||0),daily=spent/days;
+  let projected=Math.round(daily*total),remainingProjected=Number(F.annualOperating||0)-projected;
+  return {daily,projected,remainingProjected,over:Math.max(0,-remainingProjected),under:Math.max(0,remainingProjected)}
+}
+function v221FleetRisk(){
+  let y=Number(String(state.year||2026).match(/\d{4}/)?.[0]||2026);
+  return (state.buses||[]).filter(b=>{
+    let age=y-Number(b.year||y),m=Number(b.miles||0),cond=Number(b.condition||90),br=Number(b.breakdowns||0),rep=Number(b.repairSpend||0);
+    return age>=11||m>=150000||cond<70||br>=3||rep>=18000
+  })
+}
+function v221FleetReplacementScore(b){
+  let y=Number(String(state.year||2026).match(/\d{4}/)?.[0]||2026),age=Math.max(0,y-Number(b.year||y));
+  return Math.round(age*6+Number(b.miles||0)/6000+(100-Number(b.condition||90))*1.5+Number(b.breakdowns||0)*10+Number(b.repairSpend||0)/2500)
+}
+function v221NeedsAttention(){
+  ensureV221();let arr=[],routes=(state.routes||[]).filter(r=>r.active!==false);
+  let uncovered=routes.filter(r=>!r.driver).length;
+  let over=routes.filter(r=>{try{return Number(r.ops15?.riders||0)>Number(v202RouteCapacity(r)||0)}catch(e){return false}}).length;
+  let shop=(state.buses||[]).filter(b=>/shop|out of service|maintenance/i.test(String(b.status||'')+' '+String(b.liveStatus||''))).length;
+  let vac=v22AuthorizedPositions().filter(p=>p.status==='Vacant').length;
+  let proj=v221BudgetProjection();
+  let inspections=(state.buses||[]).filter(b=>/due/i.test(String(b.v18?.inspectionStatus||b.status||''))).length;
+  if(uncovered)arr.push({sev:'bad',title:`${uncovered} route${uncovered===1?'':'s'} uncovered`,detail:'Assign a substitute, double-route a qualified driver, or fill the vacancy.',action:`document.querySelector('[data-view="dispatch"]')?.click()`});
+  if(over)arr.push({sev:'warn',title:`${over} route${over===1?'':'s'} over capacity`,detail:'Move stops, use a larger bus, or build relief service.',action:`document.querySelector('[data-view="routes"]')?.click()`});
+  if(shop)arr.push({sev:'warn',title:`${shop} bus${shop===1?'':'es'} unavailable`,detail:'Review open work orders and spare coverage.',action:`v221OpenWorkOrders()`});
+  if(vac)arr.push({sev:'warn',title:`${vac} funded vacanc${vac===1?'y':'ies'}`,detail:'Post and recruit specifically against funded positions.',action:`v203OpenApplicantBoard()`});
+  if(proj.over>0)arr.push({sev:'bad',title:`Projected ${money(proj.over)} over operating budget`,detail:'Current spending pace will exhaust the annual appropriation.',action:`v221OpenFinancialForecast()`});
+  if(inspections)arr.push({sev:'warn',title:`${inspections} inspection item${inspections===1?'':'s'} due`,detail:'Move them into the shop plan before service is affected.',action:`v221OpenWorkOrders()`});
+  return arr
+}
+function v221OpenAttention(){
+  let arr=v221NeedsAttention();
+  openModal(`⚠ Needs Your Attention — ${arr.length}`,
+    arr.length?arr.map((x,i)=>`<div class="v221-attn ${x.sev}"><div class="v221-num">${i+1}</div><div><b>${x.title}</b><div class="small">${x.detail}</div></div><button class="btn" onclick="closeModal();${x.action}">Handle</button></div>`).join(''):
+    `<div class="v221-attn good"><div class="v221-num">✓</div><div><b>No Director action needed</b><div class="small">Routine operations can continue.</div></div></div>`
+  )
+}
+function v221OpenFinancialForecast(){
+  let F=ensureFinanceV22(),p=v221BudgetProjection(),pace=v22BudgetPace();
+  openModal('📈 Operating Budget Forecast',
+    `<div class="v221-reportgrid">
+      <div class="v221-metric"><div class="small">ANNUAL APPROPRIATION</div><b>${money(F.annualOperating)}</b></div>
+      <div class="v221-metric"><div class="small">SPENT TO DATE</div><b>${money(F.spentOperating)}</b></div>
+      <div class="v221-metric"><div class="small">PROJECTED YEAR-END SPEND</div><b>${money(p.projected)}</b></div>
+      <div class="v221-metric"><div class="small">PROJECTED BALANCE</div><b>${money(p.remainingProjected)}</b></div>
+    </div>
+    <div class="alert ${p.over?'priority-yellow':'priority-green'}" style="margin-top:10px"><b>${p.over?`Projected ${money(p.over)} over budget`:`Projected ${money(p.under)} under budget`}</b><div class="small">Average operating spend: ${money(p.daily)} per school day. Expected spend by today: ${money(pace.expected)}.</div></div>
+    <div class="actions"><button class="btn" onclick="openBoardRequests()">Request Supplemental Funding</button></div>`)
+}
+function v221EnsureWorkOrders(){
+  let V=ensureV221();
+  (state.buses||[]).forEach(b=>{
+    let bad=/shop|out of service|maintenance/i.test(String(b.status||'')+' '+String(b.liveStatus||'')),exists=V.workOrders.some(w=>Number(w.bus)===Number(b.id)&&w.status!=='Closed');
+    if(bad&&!exists)V.workOrders.push({id:Date.now()+Number(b.id),bus:b.id,issue:'Diagnostic / repair required',status:'Open',assigned:'Mike Evans',parts:'Pending inspection',eta:'TBD',opened:state.gameDate||''})
+  });
+  return V.workOrders
+}
+function v221OpenWorkOrders(){
+  let W=v221EnsureWorkOrders();
+  openModal('🔧 Fleet Work Orders',
+    `<div class="actions"><button class="btn primary" onclick="v221CreateWorkOrder()">+ New Work Order</button></div>`+
+    (W.length?W.slice().reverse().map(w=>`<div class="v221-workorder"><b>WO ${w.id} • Bus ${w.bus}</b><div class="small">${w.issue}<br>Status: ${w.status} • Assigned: ${w.assigned}<br>Parts: ${w.parts} • ETA: ${w.eta}</div><div class="actions">${w.status!=='Closed'?`<button class="btn" onclick="v221AdvanceWorkOrder(${w.id})">Advance Work</button>`:''}</div></div>`).join(''):'<div class="small">No work orders.</div>')
+  )
+}
+function v221CreateWorkOrder(){
+  let ids=(state.buses||[]).map(b=>b.id);
+  openModal('New Work Order',`<label>Bus<select id="v221woBus">${ids.map(x=>`<option>${x}</option>`).join('')}</select></label><label>Issue<input id="v221woIssue" value="Driver reported mechanical concern"></label><button class="btn primary" onclick="v221SaveWorkOrder()">Create Work Order</button>`)
+}
+function v221SaveWorkOrder(){
+  let V=ensureV221(),bus=Number($('v221woBus').value),issue=$('v221woIssue').value;
+  V.workOrders.push({id:Date.now(),bus,issue,status:'Open',assigned:'Mike Evans',parts:'Diagnosis pending',eta:'TBD',opened:state.gameDate||''});
+  let b=state.buses.find(x=>Number(x.id)===bus);if(b){b.status='Maintenance';b.liveStatus='Shop'};
+  autosaveGame?.();v221OpenWorkOrders()
+}
+function v221AdvanceWorkOrder(id){
+  let w=ensureV221().workOrders.find(x=>Number(x.id)===Number(id));if(!w)return;
+  let steps=['Open','Diagnosing','Waiting for Parts','Repairing','Quality Check','Closed'],i=steps.indexOf(w.status);w.status=steps[Math.min(steps.length-1,Math.max(0,i)+1)];
+  if(w.status==='Diagnosing'){w.parts='Inspection underway';w.eta='2–3 days'}
+  if(w.status==='Waiting for Parts'){w.parts='Parts ordered';w.eta='3–5 days'}
+  if(w.status==='Repairing'){w.parts='Parts received';w.eta='1–2 days'}
+  if(w.status==='Quality Check')w.eta='Tomorrow';
+  if(w.status==='Closed'){w.eta='Complete';let b=state.buses.find(x=>Number(x.id)===Number(w.bus));if(b){b.status='Ready';b.liveStatus='Parked / Pre-Trip';b.condition=Math.min(100,Number(b.condition||80)+8)}}
+  autosaveGame?.();v221OpenWorkOrders()
+}
+function v221OpenFleetPriorities(){
+  let rows=(state.buses||[]).map(b=>({b,score:v221FleetReplacementScore(b)})).sort((a,b)=>b.score-a.score);
+  openModal('🚌 Fleet Replacement Priority',
+    rows.map((x,i)=>`<div class="v221-proc"><b>#${i+1} • Bus ${x.b.id} — Score ${x.score}</b><div class="small">${x.b.year} ${x.b.model||''} • ${Number(x.b.miles||0).toLocaleString()} miles • Condition ${x.b.condition||90}% • Repairs ${money(x.b.repairSpend||0)}</div></div>`).join(''))
+}
+function v221StartProcurement(){
+  let V=ensureV221();
+  openModal('🚌 Start Bus Procurement',`<div class="alert">Capital purchases now follow a realistic pipeline instead of appearing instantly.</div><label>Quantity<input id="v221pq" type="number" min="1" max="10" value="2"></label><label>Estimated total<input id="v221pc" type="number" value="300000"></label><button class="btn primary" onclick="v221SaveProcurement()">Create Capital Request</button>`)
+}
+function v221SaveProcurement(){
+  let V=ensureV221(),q=Number($('v221pq').value||1),cost=Number($('v221pc').value||0);
+  V.procurements.push({id:Date.now(),qty:q,cost,status:'Capital Request',vendor:null,eta:null,history:[`Request created ${state.gameDate||''}`]});
+  autosaveGame?.();v221OpenProcurements()
+}
+function v221OpenProcurements(){
+  let P=ensureV221().procurements,steps=['Capital Request','Board Approval','Specifications','Bid / Quote','Vendor Award','Ordered','Production','Dealer Prep','Delivered'];
+  openModal('📦 Bus Procurement Pipeline',
+    `<div class="actions"><button class="btn primary" onclick="v221StartProcurement()">+ New Procurement</button></div>`+
+    (P.length?P.map(p=>`<div class="v221-proc"><b>${p.qty} Bus Procurement • ${money(p.cost)}</b><div class="small">Stage: ${p.status}${p.vendor?' • '+p.vendor:''}${p.eta?' • ETA '+p.eta:''}</div><div class="actions">${p.status!=='Delivered'?`<button class="btn" onclick="v221AdvanceProcurement(${p.id})">Advance Stage</button>`:''}</div></div>`).join(''):'<div class="small">No active procurements.</div>')
+  )
+}
+function v221AdvanceProcurement(id){
+  let p=ensureV221().procurements.find(x=>Number(x.id)===Number(id));if(!p)return;
+  let steps=['Capital Request','Board Approval','Specifications','Bid / Quote','Vendor Award','Ordered','Production','Dealer Prep','Delivered'],i=steps.indexOf(p.status),next=steps[Math.min(steps.length-1,i+1)];
+  if(next==='Board Approval'&&Number(state.capitalBudget||0)<p.cost)return alert(`Capital Fund needs ${money(p.cost)} for this project.`);
+  if(next==='Vendor Award'){p.vendor=['Kerlin Bus Sales','Midwest Transit Equipment','Central States Bus Sales'][Math.floor(Math.random()*3)]}
+  if(next==='Ordered'){state.capitalBudget=Number(state.capitalBudget||0)-p.cost;syncBudgets?.();p.eta='8–12 months'}
+  if(next==='Production')p.eta='4–7 months';
+  if(next==='Dealer Prep')p.eta='2–4 weeks';
+  if(next==='Delivered')p.eta='Arrived';
+  p.status=next;p.history.push(`${next} — ${state.gameDate||''}`);autosaveGame?.();v221OpenProcurements()
+}
+function v221OpenEnrollmentForecast(){
+  let E=ensureV221().enrollmentForecast,total=E.reduce((a,x)=>a+x.change,0);
+  openModal('🏘️ Next-Year Enrollment & Routing Forecast',
+    `<div class="alert"><b>Projected transportation change: ${total>=0?'+':''}${total} students</b><div class="small">Use this during summer planning so route growth does not surprise you in August.</div></div>`+
+    E.map(x=>`<div class="kv"><span>${x.school}<br><span class="small">${x.confidence}% confidence</span></span><b>${x.change>=0?'+':''}${x.change}</b></div>`).join(''))
+}
+function v221UpdateGoals(){
+  let V=ensureV221(),proj=v221BudgetProjection(),vac=v22AuthorizedPositions().filter(p=>p.status==='Vacant').length,risk=v221FleetRisk().length;
+  V.goals.forEach(g=>{
+    if(g.id==='ontime')g.value=Number(state.dailyStats?.onTime||96);
+    if(g.id==='budget')g.value=proj.over;
+    if(g.id==='vacancies')g.value=vac;
+    if(g.id==='fleet')g.value=risk
+  });return V.goals
+}
+function v221OpenGoals(){
+  let G=v221UpdateGoals();
+  openModal('🎯 Superintendent Transportation Goals',
+    G.map(g=>{let ok=g.type==='min'?g.value>=g.target:g.value<=g.target,pct=g.type==='min'?Math.min(100,g.value/g.target*100):Math.min(100,g.target/Math.max(1,g.value)*100);return `<div class="v221-goal"><b>${ok?'✅':'⚠️'} ${g.title}</b><div class="small">Current: ${g.value}${g.unit||''} • Target: ${g.target}${g.unit||''}</div><div class="v221-progress"><span style="width:${pct}%"></span></div></div>`}).join(''))
+}
+function v221OpenBoardAgenda(){
+  let V=ensureV221(),att=v221NeedsAttention(),proj=v221BudgetProjection();
+  let agenda=[
+    `Transportation financial update — projected ${proj.over?money(proj.over)+' over':money(proj.under)+' under'} budget`,
+    `${v22AuthorizedPositions().filter(p=>p.status==='Vacant').length} funded transportation vacancies`,
+    `${v221FleetRisk().length} buses flagged for replacement review`,
+    `${att.length} current Director attention items`
+  ];
+  V.boardAgenda=agenda;
+  openModal('🏛️ Monthly School Board Agenda',agenda.map((x,i)=>`<div class="v221-proc"><b>${i+1}. ${x}</b></div>`).join('')+`<div class="actions"><button class="btn" onclick="openBoardRequests()">Submit Funding Request</button><button class="btn" onclick="v22RequestPosition()">Request Position</button><button class="btn" onclick="v221OpenProcurements()">Capital Procurement</button></div>`)
+}
+function v221AnnualReport(){
+  ensureV221();let F=ensureFinanceV22(),yr=String(state.year||2026),routes=(state.routes||[]).filter(r=>r.active!==false).length,buses=(state.buses||[]).length;
+  let report={year:yr,routes,buses,onTime:Number(state.dailyStats?.onTime||96),spent:F.spentOperating,budget:F.annualOperating,balance:Number(state.operatingBudget||0),vacancies:v22AuthorizedPositions().filter(p=>p.status==='Vacant').length,highRisk:v221FleetRisk().length,board:Number(state.board||0)};
+  let grade=report.onTime>=95&&report.spent<=report.budget&&report.vacancies<=2?'A':report.onTime>=92&&report.spent<=report.budget*1.03?'B':'C';
+  report.grade=grade;
+  openModal(`📘 Transportation Annual Report — ${yr}`,
+    `<div class="alert priority-green"><b>Department Grade: ${grade}</b></div><div class="v221-reportgrid">
+      <div class="v221-metric"><div class="small">ROUTES</div><b>${routes}</b></div>
+      <div class="v221-metric"><div class="small">BUSES</div><b>${buses}</b></div>
+      <div class="v221-metric"><div class="small">ON-TIME</div><b>${report.onTime}%</b></div>
+      <div class="v221-metric"><div class="small">BUDGET BALANCE</div><b>${money(report.balance)}</b></div>
+      <div class="v221-metric"><div class="small">VACANCIES</div><b>${report.vacancies}</b></div>
+      <div class="v221-metric"><div class="small">HIGH-RISK BUSES</div><b>${report.highRisk}</b></div>
+      <div class="v221-metric"><div class="small">BOARD CONFIDENCE</div><b>${report.board}%</b></div>
+      <div class="v221-metric"><div class="small">OPERATING SPEND</div><b>${money(report.spent)}</b></div>
+    </div>`)
+}
+function v221OpenSummerPlanning(){
+  openModal('☀️ Summer Transportation Planning',
+    `<div class="alert"><b>Summer is for rebuilding the operation before opening day.</b></div>
+     <div class="actions"><button class="btn" onclick="v221OpenEnrollmentForecast()">Enrollment Forecast</button><button class="btn" onclick="v221OpenFleetPriorities()">Fleet Replacement</button><button class="btn" onclick="v203OpenApplicantBoard()">Hiring & Postings</button><button class="btn" onclick="v222OpenRouteBid()">Driver Route Bidding</button><button class="btn" onclick="v221OpenProcurements()">Bus Procurement</button><button class="btn" onclick="v221OpenGoals()">Superintendent Goals</button></div>`)
+}
+function v221ApplicantCompetition(){
+  let apps=state.hr203?.applicants||[];
+  apps.filter(a=>!['Hired','Rejected','Archived'].includes(a.stage)).forEach(a=>{
+    a.daysOpen=Number(a.daysOpen||0)+1;
+    if(a.daysOpen>8&&Math.random()<.035){
+      a.stage='Rejected';a.status='Withdrew';a.timeline=a.timeline||[];a.timeline.push({day:state.gameDate||'',event:'Applicant withdrew after accepting another position'});
+    }
+  })
+}
+function renderGarageCommandV22(){
+  if(!$('garageCommandV22'))return;let F=ensureFinanceV22(),pace=v22BudgetPace(),alerts=v221NeedsAttention(),proj=v221BudgetProjection();
+  let remaining=Number(state.operatingBudget||0),annual=Number(F.annualOperating||1),spent=Math.max(0,F.spentOperating),sp=Math.min(100,spent/annual*100);
+  let routes=(state.routes||[]).filter(r=>r.active!==false),covered=routes.filter(r=>r.driver).length;
+  $('garageCommandV22').innerHTML=`
+    <div class="section-head"><div><h2 style="margin:0">🚌 Transportation Command Center</h2><div class="small">${formatGameDate()} • ${minsToTime(state.simMinutes||315)} • School Day ${Number(state.schoolDay||1)} of ${Number(state.schoolDaysPerYear||180)}</div></div>
+    <div class="actions"><button class="btn ${alerts.length?'primary':''}" onclick="v221OpenAttention()">⚠ Needs Attention (${alerts.length})</button><button class="btn primary" onclick="runTransportationDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div></div>
+    <div class="v22-command-grid">
+      <div><div class="small">OPERATING REMAINING</div><div class="v22-money">${money(remaining)}</div><div class="small">${money(spent)} spent of ${money(annual)}</div><div class="v22-budgetbar"><span style="width:${sp}%"></span></div></div>
+      <div><div class="small">YEAR-END FORECAST</div><div class="v22-money">${proj.over?money(proj.over)+' over':money(proj.under)+' under'}</div><div class="small">Projected spend ${money(proj.projected)}</div></div>
+      <div><div class="small">CAPITAL FUND</div><div class="v22-money">${money(state.capitalBudget||0)}</div><div class="small">Buses & major projects</div></div>
+      <div><div class="small">ROUTE COVERAGE</div><div class="v22-money">${covered}/${routes.length}</div><div class="small">Regular morning routes</div></div>
+      <div><div class="small">FLEET READY</div><div class="v22-money">${(state.buses||[]).filter(b=>!/shop|out of service|maintenance/i.test(String(b.status||'')+' '+String(b.liveStatus||''))).length}/${(state.buses||[]).length}</div><div class="small">${v221FleetRisk().length} replacement-risk</div></div>
+      <div><div class="small">FUNDED VACANCIES</div><div class="v22-money">${v22AuthorizedPositions().filter(p=>p.status==='Vacant').length}</div><div class="small">Authorized positions</div></div>
+    </div>
+    <div class="v22-alertgrid">${(alerts.length?alerts.slice(0,4):[{sev:'good',title:'Morning operation ready',detail:'No major issues currently require Director attention.'}]).map(x=>`<div class="v22-alert ${x.sev}"><b>${x.title}</b><div class="small">${x.detail}</div></div>`).join('')}</div>
+    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
+}
+
+
+/* ===== V22.2 WORKFORCE / POSITION / ROUTE / PAYROLL INTEGRATION ===== */
+function ensureV222(){
+  ensureV221?.(); ensureFinanceV22?.();
+  state.v222=state.v222||{
+    positionEvents:[],retirementNotices:[],routeBids:[],payrollHistory:[],
+    lastYearProcessed:null,lastDailyProcessed:null,employeeIdsInitialized:false
+  };
+  let V=state.v222;
+
+  // Give stable employee ids.
+  if(!V.employeeIdsInitialized){
+    (state.staff||[]).forEach((s,i)=>{if(!s.employeeId)s.employeeId=`DRV-${String(i+1).padStart(3,'0')}`});
+    (state.supportStaff||[]).forEach((s,i)=>{if(!s.employeeId)s.employeeId=`SUP-${String(i+1).padStart(3,'0')}`});
+    V.employeeIdsInitialized=true;
+  }
+
+  // Rebuild position links once, keeping existing funded positions.
+  let P=v22AuthorizedPositions?.()||[];
+  (state.staff||[]).forEach(s=>{
+    let pos=P.find(p=>p.employee===s.name && /driver/i.test(p.role||'')) ||
+            P.find(p=>p.employeeId===s.employeeId);
+    if(!pos){
+      pos={id:`AUTH-${s.employeeId}`,role:s.status==='Substitute'?'Substitute Bus Driver':'Bus Driver',
+           status:'Filled',employee:s.name,employeeId:s.employeeId,funded:true,annualAuthorization:v222SalaryFor(s)};
+      P.push(pos)
+    }else{
+      pos.employeeId=s.employeeId;
+      if(!pos.annualAuthorization)pos.annualAuthorization=v222SalaryFor(s);
+      if(s.status!=='Retired'){pos.status='Filled';pos.employee=s.name}
+    }
+    s.positionId=pos.id
+  });
+  (state.supportStaff||[]).forEach(s=>{
+    let pos=P.find(p=>p.employee===s.name) || P.find(p=>p.employeeId===s.employeeId);
+    if(!pos){
+      pos={id:`AUTH-${s.employeeId}`,role:s.role||'Support Staff',status:'Filled',employee:s.name,
+           employeeId:s.employeeId,funded:true,annualAuthorization:v222SalaryFor(s)};
+      P.push(pos)
+    }else{
+      pos.employeeId=s.employeeId;
+      if(!pos.annualAuthorization)pos.annualAuthorization=v222SalaryFor(s);
+      if(s.status==='Active'){pos.status='Filled';pos.employee=s.name}
+    }
+    s.positionId=pos.id
+  });
+
+  v222SyncPositions();
+  v222SyncRouteAssignments();
+  return V
+}
+function v222SalaryFor(emp){
+  let role=String(emp.role||emp.status||'Bus Driver').toLowerCase(),yrs=Number(emp.years||emp.yearsExperience||0);
+  let base=46500;
+  if(role.includes('substitute'))base=30000;
+  else if(role.includes('mechanic'))base=56000;
+  else if(role.includes('dispatcher'))base=50000;
+  else if(role.includes('secretary'))base=44500;
+  else if(role.includes('coordinator'))base=58500;
+  else if(role.includes('director'))base=74000;
+  else if(role.includes('trainer'))base=56500;
+  else if(role.includes('aide')||role.includes('monitor'))base=33000;
+  return Math.round(base+Math.min(20,yrs)*650)
+}
+function v222AllEmployees(){
+  return [...(state.staff||[]).map(x=>({...x,_group:'driver'})),
+          ...(state.supportStaff||[]).map(x=>({...x,_group:'support'}))]
+}
+function v222FindEmployeeByName(name){
+  return (state.staff||[]).find(x=>x.name===name)||(state.supportStaff||[]).find(x=>x.name===name)
+}
+function v222SyncPositions(){
+  let P=v22AuthorizedPositions?.()||[];
+  P.forEach(p=>{
+    if(p.employee){
+      let e=v222FindEmployeeByName(p.employee);
+      if(!e || e.status==='Retired' || e.status==='Resigned' || e.status==='Terminated'){
+        p.status='Vacant';p.employee=null;p.employeeId=null
+      } else {
+        p.status='Filled';p.employeeId=e.employeeId||p.employeeId
+      }
+    }
+  })
+}
+function v222SyncRouteAssignments(){
+  let activeNames=new Set((state.staff||[]).filter(s=>!['Retired','Resigned','Terminated'].includes(s.status)).map(s=>s.name));
+  (state.routes||[]).forEach(r=>{
+    if(r.driver && !activeNames.has(r.driver)) r.driver=null;
+  });
+  (state.staff||[]).forEach(s=>{
+    if(['Retired','Resigned','Terminated'].includes(s.status))return;
+    let r=(state.routes||[]).find(x=>x.driver===s.name);
+    s.route=r?r.id:null
+  })
+}
+function v222VacateEmployee(emp,reason='Left employment'){
+  ensureV222();
+  let P=v22AuthorizedPositions?.()||[],p=P.find(x=>x.id===emp.positionId)||P.find(x=>x.employee===emp.name);
+  if(p){p.status='Vacant';p.employee=null;p.employeeId=null}
+  (state.routes||[]).forEach(r=>{if(r.driver===emp.name)r.driver=null});
+  state.v222.positionEvents.unshift({date:state.gameDate||'',employee:emp.name,reason,positionId:p?.id||null,event:'Position Vacated'});
+}
+function v222HireIntoPosition(applicant,positionId){
+  ensureV222();
+  let P=v22AuthorizedPositions?.()||[],p=P.find(x=>x.id===positionId);
+  if(!p || p.status!=='Vacant')return false;
+  let role=String(p.role||applicant.appliedFor||'Bus Driver');
+  let isDriver=/driver/i.test(role),emp={
+    name:applicant.name,
+    age:applicant.age||25+Math.floor(Math.random()*28),
+    years:0,
+    status:isDriver&&/substitute/i.test(role)?'Substitute':'Active',
+    role:role,
+    employeeId:`NEW-${Date.now()}`,
+    positionId:p.id
+  };
+  if(isDriver){emp.route=null;(state.staff=state.staff||[]).push(emp)}
+  else {(state.supportStaff=state.supportStaff||[]).push(emp)}
+  p.status='Filled';p.employee=emp.name;p.employeeId=emp.employeeId;
+  if(!p.annualAuthorization)p.annualAuthorization=v222SalaryFor(emp);
+  state.v222.positionEvents.unshift({date:state.gameDate||'',employee:emp.name,positionId:p.id,event:'Position Filled'});
+  v222SyncRouteAssignments();autosaveGame?.();return true
+}
+function v222FundedVacanciesForRole(role){
+  let r=String(role||'').toLowerCase();
+  return (v22AuthorizedPositions?.()||[]).filter(p=>p.status==='Vacant' && (
+    String(p.role||'').toLowerCase()===r ||
+    (r.includes('driver')&&String(p.role||'').toLowerCase().includes('driver')) ||
+    (r.includes('mechanic')&&String(p.role||'').toLowerCase().includes('mechanic'))
+  ))
+}
+function v222RetirementForecast(){
+  ensureV222();
+  let list=(state.staff||[]).filter(s=>!['Retired','Resigned','Terminated'].includes(s.status)).map(s=>{
+    let age=Number(s.age||45),yrs=Number(s.years||0);
+    let risk=age>=65?'High':age>=62?'Medium':age>=59&&yrs>=10?'Watch':'Low';
+    return {s,risk}
+  }).filter(x=>x.risk!=='Low');
+  return list
+}
+function v222ProcessRetirementNotices(){
+  ensureV222();
+  (state.staff||[]).forEach(s=>{
+    if(['Retired','Resigned','Terminated'].includes(s.status))return;
+    let age=Number(s.age||45);
+    if(age>=63 && !s.retirementNotice && Math.random()<.018){
+      s.retirementNotice=true;
+      state.v222.retirementNotices.unshift({employee:s.name,date:state.gameDate||'',effective:'End of school year'});
+      state.news?.unshift({text:`${s.name} submitted retirement notice effective at the end of the school year.`,tone:'info'})
+    }
+  })
+}
+function v222FinalizeRetirements(){
+  ensureV222();
+  (state.staff||[]).forEach(s=>{
+    if(s.retirementNotice && s.status!=='Retired'){
+      s.status='Retired';
+      v222VacateEmployee(s,'Retirement');
+      state.news?.unshift({text:`${s.name} retired after ${Number(s.years||0)} years of service. Their funded position is now vacant.`,tone:'info'})
+    }
+  });
+  v222SyncPositions();v222SyncRouteAssignments()
+}
+function v222MaybeResignation(){
+  ensureV222();
+  (state.staff||[]).forEach(s=>{
+    if(['Retired','Resigned','Terminated'].includes(s.status)||s.retirementNotice)return;
+    if(Math.random()<.0025){
+      s.status='Resigned';v222VacateEmployee(s,'Resignation');
+      state.news?.unshift({text:`${s.name} resigned. Their funded position remains authorized and is now vacant.`,tone:'warn'})
+    }
+  })
+}
+function v222DriverSeniority(){
+  return (state.staff||[]).filter(s=>!['Retired','Resigned','Terminated'].includes(s.status)&&s.status!=='Substitute')
+    .slice().sort((a,b)=>Number(b.years||0)-Number(a.years||0))
+}
+function v222OpenRouteBid(){
+  ensureV222();
+  let drivers=v222DriverSeniority(),routes=(state.routes||[]).filter(r=>r.active!==false && !String(r.id).includes('90'));
+  openModal('🗳️ Annual Driver Route Bid',
+    `<div class="alert">Drivers select routes in seniority order. You can run the automatic bid or review the order first.</div>
+     <div class="v222-card"><b>Seniority Order</b>${drivers.map((d,i)=>`<div class="kv"><span>${i+1}. ${d.name}</span><span>${Number(d.years||0)} yrs</span></div>`).join('')}</div>
+     <div class="v222-card"><b>Routes Available</b><div class="small">${routes.map(r=>r.id).join(', ')}</div></div>
+     <button class="btn primary" onclick="v222RunRouteBid()">Run Seniority Bid</button>`)
+}
+function v222RunRouteBid(){
+  ensureV222();
+  let drivers=v222DriverSeniority(),routes=(state.routes||[]).filter(r=>r.active!==false && !String(r.id).includes('90')).slice();
+  let openRoutes=routes.slice();
+  drivers.forEach(d=>{
+    let current=openRoutes.find(r=>String(r.id)===String(d.route)) || openRoutes.find(r=>r.driver===d.name);
+    let preferred=current||openRoutes[0];
+    if(preferred){
+      preferred.driver=d.name;d.route=preferred.id;
+      openRoutes=openRoutes.filter(r=>r!==preferred)
+    }
+  });
+  state.v222.routeBids.unshift({date:state.gameDate||'',year:state.year||'',assignments:drivers.map(d=>({driver:d.name,route:d.route}))});
+  autosaveGame?.();closeModal();render?.();
+  openModal('Route Bid Complete',`<div class="v222-chain">${drivers.map(d=>`<div><b>${d.name}</b> → Route ${d.route||'Unassigned'}</div>`).join('')}</div>`)
+}
+function v222PayrollForecast(){
+  ensureV222();
+  let filled=(v22AuthorizedPositions?.()||[]).filter(p=>p.status==='Filled');
+  let vacancies=(v22AuthorizedPositions?.()||[]).filter(p=>p.status==='Vacant');
+  let salary=filled.reduce((a,p)=>a+Number(p.annualAuthorization||v222SalaryFor(v222FindEmployeeByName(p.employee)||{})),0);
+  let vacancySavings=vacancies.reduce((a,p)=>a+Number(p.annualAuthorization||50000),0);
+  let benefits=Math.round(salary*.28);
+  let overtime=Math.round((state.staff||[]).length*1200);
+  let subs=Math.round((state.staff||[]).filter(s=>s.status==='Substitute').length*9500);
+  let total=salary+benefits+overtime+subs;
+  return {salary,benefits,overtime,subs,total,vacancySavings}
+}
+function v222OpenPayroll(){
+  let p=v222PayrollForecast();
+  openModal('💵 Payroll Forecast',
+    `<div class="v222-pay">
+      <div><div class="small">BASE PAYROLL</div><b>${money(p.salary)}</b></div>
+      <div><div class="small">BENEFITS</div><b>${money(p.benefits)}</b></div>
+      <div><div class="small">OVERTIME / EXTRA WORK</div><b>${money(p.overtime)}</b></div>
+      <div><div class="small">SUBSTITUTE COST</div><b>${money(p.subs)}</b></div>
+    </div>
+    <div class="alert" style="margin-top:10px"><b>Projected annual workforce cost: ${money(p.total)}</b><div class="small">Currently vacant authorized positions represent about ${money(p.vacancySavings)} in unspent salary authorization.</div></div>`)
+}
+function v222OpenPositionControl(){
+  ensureV222();let P=v22AuthorizedPositions?.()||[];
+  openModal('👥 Position Control',
+    `<div class="actions"><button class="btn primary" onclick="v22RequestPosition()">Request New Funded Position</button><button class="btn" onclick="v203OpenApplicantBoard()">Job Postings</button><button class="btn" onclick="v222OpenPayroll()">Payroll Forecast</button></div>`+
+    P.map(p=>`<div class="v222-card"><div class="v222-row"><div><b>${p.role}</b><div class="small">${p.id}</div></div><div><span class="v222-chip">${p.status}</span></div><div>${p.employee||'Vacant'}</div><div>${money(p.annualAuthorization||0)}</div><div>${p.status==='Vacant'?`<button class="btn" onclick="v222PostVacancy('${p.id}')">Post</button>`:''}</div></div></div>`).join(''))
+}
+function v222PostVacancy(positionId){
+  let p=(v22AuthorizedPositions?.()||[]).find(x=>x.id===positionId);if(!p)return;
+  // Prefer the newer posting system.
+  if(typeof v203CreatePosting==='function'){
+    closeModal();
+    try{v203CreatePosting(p.role)}catch(e){v203OpenApplicantBoard?.()}
+  }else{
+    closeModal();v203OpenApplicantBoard?.()
+  }
+}
+function v222OpenRetirements(){
+  let list=v222RetirementForecast(),notices=ensureV222().retirementNotices;
+  openModal('🎖️ Retirement & Succession',
+    `<div class="v222-card"><b>Retirement Notices</b>${notices.length?notices.map(n=>`<div class="kv"><span>${n.employee}</span><span>${n.effective}</span></div>`).join(''):'<div class="small">No active retirement notices.</div>'}</div>
+     <div class="v222-card"><b>Retirement Watch</b>${list.length?list.map(x=>`<div class="kv"><span>${x.s.name}<br><span class="small">${x.s.age} yrs old • ${x.s.years||0} yrs service</span></span><span>${x.risk}</span></div>`).join(''):'<div class="small">No near-term retirement risks.</div>'}</div>`)
+}
+function v222OpenWorkforceChain(){
+  let P=v22AuthorizedPositions?.()||[],vac=P.filter(p=>p.status==='Vacant'),open=(state.hr203?.postings||[]).filter(p=>p.status!=='Closed'&&p.status!=='Filled');
+  openModal('🔗 Workforce Chain',
+    `<div class="v222-chain"><b>Funded Positions</b><div class="small">${P.length} authorized • ${vac.length} vacant</div></div>
+     <div class="v222-chain"><b>Open Job Postings</b><div class="small">${open.length} active posting${open.length===1?'':'s'}</div></div>
+     <div class="v222-chain"><b>Route Openings</b><div class="small">${(state.routes||[]).filter(r=>r.active!==false&&!r.driver).length} route${(state.routes||[]).filter(r=>r.active!==false&&!r.driver).length===1?'':'s'} without a regular driver</div></div>
+     <div class="v222-chain"><b>Payroll</b><div class="small">${money(v222PayrollForecast().total)} projected annual workforce cost</div></div>
+     <div class="actions"><button class="btn" onclick="v222OpenPositionControl()">Position Control</button><button class="btn" onclick="v222OpenRouteBid()">Route Bid</button><button class="btn" onclick="v203OpenApplicantBoard()">Hiring</button></div>`)
+}
+function v222IntegratePostingHire(){
+  // Patch applicant cards by making sure exact posting roles have a funded vacancy available.
+  ensureV222();
+  let postings=state.hr203?.postings||[];
+  postings.forEach(p=>{
+    if(!p.positionId){
+      let vac=v222FundedVacanciesForRole(p.role||'');
+      if(vac.length)p.positionId=vac[0].id
+    }
+  })
+}
+function v222ProcessDaily(){
+  ensureV222();v222IntegratePostingHire();v222ProcessRetirementNotices();v222MaybeResignation();v222SyncPositions();v222SyncRouteAssignments();
+}
+function v222ProcessNewYear(){
+  ensureV222();v222FinalizeRetirements();
+  (state.staff||[]).forEach(s=>{if(s.status!=='Retired'&&s.status!=='Resigned'){s.age=Number(s.age||40)+1;s.years=Number(s.years||0)+1}});
+  (state.supportStaff||[]).forEach(s=>{if(s.status==='Active'){s.age=Number(s.age||40)+1;s.years=Number(s.years||0)+1}});
+  v222SyncPositions();v222SyncRouteAssignments()
+}
+
+/* Wrap the modern posting hire so a hire fills an exact funded position when one exists. */
+if(typeof v203HireFromPosting==='function' && !window._v222HireWrapped){
+  window._v222HireWrapped=true;
+  const _v203HireFromPosting=v203HireFromPosting;
+  v203HireFromPosting=function(a){
+    ensureV222();v222IntegratePostingHire();
+    let posting=(state.hr203?.postings||[]).find(p=>p.id===a.postingId);
+    let pos=posting?.positionId ? (v22AuthorizedPositions?.()||[]).find(p=>p.id===posting.positionId) : null;
+    let beforeDrivers=(state.staff||[]).length,beforeSupport=(state.supportStaff||[]).length;
+    let result=_v203HireFromPosting(a);
+    let newEmp=null;
+    if((state.staff||[]).length>beforeDrivers)newEmp=state.staff[state.staff.length-1];
+    else if((state.supportStaff||[]).length>beforeSupport)newEmp=state.supportStaff[state.supportStaff.length-1];
+    if(pos && newEmp){
+      if(!newEmp.employeeId)newEmp.employeeId=`NEW-${Date.now()}`;
+      newEmp.positionId=pos.id;pos.status='Filled';pos.employee=newEmp.name;pos.employeeId=newEmp.employeeId;
+      if(!pos.annualAuthorization)pos.annualAuthorization=v222SalaryFor(newEmp);
+      state.v222.positionEvents.unshift({date:state.gameDate||'',employee:newEmp.name,positionId:pos.id,event:'Position Filled from Posting'})
+    }
+    v222SyncPositions();v222SyncRouteAssignments();return result
+  }
+}
+
 /* ===== V21.5 BALANCED-START MIGRATION ===== */
 function v215RebalanceOpeningYearIfNeeded(){
   ensureGrowthV214?.();
@@ -7127,7 +7793,7 @@ window.addEventListener('load',()=>{
  },1000);
 });
 
-window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
+window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureFinanceV22();v22AuthorizedPositions();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
 
 render();
 </script>
