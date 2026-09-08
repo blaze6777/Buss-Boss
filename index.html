@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.1 — Route Builder & Expanded Fleet</title>
+<title>School Transportation Tycoon — Tycoon Web V21.2 — Visible Route Builder</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -460,7 +460,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.1 — Route Builder & Expanded Fleet</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.2 — Visible Route Builder</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -590,8 +590,9 @@ button,.btn,select,input{touch-action:manipulation}
   <section id="routes" class="view">
   <div class="section-head">
     <div><h2>🗺️ Route Operations & Stop Planning</h2><div class="small">Every route now has stop times, students, deadhead mileage, crossings, timing history and a route sheet.</div></div>
-    <div class="actions"><button class="btn primary" onclick="opsRouteOptimizerV15()">Route Optimizer</button><button class="btn" onclick="openRouteRepairV116()">Duplicate Check</button><button class="btn" onclick="openClosedRoutesV116()">Closed Routes</button></div>
+    <div class="actions"><button class="btn primary" onclick="v211OpenRouteBuilder()">➕ NEW ROUTE / SPLIT STOPS</button><button class="btn" onclick="v202OpenCapacityCenter()">⚖️ Capacity / Relief</button><button class="btn" onclick="v202OpenAutoBalance()">🧠 Auto-Balance</button><button class="btn" onclick="opsRouteOptimizerV15()">Route Optimizer</button><button class="btn" onclick="openRouteRepairV116()">Duplicate Check</button><button class="btn" onclick="openClosedRoutesV116()">Closed Routes</button></div>
   </div>
+  <div class="alert" style="margin-bottom:10px"><b>Need another route?</b> If a bus is over capacity, click <button class="btn primary" onclick="v211OpenRouteBuilder()">➕ New Route / Split Stops</button> to move selected stops and their students to a new route.</div>
   <div class="today-grid" id="routeOpsKpis"></div>
   <div class="grid2">
     <div class="panel"><div class="section-head"><h3 style="margin:0">Live Route Board</h3><button class="btn" onclick="opsAdvanceTrafficV15()">Refresh Traffic</button></div><div id="routeOpsBoard"></div></div>
