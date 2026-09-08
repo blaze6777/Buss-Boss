@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.5 — True Balanced Start</title>
+<title>School Transportation Tycoon — Tycoon Web V21.6 — Full Bus Purchase Options</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -467,7 +467,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.5 — True Balanced Start</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.6 — Full Bus Purchase Options</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -822,7 +822,7 @@ button,.btn,select,input{touch-action:manipulation}
 
   <section id="fleet" class="view">
 <div class="actions" style="margin-bottom:12px"><button class="btn primary" onclick="openFleetReplacementPlanV11()">5-Year Replacement Plan</button><button class="btn" onclick="openFleetRFPV10()">Issue Fleet RFP</button><button class="btn" onclick="openFleetLifecycleV10()">Fleet Lifecycle Records</button><button class="btn" onclick="openFuelCardV10()">Fuel Card Ledger</button></div>
-    <div class="section-head"><div><h2>Fleet Management</h2><div class="small">Mileage, inspections, fuel, age, repairs and replacement planning.</div></div><button class="btn primary" onclick="buyBus()">Purchase Bus • $112,000</button></div>
+    <div class="section-head"><div><h2>Fleet Management</h2><div class="small">Mileage, inspections, fuel, age, repairs and replacement planning.</div></div><button class="btn primary" onclick="openBusPurchase()">Purchase Bus / Choose Type</button></div>
     <div class="panel" style="overflow:auto"><table><thead><tr><th>Bus</th><th>Year/Model</th><th>Mileage</th><th>Fuel</th><th>Route</th><th>Status</th><th>Condition</th></tr></thead><tbody id="fleetBody"></tbody></table></div>
   </section>
 
@@ -937,7 +937,7 @@ button,.btn,select,input{touch-action:manipulation}
       </aside>
     </div>
     <div class="panel" style="margin-top:12px">
-      <div class="section-head"><h2>Unassigned / Specialty Fleet</h2><button class="btn" onclick="openBusPurchase()">Purchase Bus</button></div>
+      <div class="section-head"><h2>Unassigned / Specialty Fleet</h2><button class="btn" onclick="openBusPurchase()">Purchase Bus / Choose Type</button></div>
       <div id="specialtyFleet" class="staff-grid"></div>
     </div>
   </section>
@@ -2609,59 +2609,88 @@ function buyBus(){openBusPurchase()}
 
 function openBusPurchase(){
  openModal('Purchase New Bus',`
+   <div class="alert"><b>Choose the actual bus body/style you want to buy.</b><br>Long conventionals, front-engine transit buses, and rear-engine pushers are all available here now.</div>
    <div class="detail">
      <div><label>Bus number</label><input id="newBusNumber" type="number" min="1" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px" placeholder="e.g. 61"></div>
      <div><label>Bus Type</label><select id="newBusType" onchange="updateBusPurchaseOptions()" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
-       <option value="standard">Standard School Bus</option>
+       <option value="conv66">66-Passenger Conventional</option>
+       <option value="conv72" selected>72-Passenger Conventional</option>
+       <option value="conv78">78-Passenger Long Conventional</option>
+       <option value="front84">84-Passenger Front-Engine Type D</option>
+       <option value="pusher78">78-Passenger Rear-Engine Pusher</option>
+       <option value="pusher84">84-Passenger Rear-Engine Pusher</option>
        <option value="special">Special Needs / Wheelchair Bus</option>
      </select></div>
      <div><label>Designation</label><select id="newBusDesignation" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
        <option>Regular Route</option><option>Spare</option><option>Trip Bus</option><option>Special Ed</option><option>Maintenance Reserve</option>
      </select></div>
-     <div><label>Model</label><select id="newBusModel" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px">
-       <option>Blue Bird Vision</option><option>Thomas C2</option><option>IC CE</option>
-     </select></div>
+     <div><label>Model</label><select id="newBusModel" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></select></div>
      <div><label>Fuel / Power</label><select id="newBusFuel" onchange="updateBusPurchaseOptions()" style="width:100%;padding:9px"><option>Diesel</option><option>Gasoline</option><option>Propane</option><option>Electric</option></select></div>
-     <div><label>Capacity</label><select id="newBusCapacity" style="width:100%;padding:9px"><option value="72">72 Passenger</option><option value="66">66 Passenger</option><option value="54">54 Passenger</option></select></div>
+     <div><label>Capacity</label><input id="newBusCapacityDisplay" type="text" readonly style="width:100%;padding:9px;background:#eef3f6;border:1px solid var(--line);border-radius:10px"></div>
+     <div><label>Length / Body</label><input id="newBusLengthDisplay" type="text" readonly style="width:100%;padding:9px;background:#eef3f6;border:1px solid var(--line);border-radius:10px"></div>
      <div><label><input id="newBusAC" type="checkbox" onchange="updateBusPurchaseOptions()"> Air Conditioning (+$8,500)</label></div>
      <div><label><input id="newBusCameras" type="checkbox" checked onchange="updateBusPurchaseOptions()"> Full Camera System (+$5,500)</label></div>
      <div><label><input id="newBusGPS" type="checkbox" checked onchange="updateBusPurchaseOptions()"> GPS / Parent Tracking (+$3,500)</label></div>
      <div id="specialBusInfo" class="alert" style="display:none">♿ Wheelchair lift • 4 wheelchair positions • 24-passenger flexible capacity • tie-down equipment</div>
+     <div id="premiumBusInfo" class="alert" style="display:none">🚌 Rear-engine pusher • flat front • premium high-capacity/trip configuration</div>
      <div class="alert">Purchase price: <b id="purchasePrice">$112,000</b></div>
    </div>
-   <div class="actions"><button class="btn primary" onclick="confirmBusPurchase()">Purchase Bus</button></div>`)
+   <div class="actions"><button class="btn primary" onclick="confirmBusPurchase()">Purchase Bus</button><button class="btn" onclick="v211OpenBusCatalog()">Compare Full Catalog</button></div>`);
+ updateBusPurchaseOptions()
+}
+
+function v216PurchaseSpec(){
+ let type=$('newBusType')?.value||'conv72';
+ let specs={
+  conv66:{capacity:66,length:'36 ft conventional',base:132000,body:'conventional',models:['Blue Bird Vision 66','Thomas C2 66','IC CE 66']},
+  conv72:{capacity:72,length:'39 ft conventional',base:139000,body:'conventional',models:['Blue Bird Vision 72','Thomas C2 72','IC CE 72']},
+  conv78:{capacity:78,length:'40 ft long conventional',base:148000,body:'conventional-long',models:['IC CE 78 Long','Thomas C2 78 Long','Blue Bird Vision 78 Long']},
+  front84:{capacity:84,length:'40 ft front-engine Type D',base:165000,body:'transit-front',models:['IC Front-Engine 84','Blue Bird All American FE 84','Thomas EF 84']},
+  pusher78:{capacity:78,length:'40 ft rear-engine pusher',base:176000,body:'pusher',models:['Blue Bird All American RE 78','Thomas HDX 78']},
+  pusher84:{capacity:84,length:'41 ft rear-engine pusher',base:188000,body:'pusher',models:['Thomas HDX 84','Blue Bird All American RE 84']},
+  special:{capacity:24,length:'25 ft special-needs mini',base:138000,body:'mini-special',models:['Thomas Minotour Special Needs','Blue Bird Micro Bird Special Needs','IC CE Special Needs']}
+ };
+ return specs[type]||specs.conv72
 }
 
 function updateBusPurchaseOptions(){
- let special=$('newBusType').value==='special',model=$('newBusModel'),des=$('newBusDesignation'),fuel=$('newBusFuel')?$('newBusFuel').value:'Diesel';
- if(special){
-   model.innerHTML='<option>Thomas Minotour Special Needs</option><option>Blue Bird Micro Bird Special Needs</option><option>IC CE Special Needs</option>';
-   des.value='Special Ed';$('specialBusInfo').style.display='block';
- }else{
-   if(!['Blue Bird Vision','Thomas C2','IC CE'].includes(model.value))model.innerHTML='<option>Blue Bird Vision</option><option>Thomas C2</option><option>IC CE</option>';
-   $('specialBusInfo').style.display='none';
- }
- let price=special?138000:112000;
+ let type=$('newBusType').value,spec=v216PurchaseSpec(),model=$('newBusModel'),des=$('newBusDesignation'),fuel=$('newBusFuel')?$('newBusFuel').value:'Diesel';
+ let previous=model.value;
+ model.innerHTML=spec.models.map(x=>`<option>${x}</option>`).join('');
+ if(spec.models.includes(previous))model.value=previous;
+ let special=type==='special',pusher=type==='pusher78'||type==='pusher84';
+ if(special)des.value='Special Ed';
+ $('specialBusInfo').style.display=special?'block':'none';
+ $('premiumBusInfo').style.display=pusher?'block':'none';
+ $('newBusCapacityDisplay').value=`${spec.capacity} Passenger`;
+ $('newBusLengthDisplay').value=spec.length;
+ let price=spec.base;
  if(fuel==='Propane')price+=6500;if(fuel==='Electric')price+=95000;
  if($('newBusAC')&&$('newBusAC').checked)price+=8500;
  if($('newBusCameras')&&$('newBusCameras').checked)price+=5500;
  if($('newBusGPS')&&$('newBusGPS').checked)price+=3500;
- $('purchasePrice').textContent=money(price);
+ $('purchasePrice').textContent=money(price)
 }
 
 function confirmBusPurchase(){
- let special=$('newBusType').value==='special',fuel=$('newBusFuel')?$('newBusFuel').value:'Diesel';
- let price=special?138000:112000;if(fuel==='Propane')price+=6500;if(fuel==='Electric')price+=95000;
+ let type=$('newBusType').value,spec=v216PurchaseSpec(),fuel=$('newBusFuel')?$('newBusFuel').value:'Diesel';
+ let price=spec.base;if(fuel==='Propane')price+=6500;if(fuel==='Electric')price+=95000;
  let ac=$('newBusAC')&&$('newBusAC').checked,cameras=$('newBusCameras')&&$('newBusCameras').checked,gps=$('newBusGPS')&&$('newBusGPS').checked;
  if(ac)price+=8500;if(cameras)price+=5500;if(gps)price+=3500;
  syncBudgets();if(state.operatingBudget<price)return alert('Not enough budget.');
- let id=Number($('newBusNumber').value),designation=$('newBusDesignation').value,model=$('newBusModel').value,capacity=special?24:Number($('newBusCapacity').value||72);
+ let id=Number($('newBusNumber').value),designation=$('newBusDesignation').value,model=$('newBusModel').value,capacity=spec.capacity;
  if(!id||id<1)return alert('Enter a valid bus number.');
- if(state.buses.some(b=>b.id===id))return alert('That bus number already exists.');
+ if(state.buses.some(b=>Number(b.id)===id))return alert('That bus number already exists.');
  let gameYear=Number(String(state.gameDate||'2026-08-24').slice(0,4))||2026;
  state.operatingBudget-=price;syncBudgets();
- state.buses.push({id,year:gameYear,model,miles:0,route:null,driver:null,status:designation==='Regular Route'?'Ready':'Spare',fuel:100,capacity,condition:100,designation,temporaryRoute:null,wheelchairLift:special,wheelchairPositions:special?4:0,fuelType:fuel,airConditioning:ac,cameras,gps,purchasePrice:price,repairSpend:0,breakdowns:0,history:[{year:state.year,event:`Purchased new for ${money(price)} • ${fuel}${ac?' • AC':''}${cameras?' • cameras':''}${gps?' • GPS':''}`}],liveStatus:'Parked / Pre-Trip'});
- state.news.unshift({text:`Transportation purchased Bus ${id}, a new ${fuel} ${model}.`,tone:'good'});notify(`New Bus ${id} added to fleet.`,'decision');log(`Purchased Bus ${id} for ${money(price)}.`);autosaveGame();closeModal();render()
+ let special=type==='special';
+ let bus={id,year:gameYear,model,miles:0,route:null,driver:null,status:designation==='Regular Route'?'Ready':'Spare',fuel:100,capacity,condition:100,designation,temporaryRoute:null,wheelchairLift:special,wheelchairPositions:special?4:0,fuelType:fuel,airConditioning:ac,cameras,gps,purchasePrice:price,repairSpend:0,breakdowns:0,history:[{year:state.year,event:`Purchased new for ${money(price)} • ${spec.length} • ${fuel}${ac?' • AC':''}${cameras?' • cameras':''}${gps?' • GPS':''}`}],liveStatus:'Parked / Pre-Trip',body:spec.body,length:spec.length,type:type.includes('pusher')?'Type D Rear-Engine Pusher':type==='front84'?'Type D Front-Engine':type==='conv78'?'Type C Long Conventional':special?'Type A / Special Needs':'Type C Conventional'};
+ state.buses.push(bus);
+ v21PostExpense?.('Bus Purchase',price,{key:`bus-${id}`,bus:id});
+ v21RegisterBusDelivery?.(bus);
+ state.news.unshift({text:`Transportation purchased Bus ${id}, a new ${fuel} ${model} (${capacity} passenger).`,tone:'good'});
+ notify(`New Bus ${id} added to fleet.`,'decision');log(`Purchased Bus ${id} for ${money(price)}.`);
+ autosaveGame();closeModal();render()
 }
 
 function renderDispatch(){
