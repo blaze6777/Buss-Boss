@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.3 — Capacity & Route Visibility Fix</title>
+<title>School Transportation Tycoon — Tycoon Web V21.4 — Balanced Growth & Stop Transfers</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -455,12 +455,19 @@ button,.btn,select,input{touch-action:manipulation}
 .v211-busmeta span{background:#edf2f5;border-radius:999px;padding:3px 6px;font-size:8px;font-weight:800}
 .v211-preview{border:1px solid #cfd8de;border-radius:10px;padding:8px;background:#f7fafc}
 @media(max-width:900px){.v211-builder{grid-template-columns:1fr}.v211-stop{grid-template-columns:25px 1fr 65px}.v211-stop>*:nth-child(4){grid-column:2/-1}}
+
+/* V21.4 balanced growth + stop transfers */
+.v214-growthrow{display:grid;grid-template-columns:70px 1fr 100px 130px;gap:8px;align-items:center;padding:7px;border-bottom:1px solid #e4e9ec;font-size:9px}
+.v214-bar{height:9px;background:#e5eaed;border-radius:999px;overflow:hidden}.v214-bar>span{display:block;height:100%;background:#7895a7}
+.v214-transfer{border:1px solid var(--line);border-radius:9px;padding:9px;margin:7px 0;background:#fafcfd}
+.v214-ok{color:#4d8655;font-weight:800}.v214-warn{color:#a56a2f;font-weight:800}.v214-over{color:#a84d4d;font-weight:900}
+@media(max-width:800px){.v214-growthrow{grid-template-columns:55px 1fr 90px}.v214-growthrow>*:nth-child(4){grid-column:2/-1}}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.3 — Capacity & Route Visibility Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.4 — Balanced Growth & Stop Transfers</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -590,10 +597,10 @@ button,.btn,select,input{touch-action:manipulation}
   <section id="routes" class="view">
   <div class="section-head">
     <div><h2>🗺️ Route Operations & Stop Planning</h2><div class="small">Every route now has stop times, students, deadhead mileage, crossings, timing history and a route sheet.</div></div>
-    <div class="actions"><button class="btn primary" onclick="v211OpenRouteBuilder()">➕ NEW ROUTE / SPLIT STOPS</button><button class="btn" onclick="v202OpenCapacityCenter()">⚖️ Capacity / Relief</button><button class="btn" onclick="v202OpenAutoBalance()">🧠 Auto-Balance</button><button class="btn" onclick="opsRouteOptimizerV15()">Route Optimizer</button><button class="btn" onclick="openRouteRepairV116()">Duplicate Check</button><button class="btn" onclick="openClosedRoutesV116()">Closed Routes</button></div>
+    <div class="actions"><button class="btn primary" onclick="v211OpenRouteBuilder()">➕ NEW ROUTE / SPLIT STOPS</button><button class="btn" onclick="v202OpenCapacityCenter()">⚖️ Capacity / Relief</button><button class="btn" onclick="v202OpenAutoBalance()">🧠 Auto-Balance</button><button class="btn" onclick="v214OpenStopTransfer()">🔄 Move Stops Between Routes</button><button class="btn" onclick="v214GrowthSummary()">📈 Enrollment Growth</button><button class="btn" onclick="opsRouteOptimizerV15()">Route Optimizer</button><button class="btn" onclick="openRouteRepairV116()">Duplicate Check</button><button class="btn" onclick="openClosedRoutesV116()">Closed Routes</button></div>
   </div>
   <div class="alert" style="margin-bottom:10px"><b>Need another route?</b> If a bus is over capacity, click <button class="btn primary" onclick="v211OpenRouteBuilder()">➕ New Route / Split Stops</button> to move selected stops and their students to a new route.</div>
-  <div class="today-grid" id="routeOpsKpis"></div>
+  <div class="alert" style="margin-bottom:10px"><b>Route tools:</b> split an overloaded route into a new one, or move a stop to another existing route if that bus has enough open seats. <button class="btn" onclick="v214OpenStopTransfer()">🔄 Move Stops</button></div><div class="today-grid" id="routeOpsKpis"></div>
   <div class="grid2">
     <div class="panel"><div class="section-head"><h3 style="margin:0">Live Route Board</h3><button class="btn" onclick="opsAdvanceTrafficV15()">Refresh Traffic</button></div><div id="routeOpsBoard"></div></div>
     <aside class="panel"><div class="small">ROUTE FILE</div><h2 id="routeTitle">Select a route</h2><div id="routeDetail"></div></aside>
@@ -6470,6 +6477,166 @@ function v211BusVisualClass(bus){
   return'conventional'
 }
 
+
+/* ===== V21.4 BALANCED START + YEARLY GROWTH + STOP TRANSFERS ===== */
+function ensureGrowthV214(){
+  state.growth214=state.growth214||{};
+  let G=state.growth214;
+  if(G.initialized==null)G.initialized=false;
+  if(G.lastYearProcessed==null)G.lastYearProcessed=Number(state.year||2026);
+  if(!G.history)G.history=[];
+  if(!G.routeTargets)G.routeTargets={};
+}
+function v214FreshGameLooksOverloaded(){
+  let yr=Number(state.year||2026);
+  if(yr>2026)return false;
+  let routes=(state.routes||[]).filter(r=>v202RouteCapacity(r)>0);
+  if(!routes.length)return false;
+  let over=routes.filter(r=>v202RouteRiders(r)>v202RouteCapacity(r)).length;
+  return over>=Math.ceil(routes.length*.55)
+}
+function v214TargetLoadForRoute(r){
+  let cap=v202RouteCapacity(r); if(!cap)return 0;
+  let levels=[.64,.68,.72,.76,.80];
+  let pct=levels[Math.abs(Number(r.id||0))%levels.length];
+  if(r.specialNeeds||String(r.ops15?.routeType||'').toLowerCase().includes('special'))pct=.56;
+  return Math.max(1,Math.floor(cap*pct))
+}
+function v214InitializeBalancedStart(){
+  ensureGrowthV214(); let G=state.growth214;
+  if(G.initialized)return;
+  v213NormalizeAllRoutes?.();
+
+  // Only rebalance a clearly fresh/default game. Developed saves are preserved.
+  if(!v214FreshGameLooksOverloaded()){
+    G.initialized=true;G.lastYearProcessed=Number(state.year||2026);
+    return
+  }
+
+  let routes=(state.routes||[]).filter(r=>v202RouteCapacity(r)>0 && r.active!==false);
+  let students=(state.riders16?.students||[]).filter(s=>s.active!==false);
+
+  routes.forEach(r=>{G.routeTargets[r.id]=v214TargetLoadForRoute(r)});
+
+  if(students.length){
+    // Redistribute actual riders so routes begin comfortably below capacity.
+    let counts={};routes.forEach(r=>counts[r.id]=0);
+    students.forEach((s,idx)=>{
+      let options=routes.filter(r=>counts[r.id]<G.routeTargets[r.id]);
+      let r=(options.length?options:routes).sort((a,b)=>(counts[a.id]/Math.max(1,G.routeTargets[a.id]))-(counts[b.id]/Math.max(1,G.routeTargets[b.id])))[0];
+      if(!r)return;
+      s.routeAM=r.id;s.routePM=r.id;counts[r.id]++;
+      s.stopName=s.stopName||`Neighborhood ${1+(idx%8)}`
+    });
+    try{riderSyncRoutesV16?.()}catch(e){}
+    routes.forEach(r=>{
+      let n=counts[r.id]||0;
+      r.ops15.riders=n;r.ops15.ridersAM=n;r.ops15.ridersPM=n
+    })
+  }else{
+    routes.forEach(r=>{
+      let n=G.routeTargets[r.id];
+      r.ops15.riders=n;r.ops15.ridersAM=n;r.ops15.ridersPM=n
+    })
+  }
+
+  G.initialized=true;G.lastYearProcessed=Number(state.year||2026);
+  G.history.push({year:Number(state.year||2026),type:'Balanced Start',note:'Default routes initialized below bus capacity.'})
+}
+function v214ApplyYearlyGrowth(){
+  ensureGrowthV214();let G=state.growth214,yr=Number(state.year||2026);
+  if(!G.initialized)v214InitializeBalancedStart();
+  if(!Number.isFinite(yr)||yr<=Number(G.lastYearProcessed||yr))return;
+
+  for(let y=Number(G.lastYearProcessed)+1;y<=yr;y++){
+    v213NormalizeAllRoutes?.();
+    (state.routes||[]).filter(r=>r.active!==false&&v202RouteCapacity(r)>0).forEach(r=>{
+      let cap=v202RouteCapacity(r),cur=v202RouteRiders(r);
+      let growth=.015+Math.random()*.045;
+      if(Number(r.id)%4===0)growth+=.02;
+      if(Number(r.id)%7===0)growth=Math.max(0,growth-.012);
+      let add=Math.max(1,Math.round(cur*growth));
+      let next=cur+add;
+      r.ops15.riders=next;r.ops15.ridersAM=next;r.ops15.ridersPM=next;
+      if(next>cap)v21Log?.('Enrollment Growth',`Route ${r.id} reached ${next}/${cap} riders and is over capacity.`,true);
+      else if(next>=Math.floor(cap*.9))v21Log?.('Enrollment Growth',`Route ${r.id} is nearing capacity at ${next}/${cap} riders.`)
+    });
+    G.history.push({year:y,type:'Annual Growth',note:'Enrollment changed unevenly across routes.'})
+  }
+  G.lastYearProcessed=yr;autosaveGame?.()
+}
+function v214GrowthSummary(){
+  ensureGrowthV214();v213NormalizeAllRoutes?.();
+  let rows=(state.routes||[]).filter(r=>v202RouteCapacity(r)>0).map(r=>{
+    let riders=v202RouteRiders(r),cap=v202RouteCapacity(r),pct=Math.round(riders/cap*100),cls=pct>100?'v214-over':pct>=90?'v214-warn':'v214-ok';
+    return `<div class="v214-growthrow"><b>Route ${r.id}</b><div class="v214-bar"><span style="width:${Math.min(100,pct)}%"></span></div><b class="${cls}">${riders}/${cap}</b><span>${pct}% full</span></div>`
+  }).join('');
+  openModal('📈 Enrollment & Route Growth',`<div class="alert"><b>Routes now start with room to grow.</b><br>Each school year changes rider counts unevenly. Growing neighborhoods can eventually push individual routes near or over capacity.</div>${rows}`)
+}
+function v214TransferableStops(routeId){
+  let groups=v202GroupStudentsByStop?.(routeId)||[];
+  if(groups.length)return groups.map(g=>({name:g.name,riders:Number(g.peak||g.students?.length||0),students:g.students||[]}));
+  let r=(state.routes||[]).find(x=>Number(x.id)===Number(routeId));
+  return (r?.ops15?.stopTimes||r?.ops15?.stops||[]).map(s=>({name:s.name||s.stop||'Stop',riders:Number(s.riders||0),students:[]}))
+}
+function v214OpenStopTransfer(){
+  ensureGrowthV214();v213NormalizeAllRoutes?.();
+  openModal('🔄 Move Stops Between Existing Routes',
+   `<div class="alert"><b>Move a stop from one existing route to another when the receiving bus has enough room.</b><br>The stop and its actual students move together. The transfer is blocked if it would put the destination route over capacity.</div>
+    <label>From Route<select id="v214From">${(state.routes||[]).filter(r=>v214TransferableStops(r.id).length).map(r=>`<option value="${r.id}">Route ${r.id} — ${v202RouteRiders(r)}/${v202RouteCapacity(r)||'No bus'}</option>`).join('')}</select></label>
+    <button class="btn primary" onclick="v214ChooseTransferStop()">Choose Stop</button>`)
+}
+function v214ChooseTransferStop(){
+  let fromId=Number($('v214From').value),from=(state.routes||[]).find(r=>Number(r.id)===fromId);if(!from)return;
+  let stops=v214TransferableStops(fromId);
+  let destinations=(state.routes||[]).filter(r=>Number(r.id)!==fromId&&r.active!==false&&v202RouteCapacity(r)>0);
+  openModal(`🔄 Transfer Stop from Route ${fromId}`,
+   `${stops.map((s,i)=>`<div class="v214-transfer"><b>${s.name}</b><div class="small">${s.riders} rider(s)</div><label>Move to<select id="v214Dest${i}">${destinations.map(r=>{let room=v202RouteCapacity(r)-v202RouteRiders(r),ok=room>=s.riders;return `<option value="${r.id}" ${ok?'':'disabled'}>Route ${r.id} — ${room} open seat(s)${ok?'':' — NOT ENOUGH ROOM'}</option>`}).join('')}</select></label><button class="btn primary" onclick="v214PreviewTransfer(${fromId},'${encodeURIComponent(s.name)}',${s.riders},${i})">Preview Move</button></div>`).join('')||'<div class="v203-empty">No stops available to move from this route.</div>'}<div class="actions"><button class="btn" onclick="v214OpenStopTransfer()">Back</button></div>`)
+}
+function v214PreviewTransfer(fromId,stopEnc,riders,index){
+  let name=decodeURIComponent(stopEnc),destId=Number($(`v214Dest${index}`).value);
+  let from=(state.routes||[]).find(r=>Number(r.id)===Number(fromId)),dest=(state.routes||[]).find(r=>Number(r.id)===destId);if(!from||!dest)return;
+  let room=v202RouteCapacity(dest)-v202RouteRiders(dest),fits=room>=Number(riders);
+  state.growth214.pendingTransfer={fromId,destId,name,riders:Number(riders)};
+  openModal('🔄 Preview Stop Transfer',
+   `<div class="${fits?'v21-good':'v21-warning'}"><b>${name}</b><br>Route ${fromId} → Route ${destId}<br>${riders} rider(s) moving<br>Destination has ${room} open seat(s).</div>${fits?`<button class="btn primary" onclick="v214CommitTransfer()">Move Stop</button>`:`<div class="alert"><b>Transfer blocked.</b> This stop would put Route ${destId} over capacity.</div>`}<button class="btn" onclick="v214OpenStopTransfer()">Cancel</button>`)
+}
+function v214CommitTransfer(){
+  let P=state.growth214?.pendingTransfer;if(!P)return;
+  let from=(state.routes||[]).find(r=>Number(r.id)===Number(P.fromId)),dest=(state.routes||[]).find(r=>Number(r.id)===Number(P.destId));if(!from||!dest)return;
+  let cap=v202RouteCapacity(dest),room=cap-v202RouteRiders(dest);if(room<P.riders){alert('The destination route no longer has enough room.');return}
+  let selected=P.name;
+  let students=v202GetStudentsForRoute?.(P.fromId)||[],moved=0;
+  students.forEach(s=>{
+    if((s.stopName||s.stop||'Unassigned Stop')===selected){
+      if(Number(s.routeAM)===Number(P.fromId))s.routeAM=P.destId;
+      if(Number(s.routePM)===Number(P.fromId))s.routePM=P.destId;
+      moved++
+    }
+  });
+
+  v213NormalizeRoute(from);v213NormalizeRoute(dest);
+  let fromStops=from.ops15.stopTimes||from.ops15.stops||[];
+  let moving=fromStops.filter(s=>(s.name||s.stop)===selected);
+  let kept=fromStops.filter(s=>(s.name||s.stop)!==selected);
+  from.ops15.stopTimes=kept.map(s=>({...s}));from.ops15.stops=kept.map(s=>({...s}));
+  let existingNames=new Set((dest.ops15.stopTimes||dest.ops15.stops||[]).map(s=>s.name||s.stop));
+  let append=moving.length?moving:[{id:`R${dest.id}-S${(dest.ops15.stopTimes||[]).length+1}`,name:selected,riders:P.riders,miles:1.4,time:Number(dest.ops15.firstStop||375)+((dest.ops15.stopTimes||[]).length*4),crossing:false,safety:'Normal'}];
+  dest.ops15.stopTimes=[...(dest.ops15.stopTimes||[]),...append.filter(s=>!existingNames.has(s.name||s.stop)).map((s,i)=>({...s,id:`R${dest.id}-S${(dest.ops15.stopTimes||[]).length+i+1}`}))];
+  dest.ops15.stops=dest.ops15.stopTimes.map(s=>({...s}));
+
+  if(moved){
+    try{riderSyncRoutesV16?.()}catch(e){}
+  }else{
+    from.ops15.riders=Math.max(0,v202RouteRiders(from)-P.riders);from.ops15.ridersAM=from.ops15.riders;from.ops15.ridersPM=from.ops15.riders;
+    dest.ops15.riders=v202RouteRiders(dest)+P.riders;dest.ops15.ridersAM=dest.ops15.riders;dest.ops15.ridersPM=dest.ops15.riders
+  }
+  try{opsRecalcRouteV15?.(from);opsRecalcRouteV15?.(dest)}catch(e){}
+  state.growth214.history.push({year:Number(state.year||2026),type:'Stop Transfer',stop:selected,from:P.fromId,to:P.destId,riders:moved||P.riders});
+  autosaveGame?.();renderRoutes?.();closeModal();
+  openModal('✅ Stop Moved',`<div class="v21-good"><b>${selected}</b> moved from Route ${P.fromId} to Route ${P.destId}.<br>${moved||P.riders} rider(s) moved with the stop.</div>`)
+}
+
 /* V13.1 startup guard + living clock */
 window.addEventListener('load',()=>{
  try{ensureV13();renderV13World(window.v13view||'campus')}catch(e){console.error('V13.1 load guard',e)}
@@ -6478,7 +6645,7 @@ window.addEventListener('load',()=>{
  },1000);
 });
 
-window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureRouteBuilderV211();v213NormalizeAllRoutes();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
+window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v214ApplyYearlyGrowth();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
 
 render();
 </script>
