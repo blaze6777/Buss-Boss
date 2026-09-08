@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.9 — Realistic Hiring</title>
+<title>School Transportation Tycoon — Tycoon Web V21.10 — Board Funding & Exact Applicants</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -492,7 +492,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.9 — Realistic Hiring</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.10 — Board Funding & Exact Applicants</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -829,7 +829,7 @@ button,.btn,select,input{touch-action:manipulation}
 <section id="staffing" class="view">
   <div class="section-head">
     <div><h2>👥 Human Resources & Applicant Tracking</h2><div class="small">Realistic vacancies, recruiting, applications, interviews, checks, CDL development, onboarding and employee files.</div></div>
-    <div class="actions"><button class="btn primary" onclick="hrCreateOpening()">+ Post Opening</button><button class="btn" onclick="generateApplicant()">Simulate Application</button><button class="btn" onclick="hrRecruitingCampaign()">Recruiting</button></div>
+    <div class="actions"><button class="btn primary" onclick="v203CreatePosting()">+ Create Job Posting</button><button class="btn" onclick="v203OpenApplicantBoard()">Job Postings</button><button class="btn" onclick="generateApplicant()">Receive Application</button><button class="btn" onclick="hrRecruitingCampaign()">Recruiting</button></div>
   </div>
   <div class="today-grid" id="hrKpis"></div>
   <div class="panel" style="margin-bottom:12px"><div class="section-head"><div><h3 style="margin:0">Applicant Tracking System</h3><div class="small">Candidates move through a real hiring pipeline over game days.</div></div><div class="actions"><button class="btn" onclick="hrOpenAnalytics()">HR Analytics</button><button class="btn" onclick="hrOpenSuccession()">Succession Planning</button></div></div><div class="hr-pipeline" id="hrPipeline"></div></div>
@@ -6787,6 +6787,113 @@ function v203SimulateApplicant(postingId){
   state.hr203.applicants.push(a);
   if(state.hr14)state.hr14.applicants=state.hr203.applicants;
   autosaveGame?.();v203ViewPosting(postingId)
+}
+
+
+/* ===== V21.10 BOARD FUNDING + EXACT POSTING APPLICANTS ===== */
+function v2110PostBoardFunding(item,cost){
+  syncBudgets?.();
+  let c=Number(cost||0),name=String(item||'').toLowerCase();
+  let destination='Operating';
+  if(name.includes('bus')||name.includes('capital')||name.includes('fleet')){
+    state.capitalBudget=Number(state.capitalBudget||0)+c;
+    destination='Capital';
+  }else{
+    state.operatingBudget=Number(state.operatingBudget||0)+c;
+    destination='Operating';
+  }
+  syncBudgets?.();
+  state.boardFundingLedger=state.boardFundingLedger||[];
+  state.boardFundingLedger.unshift({date:state.gameDate||'',year:state.year||2026,item,cost:c,fund:destination});
+  return destination
+}
+function submitBoardRequest(item,cost){
+  syncBudgets?.();
+  let chance=(state.board+state.reputation)/200,approved=Math.random()<chance;
+  let entry={item,cost,status:approved?'Approved':'Tabled',year:state.year,date:state.gameDate||''};
+  state.boardRequests=state.boardRequests||[];state.boardRequests.push(entry);
+  let fund='';
+  if(approved){
+    fund=v2110PostBoardFunding(item,cost);
+    entry.fund=fund;
+    state.board=Math.min(100,state.board+2);
+    state.news.unshift({text:`School board approves ${item.toLowerCase()} for transportation — ${money(cost)} added to the ${fund.toLowerCase()} fund.`,tone:'good'})
+  }else state.board=Math.max(50,state.board-1);
+  autosaveGame?.();closeModal();
+  openModal('Board Decision',approved
+    ?`<div class="v21-good"><b>Approved: ${item}</b><br>${money(cost)} was deposited into the <b>${fund} Fund</b>.</div>
+      <div class="kv"><span>Operating Budget</span><b>${money(state.operatingBudget)}</b></div>
+      <div class="kv"><span>Capital Budget</span><b>${money(state.capitalBudget)}</b></div>`
+    :`<div class="alert">The board tabled the request for ${item}.</div>`);
+  render?.()
+}
+function schoolBoardMeeting(){
+  syncBudgets?.();
+  let needsOld=state.buses.filter(b=>Number(b.year||0)<=2015).length;
+  let approved=Math.random() < (state.board/100);
+  if(approved){
+    let fund=v2110PostBoardFunding('Transportation Capital Funding',75000);
+    state.board=Math.min(100,state.board+2);
+    openModal('School Board Meeting',`<div class="v21-good">The board approved <b>$75,000</b> in additional transportation capital funding.</div><div class="kv"><span>Capital Budget</span><b>${money(state.capitalBudget)}</b></div><div class="small">You cited ${needsOld} aging buses and current route needs.</div>`);
+    log('School board approved $75,000 in additional transportation capital funding.')
+  }else{
+    state.board=Math.max(50,state.board-2);
+    openModal('School Board Meeting','The board tabled your transportation funding request and asked for a revised replacement plan.');
+    log('School board tabled transportation funding request.')
+  }
+  autosaveGame?.();render?.()
+}
+
+function v2110MigrateApplicantsToExactPostings(){
+  v219EnsurePostingDetails?.();
+  let H=state.hr203;if(!H)return;
+  (H.applicants||[]).forEach(a=>{
+    if(a.exactPostingV2110)return;
+    let p=H.postings.find(x=>Number(x.postingId)===Number(a.postingId));
+    if(!p){
+      let role=String(a.appliedFor||a.role||'').toLowerCase();
+      p=H.postings.find(x=>String(x.role||'').toLowerCase()===role && x.status!=='Closed');
+    }
+    if(p){
+      a.postingId=p.postingId;
+      a.appliedFor=p.role;
+      a.employmentType=p.employmentType;
+      a.exactPostingV2110=true
+    }else{
+      a.status='Unassigned Legacy';
+      a.stage='Archived';
+      a.exactPostingV2110=true
+    }
+  })
+}
+function generateApplicant(){
+  v2110MigrateApplicantsToExactPostings();
+  let open=(state.hr203?.postings||[]).filter(p=>p.status==='Open' && Number(p.filled||0)<Number(p.openings||1));
+  if(!open.length){
+    return openModal('No Open Job Posting',`<div class="alert">Applicants can only apply to an active job posting.</div><div class="actions"><button class="btn primary" onclick="v203CreatePosting()">Create Job Posting</button></div>`)
+  }
+  if(open.length===1)return v203SimulateApplicant(open[0].postingId);
+  openModal('Choose Posting for New Application',
+    `<div class="alert"><b>Applications must be tied to one exact posting.</b><br>Select the posting this person applied to.</div>`+
+    open.map(p=>`<div class="v219-posting"><div class="v219-post-head"><div><div class="v219-post-title">${p.role}</div><div class="v219-post-meta">Posting #${p.postingId} • ${p.employmentType||'Regular'} • ${p.pay||''}</div></div></div><div class="v219-post-body"><button class="btn primary" onclick="v203SimulateApplicant(${p.postingId})">Receive Application for This Posting</button></div></div>`).join('')
+  )
+}
+function renderApplicants(){
+  v2110MigrateApplicantsToExactPostings();
+  if(!$('applicantGrid'))return;
+  let posts=(state.hr203?.postings||[]).filter(p=>p.status!=='Closed');
+  $('hrPipeline').innerHTML=posts.map(p=>{
+    let apps=v203ApplicantsForPosting(p.postingId).filter(a=>!['Rejected','Hired','Archived'].includes(a.stage));
+    return `<div class="hr-stage" onclick="v203ViewPosting(${p.postingId})"><h4>${p.role}<span class="hr-stage-count">${apps.length}</span></h4><div class="small">Posting #${p.postingId}<br>${v219PostingStatusBadge(p)}</div></div>`
+  }).join('')||'<div class="small">No active postings.</div>';
+  $('hrFilter').innerHTML=`<button class="btn" onclick="v203OpenApplicantBoard()">All Job Postings</button>`;
+  $('applicantGrid').innerHTML=posts.map(p=>{
+    let apps=v203ApplicantsForPosting(p.postingId);
+    return `<button class="card" onclick="v203ViewPosting(${p.postingId})"><span class="status ${p.status==='Filled'?'good':'warn'}">${p.status||'Open'}</span><b>${p.role}</b><div class="small">Posting #${p.postingId} • ${apps.length} applicant(s)</div><div class="small">${p.employmentType||'Regular'} • ${p.pay||''}</div></button>`
+  }).join('')||'<div class="alert">No active job postings. Create one before applicants can apply.</div>';
+  if($('candidateName'))$('candidateName').textContent='Select a job posting';
+  if($('candidateDetail'))$('candidateDetail').innerHTML='<div class="alert">Applicants are managed inside the exact job posting they applied to.</div>';
+  if($('candidateActions'))$('candidateActions').innerHTML='<button class="btn primary" onclick="v203OpenApplicantBoard()">Open Job Postings</button>'
 }
 
 /* ===== V21.5 BALANCED-START MIGRATION ===== */
