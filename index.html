@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.0 — Connected District Simulation</title>
+<title>School Transportation Tycoon — Tycoon Web V21.1 — Route Builder & Expanded Fleet</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -444,12 +444,23 @@ button,.btn,select,input{touch-action:manipulation}
 .v21-special{border-left:5px solid #8b6fa8;background:#faf7fc;border-radius:8px;padding:8px;margin:6px 0}
 .v21-livechain{background:#132a3c;color:#fff;border-radius:8px;padding:8px;margin-top:8px;font-size:8px}
 @media(max-width:900px){.v21-hub{grid-template-columns:1fr 1fr}.v21-bidrow{grid-template-columns:1fr 1fr}.v21-step{grid-template-columns:24px 1fr}.v21-step>*:nth-child(3){grid-column:2}.v21-budgetrow{grid-template-columns:1fr 90px}}
+
+/* V21.1 Route Builder + Expanded Fleet */
+.v211-builder{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.v211-routebox{border:1px solid var(--line);border-radius:9px;padding:9px;background:#f8fafb}
+.v211-stop{display:grid;grid-template-columns:28px 1fr 70px 100px;gap:7px;align-items:center;padding:7px;border-bottom:1px solid #e5e9eb;font-size:9px}
+.v211-stop.move{background:#f5fbf6}.v211-stop.keep{background:#fff}
+.v211-buscard{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;margin:7px 0}
+.v211-buscard h4{margin:0 0 4px}.v211-busmeta{display:flex;gap:6px;flex-wrap:wrap;margin:5px 0}
+.v211-busmeta span{background:#edf2f5;border-radius:999px;padding:3px 6px;font-size:8px;font-weight:800}
+.v211-preview{border:1px solid #cfd8de;border-radius:10px;padding:8px;background:#f7fafc}
+@media(max-width:900px){.v211-builder{grid-template-columns:1fr}.v211-stop{grid-template-columns:25px 1fr 65px}.v211-stop>*:nth-child(4){grid-column:2/-1}}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.0 — Connected District Simulation</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.1 — Route Builder & Expanded Fleet</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -752,7 +763,7 @@ button,.btn,select,input{touch-action:manipulation}
 
 <section id="procurement" class="view">
   <div class="section-head">
-    <div><h2>🚌 Fleet Procurement, Safety & Compliance</h2><div class="small">Capital requests, RFPs, vendor bids, factory tracking, delivery, warranties, state inspections and safety investigations.</div></div>
+    <div><h2>🚌 Fleet Procurement<div style="margin-top:6px"><button class="btn primary" onclick="v211OpenBusCatalog()">🚌 Expanded Bus Catalog</button></div>, Safety & Compliance</h2><div class="small">Capital requests, RFPs, vendor bids, factory tracking, delivery, warranties, state inspections and safety investigations.</div></div>
     <div class="actions"><button class="btn primary" onclick="fpStartCapitalRequestV18()">New Capital Request</button><button class="btn" onclick="fpOpenFactoryBoardV18()">Factory Tracker</button><button class="btn" onclick="fpRunInspectionWeekV18()">State Inspection Week</button></div>
   </div>
   <div class="today-grid" id="fpKpisV18"></div>
@@ -5592,7 +5603,7 @@ function v13Toolbar(){
 }
 function v13Campus(){
  ensureLivingV20();let L=state.living20,actors=v20ActorPositions(),shop=state.buses.filter(b=>v13BusWorldStatus(b)==='shop');
- return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn primary" onclick="renderV13World('campus')">🏢 Living Campus</button><button class="btn" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="v20OpenInbox()">📥 Director Inbox</button><button class="btn" onclick="v20MorningBoard()">☕ Pull-Out Board</button><button class="btn" onclick="v13Delegation()">🧠 Authority</button><button class="btn" onclick="v20History()">🏆 History</button><button class="btn" onclick="v21OpenHub()">🔗 Connected District</button></div>
+ return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn primary" onclick="renderV13World('campus')">🏢 Living Campus</button><button class="btn" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="v20OpenInbox()">📥 Director Inbox</button><button class="btn" onclick="v20MorningBoard()">☕ Pull-Out Board</button><button class="btn" onclick="v13Delegation()">🧠 Authority</button><button class="btn" onclick="v20History()">🏆 History</button><button class="btn" onclick="v21OpenHub()">🔗 Connected District</button><button class="btn" onclick="v211OpenRouteBuilder()">➕ Route Builder</button><button class="btn" onclick="v211OpenBusCatalog()">🚌 Bus Catalog</button></div>
  <div class="v20-campus">${v20WeatherOverlay()}${L.train.active?'<div class="v20-train">🚂 FREIGHT TRAIN — CROSSING BLOCKED</div>':''}
  <div class="v20-road main"></div><div class="v20-road drive"></div>
  <div class="v20-building"><div class="sign">WARSAW COMMUNITY SCHOOLS • TRANSPORTATION CENTER</div><div class="v20-rooms"><div class="v20-room" onclick="v13Room('Director')">👔<br><b>Director</b><br>Inbox • Board</div><div class="v20-room" onclick="v13Room('Dispatch')">📻<br><b>Dispatch</b><br>Live coverage</div><div class="v20-room" onclick="v13Room('Drivers')">☕<br><b>Driver Room</b><br>Check-in • bids</div><div class="v20-room" onclick="v13Room('Training')">🎓<br><b>Training</b><br>CDL • compliance</div></div></div>
@@ -6245,6 +6256,152 @@ function v21ProcessDay(){
   C.routeWorkflow.forEach(v21ProcessRouteWorkflow);let probs=v21SpecialNeedsProblems();if(probs.length&&C.thresholds.autoSpecialNeedsFlag)v20Inbox?.('Nicole Grant','Special-needs routing conflicts',`${probs.length} assignment issue(s) require correction before pull-out.`,true,false)
 }
 
+
+/* ===== V21.1 MANUAL ROUTE BUILDER + EXPANDED FLEET ===== */
+function ensureRouteBuilderV211(){
+  ensureRouteBalanceV202?.();ensureConnectedV21?.();
+  state.routeBuilder211=state.routeBuilder211||{};
+  let B=state.routeBuilder211;
+  if(!B.history)B.history=[];
+  if(!B.busCatalog)B.busCatalog=[
+    {key:'conv66',type:'Type C Conventional',length:'36 ft',capacity:66,engine:'Diesel',price:132000,make:'Blue Bird',model:'Vision 66',body:'conventional',premium:false},
+    {key:'conv72',type:'Type C Conventional',length:'39 ft',capacity:72,engine:'Diesel',price:139000,make:'Thomas',model:'Saf-T-Liner C2 72',body:'conventional-long',premium:false},
+    {key:'conv78',type:'Type C Long Conventional',length:'40 ft',capacity:78,engine:'Diesel',price:148000,make:'IC Bus',model:'CE 78',body:'conventional-long',premium:false},
+    {key:'pusher78',type:'Type D Rear-Engine Pusher',length:'40 ft',capacity:78,engine:'Diesel',price:176000,make:'Blue Bird',model:'All American RE',body:'pusher',premium:true},
+    {key:'pusher84',type:'Type D Rear-Engine Pusher',length:'41 ft',capacity:84,engine:'Diesel',price:188000,make:'Thomas',model:'Saf-T-Liner HDX',body:'pusher',premium:true},
+    {key:'front84',type:'Type D Front-Engine',length:'40 ft',capacity:84,engine:'Diesel',price:165000,make:'IC Bus',model:'RE/FE Transit 84',body:'transit-front',premium:false},
+    {key:'mini24',type:'Type A / Mini',length:'25 ft',capacity:24,engine:'Gasoline',price:98000,make:'Thomas',model:'Minotour',body:'mini',premium:false}
+  ];
+}
+function v211NextRouteNo(){
+  let used=new Set((state.routes||[]).map(r=>Number(r.id)));
+  let n=62;while(used.has(n))n++;return n
+}
+function v211OpenRouteBuilder(){
+  ensureRouteBuilderV211();
+  openModal('➕ Create New Route / Split Existing Route',
+    `<div class="alert"><b>You can now create a brand-new route or split stops off an existing route.</b><br>This is separate from Auto-Balance, so you can create relief routes whenever you want.</div>
+     <div class="v211-builder">
+       <div class="v211-routebox"><b>Split Existing Route</b><div class="small">Choose a route, then select the exact stops to move.</div>
+         <label>Source Route<select id="v211SourceRoute">${(state.routes||[]).map(r=>`<option value="${r.id}">Route ${r.id} — ${v202RouteRiders(r)}/${v202RouteCapacity(r)}</option>`).join('')}</select></label>
+         <button class="btn primary" onclick="v211ChooseStops()">Choose Stops to Split</button>
+       </div>
+       <div class="v211-routebox"><b>Create Empty Route</b><div class="small">Useful for future growth, trips, or a route you want to build manually.</div>
+         <label>New Route Number<input id="v211NewRouteNo" type="number" value="${v211NextRouteNo()}"></label>
+         <label>Route Name<input id="v211NewRouteName" type="text" value="New Route"></label>
+         <button class="btn" onclick="v211CreateEmptyRoute()">Create Empty Route</button>
+       </div>
+     </div>`
+  )
+}
+function v211ChooseStops(){
+  let routeId=Number($('v211SourceRoute').value),r=(state.routes||[]).find(x=>Number(x.id)===routeId);if(!r)return;
+  let groups=v202GroupStudentsByStop?.(routeId)||[];
+  if(!groups.length){
+    groups=(r.ops15?.stops||[]).map(s=>({name:s.name||s.stop||'Stop',peak:Number(s.riders||0),students:[]}))
+  }
+  let newNo=v211NextRouteNo();
+  openModal(`✂️ Split Stops from Route ${routeId}`,
+    `<div class="alert">Select the stops that should move to the new route. The game will move the actual students tied to those stops whenever available.</div>
+     <label>New Route Number<input id="v211SplitRouteNo" type="number" value="${newNo}"></label>
+     <div style="max-height:420px;overflow:auto">${groups.map((g,i)=>`<label class="v211-stop keep"><input type="checkbox" class="v211StopPick" data-stop="${encodeURIComponent(g.name)}"> <b>${g.name}</b><span>${g.peak||0} riders</span><span>Move to new route</span></label>`).join('')}</div>
+     <div class="actions"><button class="btn primary" onclick="v211PreviewSplit(${routeId})">Preview Split</button><button class="btn" onclick="v211OpenRouteBuilder()">Back</button></div>`
+  )
+}
+function v211SelectedStops(){
+  return [...document.querySelectorAll('.v211StopPick:checked')].map(x=>decodeURIComponent(x.dataset.stop))
+}
+function v211PreviewSplit(routeId){
+  let source=(state.routes||[]).find(r=>Number(r.id)===Number(routeId));if(!source)return;
+  let newNo=Number($('v211SplitRouteNo').value)||v211NextRouteNo();
+  if((state.routes||[]).some(r=>Number(r.id)===newNo)){alert('That route number already exists.');return}
+  let stops=v211SelectedStops();if(!stops.length){alert('Select at least one stop to move.');return}
+  let groups=v202GroupStudentsByStop?.(routeId)||[];
+  let moved=groups.filter(g=>stops.includes(g.name)).reduce((a,g)=>a+Number(g.peak||0),0);
+  if(!moved){
+    moved=(source.ops15?.stops||[]).filter(s=>stops.includes(s.name||s.stop)).reduce((a,s)=>a+Number(s.riders||0),0)
+  }
+  let after=Math.max(0,v202RouteRiders(source)-moved),bus=v202BestSpareBus?.(moved),driver=v202BestAvailableDriver?.(routeId);
+  state.routeBuilder211.pending={sourceRoute:routeId,newRoute:newNo,stops,moved,busId:bus?.id||null,driver:driver?.name||null};
+  openModal(`🧭 Preview Route ${newNo}`,
+   `<div class="v211-preview"><b>Route ${routeId}</b>: ${v202RouteRiders(source)} → ${after} riders<br><b>Route ${newNo}</b>: ${moved} riders<br><b>Stops moved:</b> ${stops.length}</div>
+    <div class="kv"><span>Suggested Bus</span><b>${bus?`Bus ${bus.id} (${bus.capacity||72} seats)`:'No spare bus available'}</b></div>
+    <div class="kv"><span>Suggested Driver</span><b>${driver?driver.name:'No available driver'}</b></div>
+    <div class="actions"><button class="btn primary" onclick="v211CommitSplit()">Create Route ${newNo}</button><button class="btn" onclick="v211ChooseStops()">Change Stops</button></div>`
+  )
+}
+function v211CommitSplit(){
+  ensureRouteBuilderV211();let P=state.routeBuilder211.pending;if(!P)return;
+  let source=(state.routes||[]).find(r=>Number(r.id)===Number(P.sourceRoute));if(!source)return;
+  let nr=v202CreateRouteSkeleton(source,P.newRoute,P.busId,P.driver,P.moved);
+  let selected=new Set(P.stops),students=v202GetStudentsForRoute?.(P.sourceRoute)||[],movedStudents=[];
+  students.forEach(s=>{
+    let stop=s.stopName||s.stop||'Unassigned Stop';
+    if(selected.has(stop)){
+      if(Number(s.routeAM)===Number(P.sourceRoute))s.routeAM=P.newRoute;
+      if(Number(s.routePM)===Number(P.sourceRoute))s.routePM=P.newRoute;
+      movedStudents.push(s)
+    }
+  });
+  let sourceStops=(source.ops15?.stops||[]);
+  let movedStops=sourceStops.filter(s=>selected.has(s.name||s.stop));
+  source.ops15.stops=sourceStops.filter(s=>!selected.has(s.name||s.stop));
+  nr.ops15.stops=movedStops.map((s,i)=>({...s,id:s.id||`R${P.newRoute}-S${i+1}`}));
+  if(!nr.ops15.stops.length){
+    nr.ops15.stops=P.stops.map((name,i)=>({id:`R${P.newRoute}-S${i+1}`,name,riders:movedStudents.filter(s=>(s.stopName||s.stop||'Unassigned Stop')===name).length,miles:i===0?2.5:1.4,time:Number(source.ops15?.firstStop||375)+i*5,safety:'OK'}))
+  }
+  state.routes.push(nr);
+  let d=(state.staff||[]).find(s=>s.name===P.driver);if(d)d.route=P.newRoute;
+  try{riderSyncRoutesV16?.();opsRecalcRouteV15?.(source);opsRecalcRouteV15?.(nr)}catch(e){}
+  state.routeBuilder211.history.push({year:state.year||2026,source:P.sourceRoute,newRoute:P.newRoute,stops:P.stops.slice(),students:movedStudents.length});
+  v21CreateReliefWorkflow?.(P.sourceRoute,P.newRoute,movedStudents.length,P.busId,P.driver);
+  autosaveGame?.();closeModal();
+  openModal('✅ New Route Created',`<div class="v21-good"><b>Route ${P.newRoute} created successfully.</b><br>${P.stops.length} stop(s) and ${movedStudents.length} student(s) were moved from Route ${P.sourceRoute}.</div><div class="actions"><button class="btn primary" onclick="closeModal();goView('routes')">Open Routes</button><button class="btn" onclick="closeModal();v211OpenRouteBuilder()">Create Another</button></div>`);
+  render?.()
+}
+function v211CreateEmptyRoute(){
+  let n=Number($('v211NewRouteNo').value)||v211NextRouteNo();if((state.routes||[]).some(r=>Number(r.id)===n)){alert('That route number already exists.');return}
+  let name=$('v211NewRouteName').value||`Route ${n}`;
+  let r={id:n,name,driver:null,bus:null,temporaryDriver:null,temporaryBus:null,active:false,createdYear:state.year||2026,ops15:{riders:0,ridersAM:0,ridersPM:0,dailyMiles:0,stops:[],routeType:'New / Unassigned',history:[`Created manually in ${state.year||2026}.`]}};
+  state.routes.push(r);state.routeBuilder211.history.push({year:state.year||2026,newRoute:n,empty:true});autosaveGame?.();closeModal();
+  openModal('✅ Empty Route Created',`<div class="v21-good"><b>Route ${n} created.</b><br>It is inactive until you add stops, a bus, and a driver.</div>`)
+}
+function v211OpenBusCatalog(){
+  ensureRouteBuilderV211();
+  openModal('🚌 Expanded Bus Catalog',
+    `<div class="alert"><b>Pushers and longer conventional buses are now available.</b><br>Choose a model to purchase immediately or use it as the requested spec in procurement.</div>
+    ${state.routeBuilder211.busCatalog.map(b=>`<div class="v211-buscard">
+      <h4>${b.type}</h4>
+      <div class="v211-busmeta"><span>${b.make}</span><span>${b.model}</span><span>${b.length}</span><span>${b.capacity} seats</span><span>${b.engine}</span>${b.premium?'<span>Premium</span>':''}</div>
+      <div class="small">${b.body==='pusher'?'Rear-engine flat-front pusher: more premium, quieter front cabin, excellent trip/high-capacity bus.':b.body==='conventional-long'?'Long conventional: hooded Type C with maximum conventional seating capacity.':b.body==='transit-front'?'Flat-front front-engine transit: high capacity at lower cost than a pusher.':'Standard fleet configuration.'}</div>
+      <div class="actions"><button class="btn primary" onclick="v211BuyBus('${b.key}')">Purchase ${v13Money(b.price)}</button><button class="btn" onclick="v211SendToProcurement('${b.key}')">Start Procurement</button></div>
+    </div>`).join('')}`
+  )
+}
+function v211BuyBus(key){
+  ensureRouteBuilderV211();let spec=state.routeBuilder211.busCatalog.find(b=>b.key===key);if(!spec)return;
+  let cost=Number(spec.price||0),budget=Number(state.operatingBudget||state.schoolYearBudget||0);
+  if(budget && budget<cost){alert('Not enough available budget for this purchase. Use Procurement or adjust the capital budget.');return}
+  let maxNo=Math.max(0,...(state.buses||[]).map(b=>Number(b.id)||0)),id=maxNo+1;
+  let bus={id,year:state.year||2026,make:spec.make,model:spec.model,type:spec.type,capacity:spec.capacity,mileage:Math.floor(Math.random()*180)+25,condition:100,fuel:100,body:spec.body,length:spec.length,engine:spec.engine,purchasePrice:cost,inServiceYear:state.year||2026,warrantyYears:5};
+  if(spec.body==='pusher'||spec.body==='transit-front')bus.transit=true;
+  state.buses.push(bus);v21PostExpense?.('Bus Purchase',cost,{key:`bus-${id}`,bus:id});v21RegisterBusDelivery?.(bus);autosaveGame?.();
+  closeModal();openModal('🚌 Bus Ordered / Received',`<div class="v21-good"><b>Bus ${id}</b> — ${spec.make} ${spec.model}<br>${spec.type} • ${spec.capacity} seats • ${spec.length}</div><button class="btn primary" onclick="closeModal();v21OpenBusDeliveryBoard()">Assign New Bus</button>`)
+}
+function v211SendToProcurement(key){
+  ensureRouteBuilderV211();let spec=state.routeBuilder211.busCatalog.find(b=>b.key===key);if(!spec)return;
+  ensureFleetV18?.();
+  let P=state.fleet18;
+  let proj={id:P.nextProjectId++,title:`${spec.type} — ${spec.make} ${spec.model}`,stage:'Capital Request',spec:{type:spec.type,capacity:spec.capacity,length:spec.length,engine:spec.engine,make:spec.make,model:spec.model,body:spec.body,targetPrice:spec.price},createdYear:state.year||2026,status:'Open'};
+  P.projects.push(proj);autosaveGame?.();closeModal();openModal('✅ Procurement Project Created',`<div class="v21-good"><b>${proj.title}</b><br>Added to Fleet Procurement at the Capital Request stage.</div><button class="btn primary" onclick="closeModal();goView('procurement')">Open Procurement</button>`)
+}
+function v211BusVisualClass(bus){
+  let t=String(bus.body||bus.type||bus.model||'').toLowerCase();
+  if(t.includes('pusher')||t.includes('rear-engine')||t.includes('hdx')||t.includes('all american'))return'pusher';
+  if(t.includes('long')||Number(bus.capacity||0)>=78)return'long-conventional';
+  return'conventional'
+}
+
 /* V13.1 startup guard + living clock */
 window.addEventListener('load',()=>{
  try{ensureV13();renderV13World(window.v13view||'campus')}catch(e){console.error('V13.1 load guard',e)}
@@ -6253,7 +6410,7 @@ window.addEventListener('load',()=>{
  },1000);
 });
 
-window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
+window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureRouteBuilderV211();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
 
 render();
 </script>
