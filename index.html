@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.7 — Next Day Fix</title>
+<title>School Transportation Tycoon — Tycoon Web V21.8 — Dedicated Next Day</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -467,7 +467,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.7 — Next Day Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.8 — Dedicated Next Day</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -543,7 +543,7 @@ button,.btn,select,input{touch-action:manipulation}
     <div class="panel">
       <div class="section-head">
         <div><h2>Transportation Center & Bus Lot</h2><div class="small">Buses disappear from their parking spaces when dispatched.</div></div>
-        <div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="renderBuses()">Refresh Garage</button><button class="btn" onclick="goView('shop')">Repair Shop</button><button class="btn" onclick="openFuelCardV10()">Fuel Card</button></div>
+        <div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="renderBuses()">Refresh Garage</button><button class="btn" onclick="goView('shop')">Repair Shop</button><button class="btn" onclick="openFuelCardV10()">Fuel Card</button></div>
       </div>
 
       <div class="parking-lot">
@@ -847,7 +847,7 @@ button,.btn,select,input{touch-action:manipulation}
   <div class="season-banner"><b id="seasonLabel">School Year Operations</b> • <span id="seasonHelp">Watch the department run and intervene when needed.</span></div>
   <div class="section-head" style="margin-top:10px">
     <div><h2>🚌 Daily Operations Command</h2><div class="small">One full transportation day now processes routes, traffic, mileage, fuel, shop needs and service performance together.</div></div>
-    <div class="actions"><button class="btn primary" onclick="runTransportationDay()">▶ Run Transportation Day</button><button class="btn" onclick="opsMorningDecisionV15()">5:15 AM Brief</button><button class="btn" onclick="openWeatherCenter()">Weather</button></div>
+    <div class="actions"><button class="btn primary" onclick="runTransportationDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="opsMorningDecisionV15()">5:15 AM Brief</button><button class="btn" onclick="openWeatherCenter()">Weather</button></div>
   </div>
   <div class="today-grid" id="opsKpisV15"></div>
   <div class="grid2">
@@ -877,7 +877,7 @@ button,.btn,select,input{touch-action:manipulation}
   <section id="desk" class="view"><div class="actions" style="margin-bottom:12px"><button class="btn" onclick="exportSaveFile()">Export Save File</button><button class="btn" onclick="importSaveFile()">Import Save File</button><button class="btn" onclick="openRecognitionBanquet()">Recognition Banquet</button><button class="btn" onclick="openSummerOperations()">Summer Operations</button></div>
     <div class="grid2">
       <div class="panel">
-        <div class="section-head"><div><h2>Director’s Office</h2><div class="small">Run the department from your desk.</div></div><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button></div>
+        <div class="section-head"><div><h2>Director’s Office</h2><div class="small">Run the department from your desk.</div></div><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div>
         <div class="facility-grid">
           <button class="facility" onclick="deskApp('Routing')">🗺️<b> Routing</b><div class="small">Stops, loads, maps</div></button>
           <button class="facility" onclick="deskApp('Students')">🎒<b> Students</b><div class="small">Riders & households</div></button>
@@ -3490,7 +3490,7 @@ function renderOperations(){
  $('seasonHelp').textContent=state.season==='Summer'?'Inspections, route planning, hiring, training, bidding and opening-day preparation.':'Resolve coverage, review weather and trips, then run the entire transportation day with one action.';
  $('opsHeadline').textContent='Daily Operations';
  let coveredNow=state.routes.filter(r=>routeCoverage(r).ok).length;
- $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
+ $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
  let cats=state.budgetCategories;$('budgetDetailMini').innerHTML=Object.entries(cats).slice(0,6).map(([k,v])=>`<div class="alert"><b>${k}</b><div>${money(v)}</div></div>`).join('');
  $('newsFeed').innerHTML=(state.news.slice(0,4).map(n=>`<div class="news">${n.text}</div>`).join('')||'<div class="small">No district news yet.</div>');$('reputationBadge').textContent=state.reputation>=90?'Excellent':state.reputation>=75?'Good':'Needs Attention';
  let open=state.workOrders.filter(w=>w.status!=='Completed');$('workOrderMini').innerHTML=open.slice(0,5).map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)}</div></span><button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button></div>`).join('')||'<div class="small">No open work orders.</div>';
@@ -6536,6 +6536,60 @@ function v211BusVisualClass(bus){
 }
 
 
+
+
+/* ===== V21.8 DEDICATED NEXT-DAY BUTTON ===== */
+function v218NextDay(){
+  try{
+    ensureRealCalendar?.();
+    let before=state.gameDate;
+    let next=null;
+    try{next=nextScheduledSchoolDateV11?.(before)}catch(e){}
+    if(!next){
+      let d=parseGameDate();
+      do{d.setUTCDate(d.getUTCDate()+1)}
+      while(d.getUTCDay()===0||d.getUTCDay()===6);
+      next=isoDateUTC(d)
+    }
+
+    state.gameDate=next;
+    state.day=Number(state.day||0)+1;
+    state.schoolDay=Number(state.schoolDay||0)+1;
+    state.simMinutes=315;
+    state.dispatchStep=0;
+
+    state.dailyStats=state.dailyStats||{};
+    state.dailyStats.onTime=100;
+    state.dailyStats.trips=0;
+    state.dailyStats.miles=0;
+    state.dailyStats.roadCalls=0;
+
+    (state.buses||[]).forEach(b=>{
+      if(!['Shop','Out of Service'].includes(String(b.status||''))) b.liveStatus='Parked / Pre-Trip'
+    });
+
+    try{reconcileTemporaryCoverage?.()}catch(e){}
+    try{maybeMaintenanceEvent?.()}catch(e){}
+    try{if(Math.random()<.25)generateApplicant?.()}catch(e){}
+    try{if(Math.random()<.18)generateTrip?.()}catch(e){}
+    try{if(Math.random()<.22)createDriverCalloff?.()}catch(e){}
+
+    autosaveGame?.();
+    render?.();
+
+    let msg=`Advanced from ${before} to ${state.gameDate}.`;
+    try{notify?.(`Next school day: ${formatGameDate()}`,'decision')}catch(e){}
+    try{log?.(msg)}catch(e){}
+
+    openModal('📅 Next School Day',
+      `<div class="v21-good"><b>${formatGameDate()}</b><br>The calendar advanced to the next scheduled school day.</div>
+       <div class="small" style="margin-top:8px">Buses are reset to morning pre-trip and the daily clock is back at 5:15 AM.</div>
+       <div class="actions"><button class="btn primary" onclick="closeModal()">Start Day</button></div>`)
+  }catch(e){
+    console.error('V21.8 next day failed',e);
+    alert('Could not advance the calendar. '+(e?.message||e))
+  }
+}
 
 /* ===== V21.5 BALANCED-START MIGRATION ===== */
 function v215RebalanceOpeningYearIfNeeded(){
