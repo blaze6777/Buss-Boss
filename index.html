@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.4 — Balanced Growth & Stop Transfers</title>
+<title>School Transportation Tycoon — Tycoon Web V21.5 — True Balanced Start</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -467,7 +467,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.4 — Balanced Growth & Stop Transfers</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.5 — True Balanced Start</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -5175,7 +5175,16 @@ function riderSeedDistrictV16(){
  let R=state.riders16,first=['Emma','Liam','Olivia','Noah','Ava','Mason','Sophia','Ethan','Mia','Lucas','Ella','Jackson','Harper','Aiden','Grace','Logan','Chloe','Caleb','Lily','Owen'],
  last=['Miller','Johnson','Davis','Smith','Garcia','Brown','Wilson','Martinez','Anderson','Taylor','Thomas','Moore','Martin','Lee','Thompson'],
  streets=['Prairie Ridge Dr','Center St','Old Road 30','Winona Ave','CR 200 N','Market St','Husky Trail','Ranch Rd','Meadow Ln','Fox Farm Rd','Patterson Rd'];
- let target=Math.max(70,(state.routes||[]).reduce((a,r)=>a+Number(r.ops15?.riders||0),0));
+ let target=Math.max(70,(state.routes||[]).reduce((a,r)=>{
+   let cap=0;
+   try{cap=v202RouteCapacity?.(r)||opsRouteCapacityV15?.(r)?.cap||0}catch(e){}
+   if(!cap){
+     let b=(state.buses||[]).find(x=>Number(x.id)===Number(r?.temporaryBus||r?.bus));
+     cap=Number(b?.capacity||0)
+   }
+   let pct=(r.specialNeeds||String(r.ops15?.routeType||'').toLowerCase().includes('special'))?.56:.72;
+   return a+Math.floor(Number(cap||0)*pct)
+ },0));
  while(R.students.length<target){
    let hid=R.nextHouseholdId++,surname=last[(hid*7)%last.length],count=1+((hid*3)%3===0?1:0),address=`${100+(hid*37)%850} ${streets[hid%streets.length]}`;
    let hh={id:hid,name:`${surname} Household`,address,zone:['Urban','Suburban','Rural'][hid%3],students:[]};
@@ -6478,6 +6487,67 @@ function v211BusVisualClass(bus){
 }
 
 
+
+/* ===== V21.5 BALANCED-START MIGRATION ===== */
+function v215RebalanceOpeningYearIfNeeded(){
+  ensureGrowthV214?.();
+  state.growth214=state.growth214||{};
+  if(state.growth214.migrated215)return;
+
+  let yr=Number(state.year||2026);
+  let routes=(state.routes||[]).filter(r=>v202RouteCapacity(r)>0&&r.active!==false);
+  if(yr>2026||!routes.length){state.growth214.migrated215=true;return}
+
+  let overloaded=routes.filter(r=>v202RouteRiders(r)>v202RouteCapacity(r));
+  let clearlyOldBadStart=overloaded.length>=Math.ceil(routes.length*.5);
+  if(!clearlyOldBadStart){state.growth214.migrated215=true;return}
+
+  let targets={};
+  routes.forEach(r=>{
+    let pct=(r.specialNeeds||String(r.ops15?.routeType||'').toLowerCase().includes('special'))?.56:[.64,.68,.72,.76,.80][Math.abs(Number(r.id||0))%5];
+    targets[r.id]=Math.max(1,Math.floor(v202RouteCapacity(r)*pct))
+  });
+
+  let students=(state.riders16?.students||[]).filter(s=>s.active!==false);
+  if(students.length){
+    // Everyone remains an active student, but only enough students ride the bus to fit the opening fleet.
+    students.forEach(s=>{
+      s.ridesAM=false;s.ridesPM=false;s.routeAM=null;s.routePM=null;
+      s.transportationStatus='Walk / Parent Transport'
+    });
+
+    let specialRoute=routes.find(r=>r.specialNeeds||String(r.ops15?.routeType||'').toLowerCase().includes('special'));
+    let regularRoutes=routes.filter(r=>r!==specialRoute);
+    let counts={};routes.forEach(r=>counts[r.id]=0);
+
+    let ordered=[...students.filter(s=>s.specialNeeds),...students.filter(s=>!s.specialNeeds)];
+    ordered.forEach(s=>{
+      let candidates=(s.specialNeeds&&specialRoute)?[specialRoute,...regularRoutes]:regularRoutes;
+      let available=candidates.filter(r=>counts[r.id]<(targets[r.id]||0));
+      if(!available.length)return;
+      available.sort((a,b)=>(counts[a.id]/Math.max(1,targets[a.id]))-(counts[b.id]/Math.max(1,targets[b.id])));
+      let r=available[0];
+      s.routeAM=r.id;s.routePM=r.id;s.ridesAM=true;s.ridesPM=true;s.transportationStatus='Bus';
+      s.stopName=s.stopName||`Neighborhood ${1+(s.id%8)}`;
+      counts[r.id]++
+    });
+
+    try{riderSyncRoutesV16?.()}catch(e){}
+  }else{
+    routes.forEach(r=>{
+      let n=targets[r.id];
+      r.ops15.riders=n;r.ops15.ridersAM=n;r.ops15.ridersPM=n
+    })
+  }
+
+  state.growth214.initialized=true;
+  state.growth214.lastYearProcessed=yr;
+  state.growth214.migrated215=true;
+  state.growth214.history=state.growth214.history||[];
+  state.growth214.history.push({year:yr,type:'V21.5 Opening Balance',note:'Opening-year bus ridership rebalanced below capacity; excess students use non-bus transportation.'});
+  autosaveGame?.()
+}
+
 /* ===== V21.4 BALANCED START + YEARLY GROWTH + STOP TRANSFERS ===== */
 function ensureGrowthV214(){
   state.growth214=state.growth214||{};
@@ -6523,9 +6593,13 @@ function v214InitializeBalancedStart(){
     let counts={};routes.forEach(r=>counts[r.id]=0);
     students.forEach((s,idx)=>{
       let options=routes.filter(r=>counts[r.id]<G.routeTargets[r.id]);
-      let r=(options.length?options:routes).sort((a,b)=>(counts[a.id]/Math.max(1,G.routeTargets[a.id]))-(counts[b.id]/Math.max(1,G.routeTargets[b.id])))[0];
+      if(!options.length){
+        s.ridesAM=false;s.ridesPM=false;s.routeAM=null;s.routePM=null;s.transportationStatus='Walk / Parent Transport';
+        return
+      }
+      let r=options.sort((a,b)=>(counts[a.id]/Math.max(1,G.routeTargets[a.id]))-(counts[b.id]/Math.max(1,G.routeTargets[b.id])))[0];
       if(!r)return;
-      s.routeAM=r.id;s.routePM=r.id;counts[r.id]++;
+      s.routeAM=r.id;s.routePM=r.id;s.ridesAM=true;s.ridesPM=true;s.transportationStatus='Bus';counts[r.id]++;
       s.stopName=s.stopName||`Neighborhood ${1+(idx%8)}`
     });
     try{riderSyncRoutesV16?.()}catch(e){}
@@ -6645,7 +6719,7 @@ window.addEventListener('load',()=>{
  },1000);
 });
 
-window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v214ApplyYearlyGrowth();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
+window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
 
 render();
 </script>
