@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V21.10 — Board Funding & Exact Applicants</title>
+<title>School Transportation Tycoon — Tycoon Web V21.11 — Capital Fund Bus Purchases</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -492,7 +492,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V21.10 — Board Funding & Exact Applicants</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.11 — Capital Fund Bus Purchases</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -2660,7 +2660,7 @@ function openBusPurchase(){
      <div id="premiumBusInfo" class="alert" style="display:none">🚌 Rear-engine pusher • flat front • premium high-capacity/trip configuration</div>
      <div class="alert">Purchase price: <b id="purchasePrice">$112,000</b></div>
    </div>
-   <div class="actions"><button class="btn primary" onclick="confirmBusPurchase()">Purchase Bus</button><button class="btn" onclick="v211OpenBusCatalog()">Compare Full Catalog</button></div>`);
+   <div class="actions"><button class="btn primary" onclick="confirmBusPurchase()">Purchase Bus from Capital Fund</button><button class="btn" onclick="v211OpenBusCatalog()">Compare Full Catalog</button></div>`);
  updateBusPurchaseOptions()
 }
 
@@ -2702,12 +2702,12 @@ function confirmBusPurchase(){
  let price=spec.base;if(fuel==='Propane')price+=6500;if(fuel==='Electric')price+=95000;
  let ac=$('newBusAC')&&$('newBusAC').checked,cameras=$('newBusCameras')&&$('newBusCameras').checked,gps=$('newBusGPS')&&$('newBusGPS').checked;
  if(ac)price+=8500;if(cameras)price+=5500;if(gps)price+=3500;
- syncBudgets();if(state.operatingBudget<price)return alert('Not enough budget.');
+ syncBudgets();if(Number(state.capitalBudget||0)<price)return alert(`Not enough Capital Fund money. Bus price: ${money(price)} • Capital available: ${money(state.capitalBudget||0)}`);
  let id=Number($('newBusNumber').value),designation=$('newBusDesignation').value,model=$('newBusModel').value,capacity=spec.capacity;
  if(!id||id<1)return alert('Enter a valid bus number.');
  if(state.buses.some(b=>Number(b.id)===id))return alert('That bus number already exists.');
  let gameYear=Number(String(state.gameDate||'2026-08-24').slice(0,4))||2026;
- state.operatingBudget-=price;syncBudgets();
+ state.capitalBudget=Number(state.capitalBudget||0)-price;syncBudgets();
  let special=type==='special';
  let bus={id,year:gameYear,model,miles:0,route:null,driver:null,status:designation==='Regular Route'?'Ready':'Spare',fuel:100,capacity,condition:100,designation,temporaryRoute:null,wheelchairLift:special,wheelchairPositions:special?4:0,fuelType:fuel,airConditioning:ac,cameras,gps,purchasePrice:price,repairSpend:0,breakdowns:0,history:[{year:state.year,event:`Purchased new for ${money(price)} • ${spec.length} • ${fuel}${ac?' • AC':''}${cameras?' • cameras':''}${gps?' • GPS':''}`}],liveStatus:'Parked / Pre-Trip',body:spec.body,length:spec.length,type:type.includes('pusher')?'Type D Rear-Engine Pusher':type==='front84'?'Type D Front-Engine':type==='conv78'?'Type C Long Conventional':special?'Type A / Special Needs':'Type C Conventional'};
  state.buses.push(bus);
