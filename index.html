@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V20.1 — Visual World Hotfix</title>
+<title>School Transportation Tycoon — Tycoon Web V21.0 — Connected District Simulation</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -408,12 +408,48 @@ button,.btn,select,input{touch-action:manipulation}
 @media(max-width:900px){
  .v20-campus{min-height:820px}.v20-building{width:92%;left:4%}.v20-garage{width:92%;left:4%;top:255px}.v20-lot{left:4%;right:4%;top:360px;bottom:175px}.v20-livepanel{grid-template-columns:1fr}.v20-schoolscene{display:none}.v20-fuel{bottom:112px;left:53%}.v20-wash{bottom:112px;left:25%}
 }
+
+/* V20.2 Route Relief & Auto-Balance */
+.v202-caprow{display:grid;grid-template-columns:80px 1fr 90px 120px;gap:8px;align-items:center;padding:8px;border-bottom:1px solid #e5e9eb;font-size:9px}
+.v202-capbar{height:9px;background:#e5e9eb;border-radius:99px;overflow:hidden}.v202-capbar i{display:block;height:100%;background:#718f72}.v202-capbar.warn i{background:#c69435}.v202-capbar.bad i{background:#b75b5b}
+.v202-rec{border-left:5px solid #6c879d;background:#f7fafc;border-radius:8px;padding:9px;margin:7px 0}
+.v202-rec.bad{border-left-color:#b75b5b;background:#fff6f6}.v202-rec.good{border-left-color:#579161;background:#f5fbf6}
+.v202-split{display:grid;grid-template-columns:1fr 70px 1fr;gap:8px;align-items:center;margin:8px 0}.v202-split>div{border:1px solid var(--line);border-radius:8px;padding:9px;background:#fff}.v202-arrow{text-align:center;font-size:20px;font-weight:900}
+.v202-stoprow{display:grid;grid-template-columns:30px 1fr 65px 80px;gap:7px;align-items:center;padding:6px;border-bottom:1px solid #e7eaec;font-size:9px}
+.v202-pill{display:inline-block;padding:3px 6px;border-radius:999px;background:#edf2f5;font-size:8px;font-weight:800}
+@media(max-width:900px){.v202-caprow{grid-template-columns:60px 1fr 80px}.v202-caprow>*:nth-child(4){grid-column:1/-1}.v202-split{grid-template-columns:1fr}.v202-arrow{transform:rotate(90deg)}}
+
+/* V20.3 Posting-specific ATS */
+.v203-posting{border:1px solid var(--line);border-radius:9px;padding:9px;margin:7px 0;background:#f8fafb}
+.v203-posting.active{border-left:5px solid #5f7f98;background:#f5f9fc}
+.v203-app{border-left:4px solid #7c90a3;background:#fff;border-radius:8px;padding:8px;margin:6px 0}
+.v203-tag{display:inline-block;padding:3px 6px;border-radius:999px;background:#eaf0f4;font-size:8px;font-weight:800;margin-right:4px}
+.v203-empty{padding:14px;border:1px dashed #b7c1c7;border-radius:8px;background:#fbfcfd;font-size:9px}
+
+/* V21 Connected District Simulation */
+.v21-hub{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.v21-card{border:1px solid var(--line);border-radius:10px;padding:9px;background:#f8fafb;min-height:90px}
+.v21-card b{display:block;margin-bottom:4px}.v21-score{font-size:22px;font-weight:900}
+.v21-flow{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.v21-flow span{background:#edf2f5;border:1px solid #d7dfe4;border-radius:999px;padding:5px 7px;font-size:8px}
+.v21-warning{border-left:5px solid #b65e5e;background:#fff5f5;border-radius:8px;padding:8px;margin:7px 0}
+.v21-good{border-left:5px solid #5b9563;background:#f4fbf5;border-radius:8px;padding:8px;margin:7px 0}
+.v21-step{display:grid;grid-template-columns:28px 1fr 120px;gap:8px;align-items:center;padding:7px;border-bottom:1px solid #e6eaed}
+.v21-step i{width:22px;height:22px;border-radius:50%;background:#dbe4ea;text-align:center;line-height:22px;font-style:normal;font-weight:900}
+.v21-step.done i{background:#a9cfad}.v21-step.active i{background:#f0cf7d}
+.v21-bidrow{display:grid;grid-template-columns:1.2fr .7fr 1.2fr 100px;gap:7px;align-items:center;padding:7px;border-bottom:1px solid #e6eaed;font-size:9px}
+.v21-candidate{border:1px solid var(--line);border-radius:9px;padding:8px;margin:6px 0;background:#fff}
+.v21-trait{display:inline-block;padding:3px 6px;border-radius:999px;background:#eef3f6;margin:2px;font-size:8px;font-weight:800}
+.v21-budgetrow{display:grid;grid-template-columns:1.5fr 100px 100px;gap:8px;padding:7px;border-bottom:1px solid #e4e8ea;font-size:9px}
+.v21-special{border-left:5px solid #8b6fa8;background:#faf7fc;border-radius:8px;padding:8px;margin:6px 0}
+.v21-livechain{background:#132a3c;color:#fff;border-radius:8px;padding:8px;margin-top:8px;font-size:8px}
+@media(max-width:900px){.v21-hub{grid-template-columns:1fr 1fr}.v21-bidrow{grid-template-columns:1fr 1fr}.v21-step{grid-template-columns:24px 1fr}.v21-step>*:nth-child(3){grid-column:2}.v21-budgetrow{grid-template-columns:1fr 90px}}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V20.1 — Visual World Hotfix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V21.0 — Connected District Simulation</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -5454,7 +5490,7 @@ function v20TrafficDelayForRoute(r){
 }
 function v20Tick(minutes=1){
  ensureLivingV20();let L=state.living20,old=Number(state.simMinutes||315),m=Math.min(1439,old+minutes);state.simMinutes=m;
- v20BeginDayIfNeeded();
+ v20BeginDayIfNeeded();v21ProcessDay?.();
  // rare railroad train
  if(!L.train.active && m>=370 && m<=1010 && Math.random()<.006*minutes){
    L.train.active=true;L.train.until=m+7+Math.floor(Math.random()*8);L.train.lastDay=L.dayKey;
@@ -5556,7 +5592,7 @@ function v13Toolbar(){
 }
 function v13Campus(){
  ensureLivingV20();let L=state.living20,actors=v20ActorPositions(),shop=state.buses.filter(b=>v13BusWorldStatus(b)==='shop');
- return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn primary" onclick="renderV13World('campus')">🏢 Living Campus</button><button class="btn" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="v20OpenInbox()">📥 Director Inbox</button><button class="btn" onclick="v20MorningBoard()">☕ Pull-Out Board</button><button class="btn" onclick="v13Delegation()">🧠 Authority</button><button class="btn" onclick="v20History()">🏆 History</button></div>
+ return `<div class="v13-world">${v13Toolbar()}<div class="v13-worldnav"><button class="btn primary" onclick="renderV13World('campus')">🏢 Living Campus</button><button class="btn" onclick="renderV13World('warsaw')">🗺️ Live Warsaw</button><button class="btn" onclick="v20OpenInbox()">📥 Director Inbox</button><button class="btn" onclick="v20MorningBoard()">☕ Pull-Out Board</button><button class="btn" onclick="v13Delegation()">🧠 Authority</button><button class="btn" onclick="v20History()">🏆 History</button><button class="btn" onclick="v21OpenHub()">🔗 Connected District</button></div>
  <div class="v20-campus">${v20WeatherOverlay()}${L.train.active?'<div class="v20-train">🚂 FREIGHT TRAIN — CROSSING BLOCKED</div>':''}
  <div class="v20-road main"></div><div class="v20-road drive"></div>
  <div class="v20-building"><div class="sign">WARSAW COMMUNITY SCHOOLS • TRANSPORTATION CENTER</div><div class="v20-rooms"><div class="v20-room" onclick="v13Room('Director')">👔<br><b>Director</b><br>Inbox • Board</div><div class="v20-room" onclick="v13Room('Dispatch')">📻<br><b>Dispatch</b><br>Live coverage</div><div class="v20-room" onclick="v13Room('Drivers')">☕<br><b>Driver Room</b><br>Check-in • bids</div><div class="v20-room" onclick="v13Room('Training')">🎓<br><b>Training</b><br>CDL • compliance</div></div></div>
@@ -5596,6 +5632,619 @@ function v20History(){
  ensureLivingV20();let L=state.living20;openModal('🏆 Transportation History & Awards',`<h3>Awards</h3>${L.awards.map(a=>`<div class="v19-news">🏆 <b>${a.year} — ${a.title}</b></div>`).join('')||'<div class="small">No V20 awards earned yet.</div>'}<h3>Department Memory</h3>${L.history.slice().reverse().slice(0,30).map(x=>`<div class="v19-news"><b>${x.year}</b> — ${x.text}</div>`).join('')}`)
 }
 
+
+/* ===== V20.2 ROUTE RELIEF & AUTO-BALANCE ===== */
+function ensureRouteBalanceV202(){
+  state.routeBalance202 = state.routeBalance202 || {};
+  let B = state.routeBalance202;
+  if(!B.history) B.history=[];
+  if(!B.nextRouteNumber){
+    let nums=(state.routes||[]).map(r=>Number(r.id)||0);
+    B.nextRouteNumber=Math.max(61,...nums)+1;
+  }
+}
+function v202RouteCapacity(r){
+  try{return Number(opsRouteCapacityV15(r)||0)}catch(e){
+    let b=(state.buses||[]).find(x=>Number(x.id)===Number(r?.temporaryBus||r?.bus));
+    return Number(b?.capacity||72)
+  }
+}
+function v202RouteRiders(r){
+  return Math.max(Number(r?.ops15?.ridersAM||0),Number(r?.ops15?.ridersPM||0),Number(r?.ops15?.riders||0))
+}
+function v202OverloadedRoutes(){
+  ensureRouteBalanceV202();
+  try{riderSyncRoutesV16?.()}catch(e){}
+  return (state.routes||[]).map(r=>{
+    let cap=v202RouteCapacity(r), riders=v202RouteRiders(r), pct=cap?Math.round(riders/cap*100):0;
+    return {r,cap,riders,pct,over:riders>cap,near:pct>=90}
+  }).sort((a,b)=>b.pct-a.pct)
+}
+function v202OpenCapacityCenter(){
+  let rows=v202OverloadedRoutes();
+  openModal('🚌 Route Capacity & Relief Center',
+    `<div class="alert"><b>Marcus Reed — Route Coordinator</b><br>The game will recommend relief routes when a bus is overloaded or consistently above 90% capacity. No changes are made until you approve them.</div>
+     <div class="actions"><button class="btn primary" onclick="v202OpenAutoBalance()">Auto-Balance All Routes</button><button class="btn" onclick="closeModal();goView('routes')">Open Route Management</button></div>
+     ${rows.map(x=>`<div class="v202-caprow">
+       <b>Route ${x.r.id}</b>
+       <span><div class="v202-capbar ${x.over?'bad':x.near?'warn':''}"><i style="width:${Math.min(100,x.pct)}%"></i></div><span class="small">${x.r.ops15?.schools?.join(', ')||x.r.ops15?.school||'District route'}</span></span>
+       <b>${x.riders}/${x.cap}</b>
+       <span>${x.over?`<button class="btn primary" onclick="v202PlanRelief(${Number(x.r.id)})">Create Relief Route</button>`:x.near?`<button class="btn" onclick="v202PlanRelief(${Number(x.r.id)})">Review Split</button>`:'✓ Balanced'}</span>
+     </div>`).join('')}`
+  )
+}
+function v202GetStudentsForRoute(routeId){
+  ensureRidersV16?.();
+  let students=state.riders16?.students||[];
+  return students.filter(s=>s.active!==false && (Number(s.routeAM)===Number(routeId)||Number(s.routePM)===Number(routeId)))
+}
+function v202GroupStudentsByStop(routeId){
+  let students=v202GetStudentsForRoute(routeId), map={};
+  students.forEach(s=>{
+    let key=s.stopName||s.stop||'Unassigned Stop';
+    if(!map[key]) map[key]={name:key,students:[],am:0,pm:0};
+    map[key].students.push(s);
+    if(s.ridesAM!==false && Number(s.routeAM)===Number(routeId)) map[key].am++;
+    if(s.ridesPM!==false && Number(s.routePM)===Number(routeId)) map[key].pm++;
+  });
+  return Object.values(map).map(x=>({...x,peak:Math.max(x.am,x.pm)})).sort((a,b)=>b.peak-a.peak)
+}
+function v202ChooseReliefStops(routeId,targetMove){
+  let groups=v202GroupStudentsByStop(routeId);
+  if(!groups.length){
+    // fallback to V15 stops if student linkage is missing
+    let r=(state.routes||[]).find(x=>Number(x.id)===Number(routeId));
+    return (r?.ops15?.stops||[]).slice().sort((a,b)=>Number(b.riders||0)-Number(a.riders||0)).map(s=>({name:s.name||s.stop||'Stop',peak:Number(s.riders||0),students:[]})).slice(0,Math.max(1,Math.ceil(targetMove/18)))
+  }
+  // Prefer keeping household/stop groups together and move the fewest stops needed.
+  let chosen=[],moved=0;
+  for(let g of groups){
+    if(moved>=targetMove) break;
+    chosen.push(g);moved+=g.peak;
+  }
+  return chosen
+}
+function v202PlanRelief(routeId){
+  ensureRouteBalanceV202();try{riderSyncRoutesV16?.()}catch(e){}
+  let r=(state.routes||[]).find(x=>Number(x.id)===Number(routeId));if(!r)return;
+  let cap=v202RouteCapacity(r), riders=v202RouteRiders(r);
+  let desiredOriginal=Math.max(1,Math.floor(cap*.72));
+  let minMove=Math.max(1,riders-desiredOriginal);
+  let stops=v202ChooseReliefStops(routeId,minMove);
+  let moved=stops.reduce((a,s)=>a+Number(s.peak||0),0);
+  if(moved<=0)moved=Math.max(1,Math.ceil(riders*.35));
+  let newNum=v202NextRouteNumber();
+  let after=Math.max(0,riders-moved);
+  let spare=v202BestSpareBus(moved);
+  let driver=v202BestAvailableDriver(routeId);
+  let cost=v202EstimateReliefCost(r,moved);
+  state.routeBalance202.pending={sourceRoute:Number(routeId),newRoute:Number(newNum),stops:stops.map(s=>s.name),moved,sourceAfter:after,spareBus:spare?.id||null,driver:driver?.name||null,estimatedAnnualCost:cost};
+  openModal(`🛣️ Relief Plan — Route ${routeId}`,
+   `<div class="alert"><b>Marcus Reed recommends creating Route ${newNum}.</b><br>This keeps stop/household groups together whenever possible and aims to bring the original route near 70–75% capacity.</div>
+    <div class="v202-split">
+      <div><div class="small">CURRENT ROUTE ${routeId}</div><div class="big-kpi">${riders}/${cap}</div><div>${Math.round(riders/cap*100)}% utilized</div></div>
+      <div class="v202-arrow">→</div>
+      <div><div class="small">AFTER SPLIT</div><b>Route ${routeId}: ${after}/${cap}</b><br><b>Route ${newNum}: ${moved}/${spare?.capacity||72}</b></div>
+    </div>
+    <h4>Stops proposed for Route ${newNum}</h4>
+    ${stops.map((s,i)=>`<div class="v202-stoprow"><b>${i+1}</b><span>${s.name}</span><b>${s.peak||0}</b><span class="v202-pill">Move</span></div>`).join('')||'<div class="small">Student stop linkage is incomplete; the game will move the required riders directly.</div>'}
+    <div class="v19-box" style="margin-top:8px">
+      <div class="kv"><span>Recommended bus</span><b>${spare?`Bus ${spare.id} (${spare.capacity||72} cap.)`:'No spare bus available'}</b></div>
+      <div class="kv"><span>Recommended driver</span><b>${driver?driver.name:'No available driver'}</b></div>
+      <div class="kv"><span>Estimated annual operating cost</span><b>${v13Money(cost)}</b></div>
+    </div>
+    <div class="actions"><button class="btn primary" onclick="v202ApproveRelief()">Approve & Create Route ${newNum}</button><button class="btn" onclick="v202CustomizeRelief()">Customize Students / Stops</button><button class="btn" onclick="closeModal()">Cancel</button></div>`
+  )
+}
+function v202NextRouteNumber(){
+  ensureRouteBalanceV202();
+  let used=new Set((state.routes||[]).map(r=>Number(r.id)));
+  let n=Math.max(1,Number(state.routeBalance202.nextRouteNumber||62));
+  while(used.has(n))n++;
+  return n
+}
+function v202BestSpareBus(needed){
+  let assigned=new Set((state.routes||[]).flatMap(r=>[Number(r.bus),Number(r.temporaryBus)]).filter(Boolean));
+  return (state.buses||[]).filter(b=>!assigned.has(Number(b.id)) && !b.ops15?.outOfService && Number(b.condition||100)>=50 && Number(b.capacity||72)>=needed)
+    .sort((a,b)=>Number(a.capacity||72)-Number(b.capacity||72))[0] || 
+    (state.buses||[]).filter(b=>!assigned.has(Number(b.id)) && !b.ops15?.outOfService).sort((a,b)=>Number(b.capacity||72)-Number(a.capacity||72))[0]
+}
+function v202BestAvailableDriver(routeId){
+  let assigned=new Set((state.routes||[]).flatMap(r=>[r.driver,r.temporaryDriver]).filter(Boolean));
+  let pool=(state.staff||[]).filter(s=>s.status!=='Former'&&!assigned.has(s.name));
+  return pool.sort((a,b)=>(state.workforce17?.routeKnowledge?.[b.name]?.[routeId]||0)-(state.workforce17?.routeKnowledge?.[a.name]?.[routeId]||0))[0]||null
+}
+function v202EstimateReliefCost(r,moved){
+  let miles=Math.max(25,Math.round(Number(r.ops15?.dailyMiles||r.dailyMiles||70)*Math.max(.35,moved/Math.max(1,v202RouteRiders(r)))));
+  let fuel=miles/7*3.7*180, labor=5.5*26*180, maint=miles*180*.32;
+  return Math.round(fuel+labor+maint)
+}
+function v202CreateRouteSkeleton(source,newId,busId,driverName,moved){
+  let nr=JSON.parse(JSON.stringify(source));
+  nr.id=newId;nr.name=`Route ${newId}`;nr.driver=driverName||null;nr.temporaryDriver=null;nr.bus=busId||null;nr.temporaryBus=null;nr.createdYear=state.year||2026;
+  nr.ops15=nr.ops15||{};
+  nr.ops15.originalCreatedYear=state.year||2026;
+  nr.ops15.riders=Math.max(0,moved);
+  nr.ops15.ridersAM=Math.max(0,moved);
+  nr.ops15.ridersPM=Math.max(0,moved);
+  nr.ops15.dailyMiles=Math.max(25,Math.round(Number(source.ops15?.dailyMiles||source.dailyMiles||70)*Math.max(.35,moved/Math.max(1,v202RouteRiders(source)))));
+  nr.ops15.stops=[];
+  nr.ops15.onTime=96;
+  nr.ops15.routeType=source.ops15?.routeType||'Relief / Growth';
+  nr.ops15.history=[`Created in ${state.year||2026} as a relief route from Route ${source.id}.`];
+  delete nr.closed;delete nr.archived;
+  return nr
+}
+function v202ApproveRelief(){
+  ensureRouteBalanceV202();let P=state.routeBalance202.pending;if(!P)return;
+  let source=(state.routes||[]).find(r=>Number(r.id)===Number(P.sourceRoute));if(!source)return;
+  let newId=v202NextRouteNumber();
+  P.newRoute=newId;
+  let bus=P.spareBus?state.buses.find(b=>Number(b.id)===Number(P.spareBus)):v202BestSpareBus(P.moved);
+  let driver=P.driver?state.staff.find(s=>s.name===P.driver):v202BestAvailableDriver(P.sourceRoute);
+  let nr=v202CreateRouteSkeleton(source,newId,bus?.id||null,driver?.name||null,P.moved);
+  // Move actual students by selected stop groups.
+  let selected=new Set(P.stops||[]);
+  let students=v202GetStudentsForRoute(P.sourceRoute);
+  let movedStudents=[];
+  students.forEach(s=>{
+    if(selected.size===0 || selected.has(s.stopName||s.stop||'Unassigned Stop')){
+      if(Number(s.routeAM)===Number(P.sourceRoute))s.routeAM=newId;
+      if(Number(s.routePM)===Number(P.sourceRoute))s.routePM=newId;
+      movedStudents.push(s);
+    }
+  });
+  // If stop linkage didn't move enough, move additional students until target is reached.
+  if(movedStudents.length < P.moved){
+    students.filter(s=>!movedStudents.includes(s)).slice(0,P.moved-movedStudents.length).forEach(s=>{
+      if(Number(s.routeAM)===Number(P.sourceRoute))s.routeAM=newId;
+      if(Number(s.routePM)===Number(P.sourceRoute))s.routePM=newId;
+      movedStudents.push(s);
+    })
+  }
+  // Build stable relief stops from moved students.
+  let stopNames=[...new Set(movedStudents.map(s=>s.stopName||s.stop||'Relief Stop'))];
+  nr.ops15.stops=stopNames.map((name,i)=>{
+    let n=movedStudents.filter(s=>(s.stopName||s.stop||'Relief Stop')===name).length;
+    return {id:`R${newId}-S${i+1}`,name,riders:n,miles:i===0?2.8:1.6,time:Math.max(0,Number(source.ops15?.firstStop||375)+i*5),safety:'OK'}
+  });
+  state.routes.push(nr);
+  if(driver)driver.route=newId;
+  state.routeBalance202.nextRouteNumber=newId+1;
+  state.routeBalance202.history.push({year:state.year||2026,day:v20DayKey?.()||'',source:P.sourceRoute,newRoute:newId,moved:movedStudents.length,bus:bus?.id||null,driver:driver?.name||null});
+  v21CreateReliefWorkflow?.(P.sourceRoute,newId,movedStudents.length,bus?.id||null,driver?.name||null);
+  try{riderSyncRoutesV16?.();opsRecalcRouteV15?.(source);opsRecalcRouteV15?.(nr)}catch(e){console.error('Relief recalc',e)}
+  try{state.ops15?.routeHistory?.push({year:state.year||2026,text:`Route ${newId} created to relieve Route ${P.sourceRoute}; ${movedStudents.length} students reassigned.`})}catch(e){}
+  autosaveGame?.();
+  closeModal();
+  openModal('✅ Relief Route Created',
+    `<div class="alert"><b>Route ${newId} is now active.</b><br>${movedStudents.length} student(s) were moved from Route ${P.sourceRoute}.</div>
+     <div class="kv"><span>Bus</span><b>${bus?'Bus '+bus.id:'UNASSIGNED'}</b></div>
+     <div class="kv"><span>Driver</span><b>${driver?driver.name:'UNASSIGNED'}</b></div>
+     <div class="kv"><span>Stops</span><b>${nr.ops15.stops.length}</b></div>
+     <div class="actions"><button class="btn primary" onclick="closeModal();goView('routes')">Open Routes</button><button class="btn" onclick="closeModal();v202OpenCapacityCenter()">Capacity Center</button></div>`
+  );
+  render?.()
+}
+function v202CustomizeRelief(){
+  let P=state.routeBalance202?.pending;if(!P)return;
+  let students=v202GetStudentsForRoute(P.sourceRoute);
+  openModal(`✏️ Customize Relief Route ${P.newRoute}`,
+   `<div class="alert">Checked students will move to the relief route. Household/stop groups are preselected from Marcus Reed's recommendation.</div>
+    <div style="max-height:430px;overflow:auto">${students.map((s,i)=>{
+      let key=s.stopName||s.stop||'Unassigned Stop',checked=(P.stops||[]).includes(key);
+      return `<label class="v17-sub" style="display:block"><input type="checkbox" class="v202-studentpick" data-student="${s.id}" ${checked?'checked':''}> <b>${s.name}</b> — ${s.school||''} ${s.grade!=null?'Grade '+s.grade:''}<div class="small">${key} • AM R${s.routeAM||'—'} / PM R${s.routePM||'—'}</div></label>`
+    }).join('')}</div>
+    <div class="actions"><button class="btn primary" onclick="v202SaveCustomRelief()">Use Selected Students</button><button class="btn" onclick="v202PlanRelief(${P.sourceRoute})">Back to Recommendation</button></div>`
+  )
+}
+function v202SaveCustomRelief(){
+  let P=state.routeBalance202.pending,ids=[...document.querySelectorAll('.v202-studentpick:checked')].map(x=>String(x.dataset.student));
+  let students=v202GetStudentsForRoute(P.sourceRoute).filter(s=>ids.includes(String(s.id)));
+  P.stops=[...new Set(students.map(s=>s.stopName||s.stop||'Unassigned Stop'))];
+  P.moved=students.length;P.sourceAfter=Math.max(0,v202RouteRiders((state.routes||[]).find(r=>Number(r.id)===Number(P.sourceRoute)))-students.length);
+  closeModal();v202PlanRelief(P.sourceRoute)
+}
+function v202OpenAutoBalance(){
+  let overloaded=v202OverloadedRoutes().filter(x=>x.over||x.pct>=95);
+  if(!overloaded.length){
+    openModal('✅ Auto-Balance Review','<div class="alert">No routes currently require a relief route. All routes are below 95% capacity.</div>');return
+  }
+  let recs=overloaded.map(x=>{
+    let target=Math.max(1,x.riders-Math.floor(x.cap*.72)),stops=v202ChooseReliefStops(x.r.id,target),move=stops.reduce((a,s)=>a+Number(s.peak||0),0)||target,newNum=v202PeekAvailableRouteNumber(x.r.id),bus=v202BestSpareBus(move),driver=v202BestAvailableDriver(x.r.id);
+    return {route:x.r.id,current:x.riders,cap:x.cap,move,newNum,bus:bus?.id||null,driver:driver?.name||null,stops}
+  });
+  state.routeBalance202.autoRecommendations=recs;
+  openModal('🧠 Auto-Balance Recommendations',
+   `<div class="alert"><b>Marcus Reed reviewed the entire district.</b><br>These are recommendations only. Approve each relief route individually so you stay in control.</div>
+    ${recs.map((p,i)=>`<div class="v202-rec ${p.current>p.cap?'bad':''}">
+      <b>Route ${p.route}: ${p.current}/${p.cap}</b><br>
+      Recommend Route ${p.newNum} • move about ${p.move} riders / ${p.stops.length||'selected'} stop group(s)
+      <div class="small">Projected Route ${p.route}: ${Math.max(0,p.current-p.move)} riders • Route ${p.newNum}: ${p.move} riders • ${p.bus?'Bus '+p.bus:'Bus needed'} • ${p.driver||'Driver needed'}</div>
+      <button class="btn primary" onclick="closeModal();v202PlanRelief(${p.route})">Review & Approve</button>
+    </div>`).join('')}`
+  )
+}
+function v202PeekAvailableRouteNumber(routeId){
+  let used=new Set((state.routes||[]).map(r=>Number(r.id))),n=Math.max(Number(state.routeBalance202?.nextRouteNumber||62),62);
+  while(used.has(n))n++;return n
+}
+function v202RouteBalanceSummary(){
+  let rows=v202OverloadedRoutes(),bad=rows.filter(x=>x.over),near=rows.filter(x=>!x.over&&x.pct>=90);
+  return {bad,near,rows}
+}
+
+
+/* ===== V20.3 POSTING-SPECIFIC APPLICANTS ===== */
+function ensurePostingApplicantsV203(){
+  ensureHRV14?.();
+  state.hr203 = state.hr203 || {};
+  let H = state.hr203;
+  if(!H.postings) H.postings=[];
+  if(!H.nextPostingId) H.nextPostingId=20301;
+
+  // Import existing V14 postings when possible and give each a stable posting ID.
+  let legacyPosts = state.hr14?.postings || state.postings || [];
+  legacyPosts.forEach((p,i)=>{
+    if(!p.postingId) p.postingId = Number(p.id)||Number(p.postingId)||H.nextPostingId++;
+    if(!p.role) p.role = p.title || p.position || 'School Bus Driver';
+    if(!p.employmentType){
+      let t=(p.role||'').toLowerCase();
+      p.employmentType=t.includes('sub')?'Substitute':t.includes('part')?'Part-Time':'Regular';
+    }
+    if(!H.postings.some(x=>Number(x.postingId)===Number(p.postingId))) H.postings.push(p);
+  });
+
+  // Ensure useful default postings if none exist.
+  if(!H.postings.length){
+    H.postings.push(
+      {postingId:H.nextPostingId++,role:'School Bus Driver',employmentType:'Regular',status:'Open',openings:2,createdYear:state.year||2026},
+      {postingId:H.nextPostingId++,role:'Substitute School Bus Driver',employmentType:'Substitute',status:'Open',openings:3,createdYear:state.year||2026},
+      {postingId:H.nextPostingId++,role:'Bus Aide / Monitor',employmentType:'Regular',status:'Open',openings:1,createdYear:state.year||2026}
+    );
+  }
+
+  let apps = state.hr14?.applicants || state.applicants || [];
+  apps.forEach((a,i)=>{
+    if(!a.applicantId) a.applicantId = a.id || `A${203000+i+1}`;
+    if(!a.postingId){
+      let role=(a.appliedFor||a.role||a.position||'').toLowerCase();
+      let isSub=role.includes('sub');
+      let match=H.postings.find(p=>{
+        let pr=(p.role||'').toLowerCase();
+        return isSub ? (p.employmentType==='Substitute'||pr.includes('sub')) : (!pr.includes('sub') && (role?pr.includes(role.split(' ')[0]):true))
+      }) || H.postings.find(p=>p.status==='Open') || H.postings[0];
+      if(match) a.postingId=match.postingId;
+    }
+  });
+  H.applicants = apps;
+}
+function v203PostingLabel(p){
+  return `${p.role} — ${p.employmentType||'Regular'}`
+}
+function v203ApplicantsForPosting(postingId){
+  ensurePostingApplicantsV203();
+  return (state.hr203.applicants||[]).filter(a=>Number(a.postingId)===Number(postingId))
+}
+function v203OpenApplicantBoard(){
+  ensurePostingApplicantsV203();
+  let H=state.hr203;
+  openModal('👥 Applicants by Job Posting',
+    `<div class="alert"><b>Applicants are now tied to the exact posting they applied to.</b><br>A Substitute School Bus Driver posting only shows substitute applicants. Regular driver, mechanic, aide, dispatcher, and office postings each maintain their own applicant pool.</div>
+     ${H.postings.filter(p=>p.status!=='Closed').map(p=>{
+       let apps=v203ApplicantsForPosting(p.postingId);
+       return `<div class="v203-posting active">
+         <b>${v203PostingLabel(p)}</b>
+         <div class="small">Posting #${p.postingId} • ${p.openings||1} opening(s) • ${apps.length} applicant(s)</div>
+         <div class="actions"><button class="btn primary" onclick="v203ViewPosting(${p.postingId})">View Applicants</button><button class="btn" onclick="v203SimulateApplicant(${p.postingId})">Simulate Applicant</button><button class="btn" onclick="v203ClosePosting(${p.postingId})">Close Posting</button></div>
+       </div>`
+     }).join('')}`
+  )
+}
+function v203ViewPosting(postingId){
+  ensurePostingApplicantsV203();
+  let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(postingId));if(!p)return;
+  let apps=v203ApplicantsForPosting(postingId);
+  openModal(`📄 ${v203PostingLabel(p)}`,
+    `<div class="v203-posting active"><b>Posting #${p.postingId}</b><div class="small">${p.openings||1} opening(s) • ${p.status||'Open'}</div></div>
+     ${apps.length?apps.map((a,i)=>`<div class="v203-app">
+       <b>${a.name||a.fullName||'Applicant'}</b>
+       <div><span class="v203-tag">${a.stage||a.status||'Applied'}</span><span class="v203-tag">${a.source||'Online Application'}</span></div>
+       <div class="small">${a.experience||a.yearsExperience||0} years experience • ${a.cdl?'CDL':'CDL status pending'}${a.notes?' • '+a.notes:''}</div>
+       <div class="actions"><button class="btn" onclick="v203AdvanceApplicant('${String(a.applicantId).replace(/'/g,"\\'")}')">Advance</button><button class="btn" onclick="v203OpenApplicant('${String(a.applicantId).replace(/'/g,"\\'")}')">Open File</button></div>
+     </div>`).join(''):`<div class="v203-empty">No applicants for this posting yet. Applicants for other job postings will not appear here.</div>`}
+     <div class="actions"><button class="btn primary" onclick="v203SimulateApplicant(${p.postingId})">+ Simulate Applicant for This Posting</button><button class="btn" onclick="v203OpenApplicantBoard()">All Postings</button></div>`
+  )
+}
+function v203RoleTemplate(p){
+  let r=(p.role||'').toLowerCase(), sub=p.employmentType==='Substitute'||r.includes('sub');
+  if(r.includes('mechanic')) return {cdl:Math.random()<.45,exp:1+Math.floor(Math.random()*12),note:'Fleet/automotive maintenance background',source:'Indeed'};
+  if(r.includes('aide')||r.includes('monitor')) return {cdl:false,exp:Math.floor(Math.random()*6),note:'Student support / caregiving interest',source:'District Careers'};
+  if(r.includes('dispatcher')) return {cdl:Math.random()<.35,exp:1+Math.floor(Math.random()*8),note:'Dispatch/customer-service background',source:'Employee Referral'};
+  if(r.includes('secretary')||r.includes('office')) return {cdl:false,exp:1+Math.floor(Math.random()*10),note:'Office/customer-service experience',source:'District Careers'};
+  return {cdl:sub?Math.random()<.6:Math.random()<.7,exp:Math.floor(Math.random()*9),note:sub?'Seeking flexible substitute driving':'Interested in regular assigned route',source:Math.random()<.5?'Indeed':'District Careers'};
+}
+function v203SimulateApplicant(postingId){
+  ensurePostingApplicantsV203();let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(postingId));if(!p)return;
+  let first=['Megan','Ryan','Julie','Thomas','Kayla','Brian','Erin','Adam','Heather','Jason','Nicole','Scott','Angela','Derek','Rachel'];
+  let last=['Miller','Johnson','Campbell','Foster','Reed','Nelson','Collins','Baker','Turner','Hughes','Carter','Morgan','Parker','Young','Evans'];
+  let t=v203RoleTemplate(p),a={
+    applicantId:`A${Date.now()}`,
+    name:`${first[Math.floor(Math.random()*first.length)]} ${last[Math.floor(Math.random()*last.length)]}`,
+    postingId:p.postingId,
+    appliedFor:p.role,
+    employmentType:p.employmentType,
+    stage:'Applied',
+    status:'Active',
+    source:t.source,
+    experience:t.exp,
+    cdl:t.cdl,
+    notes:t.note,
+    applicationDay:v20DayKey?.()||''
+  };
+  state.hr203.applicants.push(a);
+  if(state.hr14){state.hr14.applicants=state.hr203.applicants}
+  autosaveGame?.();v203ViewPosting(postingId)
+}
+function v203AdvanceApplicant(applicantId){
+  let a=(state.hr203?.applicants||[]).find(x=>String(x.applicantId)===String(applicantId));if(!a)return;
+  let stages=['Applied','Phone Screen','Interview','References','Conditional Offer','Checks / CDL','Orientation','Hired'];
+  let i=stages.indexOf(a.stage);a.stage=stages[Math.min(stages.length-1,Math.max(0,i)+1)];
+  if(a.stage==='Hired') v203HireFromPosting(a);
+  autosaveGame?.();v203ViewPosting(a.postingId)
+}
+function v203HireFromPosting(a){
+  let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(a.postingId));if(!p)return;
+  if(a.hired)return;
+  let role=(p.role||'').toLowerCase();
+  if(role.includes('driver')){
+    let status=(p.employmentType==='Substitute'||role.includes('sub'))?'Substitute':'Active';
+    state.staff.push({name:a.name,age:24+Math.floor(Math.random()*35),years:0,status,route:null,pay:wfRateForYearsV17?.(0)||23.10,hireYear:state.year||2026});
+  }else{
+    state.supportStaff=state.supportStaff||[];
+    state.supportStaff.push({name:a.name,role:p.role,status:'Active',years:0,hireYear:state.year||2026});
+  }
+  a.hired=true;a.status='Hired';
+  p.filled=(p.filled||0)+1;
+  if(p.filled>=Number(p.openings||1))p.status='Filled';
+}
+function v203OpenApplicant(applicantId){
+  let a=(state.hr203?.applicants||[]).find(x=>String(x.applicantId)===String(applicantId));if(!a)return;
+  let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(a.postingId));
+  openModal(`👤 ${a.name}`,
+    `<div class="kv"><span>Applied For</span><b>${p?v203PostingLabel(p):a.appliedFor}</b></div>
+     <div class="kv"><span>Posting #</span><b>${a.postingId||'—'}</b></div>
+     <div class="kv"><span>Stage</span><b>${a.stage||'Applied'}</b></div>
+     <div class="kv"><span>Experience</span><b>${a.experience||0} years</b></div>
+     <div class="kv"><span>CDL</span><b>${a.cdl?'Yes':'No / Sponsorship Needed'}</b></div>
+     <div class="kv"><span>Source</span><b>${a.source||'Unknown'}</b></div>
+     <div class="alert">${a.notes||''}</div><div class="actions"><button class="btn primary" onclick="v21ApplicantInterview('${String(a.applicantId).replace(/'/g,"\\'")}')">Conduct Interview</button></div>`
+  )
+}
+function v203CreatePosting(){
+  ensurePostingApplicantsV203();
+  openModal('➕ Create Job Posting',
+    `<label>Position<select id="v203Role">
+      <option>School Bus Driver</option>
+      <option>Substitute School Bus Driver</option>
+      <option>Bus Aide / Monitor</option>
+      <option>Dispatcher</option>
+      <option>Bus Mechanic</option>
+      <option>Transportation Secretary</option>
+      <option>Route Coordinator</option>
+      <option>Driver Trainer</option>
+    </select></label>
+    <label>Openings<input id="v203Openings" type="number" min="1" max="20" value="1"></label>
+    <button class="btn primary" onclick="v203SavePosting()">Post Job</button>`
+  )
+}
+function v203SavePosting(){
+  let role=$('v203Role').value, openings=Number($('v203Openings').value)||1;
+  let type=role.toLowerCase().includes('substitute')?'Substitute':'Regular';
+  let p={postingId:state.hr203.nextPostingId++,role,employmentType:type,status:'Open',openings,createdYear:state.year||2026};
+  state.hr203.postings.push(p);
+  if(state.hr14?.postings && !state.hr14.postings.includes(p)) state.hr14.postings.push(p);
+  closeModal();v203OpenApplicantBoard();autosaveGame?.()
+}
+function v203ClosePosting(postingId){
+  let p=state.hr203.postings.find(x=>Number(x.postingId)===Number(postingId));if(!p)return;
+  p.status='Closed';autosaveGame?.();v203OpenApplicantBoard()
+}
+
+
+/* ===== V21 CONNECTED DISTRICT SIMULATION ===== */
+function ensureConnectedV21(){
+  ensurePostingApplicantsV203?.();ensureRouteBalanceV202?.();ensureLivingV20?.();
+  state.connected21=state.connected21||{};let C=state.connected21;
+  if(!C.events)C.events=[];
+  if(!C.routeWorkflow)C.routeWorkflow=[];
+  if(!C.routeBid)C.routeBid={year:null,active:false,available:[],order:[],awards:[]};
+  if(!C.applicantClock)C.applicantClock={lastDay:''};
+  if(!C.interviews)C.interviews={};
+  if(!C.employeeSchedules)C.employeeSchedules={};
+  if(!C.probation)C.probation={};
+  if(!C.busDeliveries)C.busDeliveries=[];
+  if(!C.finance)C.finance={transactions:[],openingBudget:Number(state.schoolYearBudget||state.operatingBudget||750000),spent:0};
+  if(!C.thresholds)C.thresholds={openPostingOnUncovered:true,autoTempCover:true,autoSpecialNeedsFlag:true};
+  if(!C.recruitingMarket)C.recruitingMarket={driver:72,sub:84,mechanic:58,aide:65,office:77};
+  if(!C.lastProcessedDay)C.lastProcessedDay='';
+  v21EnsureSchedules();v21EnsureProbation()
+}
+function v21Log(type,text,important=false){
+  ensureConnectedV21();state.connected21.events.unshift({id:Date.now()+Math.random(),time:v20DayKey?.()||'',type,text,important});state.connected21.events=state.connected21.events.slice(0,120);
+  if(important)v20Inbox?.('Connected District',type,text,true,false)
+}
+function v21DayOrdinal(){try{return Math.floor(new Date(state.gameDate||`${state.year||2026}-08-24T00:00:00`).getTime()/86400000)}catch(e){return Number(state.day||1)}}
+function v21EnsureSchedules(){
+  let C=state.connected21;
+  [...(state.staff||[]),...(state.supportStaff||[])].forEach(e=>{
+    if(!C.employeeSchedules[e.name]){
+      let role=String(e.role||'Driver').toLowerCase();
+      C.employeeSchedules[e.name]={pattern:role.includes('mechanic')?'05:30–14:00':role.includes('dispatch')?'05:15–13:45':(!e.role||role.includes('driver'))?'05:45–09:00 / 13:30–16:45':'07:00–15:30',leave:null,vacationDays:5+Math.floor((e.years||0)/3),attendanceScore:Math.max(70,96-Math.floor(Math.random()*7)),status:'Scheduled'}
+    }
+  })
+}
+function v21EnsureProbation(){
+  let C=state.connected21;
+  [...(state.staff||[]),...(state.supportStaff||[])].forEach(e=>{
+    if((e.years||0)<1&&!C.probation[e.name])C.probation[e.name]={hireYear:e.hireYear||state.year||2026,day30:false,day60:false,day90:false,score:80+Math.floor(Math.random()*16),notes:[]}
+  })
+}
+function v21NaturalApplicantTick(){
+  ensureConnectedV21();let C=state.connected21,ord=v21DayOrdinal();if(C.applicantClock.lastDay===String(ord))return;C.applicantClock.lastDay=String(ord);
+  (state.hr203?.postings||[]).filter(p=>p.status==='Open').forEach(p=>{
+    let r=(p.role||'').toLowerCase(),base=r.includes('sub')?C.recruitingMarket.sub:r.includes('driver')?C.recruitingMarket.driver:r.includes('mechanic')?C.recruitingMarket.mechanic:r.includes('aide')?C.recruitingMarket.aide:C.recruitingMarket.office;
+    if(Math.random()<Math.min(.75,base/100*.42)){v203SimulateApplicant?.(p.postingId);v21Log('Recruiting',`A new applicant applied to ${p.role} posting #${p.postingId}.`)}
+  });
+  (state.hr203?.applicants||[]).filter(a=>a.status==='Active'&&!a.hired).forEach(a=>{if(Math.random()<.018){a.status='Withdrawn';a.stage='Withdrawn';v21Log('Applicant Withdrawal',`${a.name} withdrew from posting #${a.postingId}.`)}})
+}
+function v21EnsurePermanentCoverage(){
+  ensureConnectedV21();
+  (state.routes||[]).forEach(r=>{
+    if(!r.driver&&state.connected21.thresholds.autoTempCover&&!r.temporaryDriver){
+      let temp=(state.staff||[]).filter(s=>s.status==='Substitute').find(s=>!(state.routes||[]).some(rr=>rr.temporaryDriver===s.name));
+      if(temp){r.temporaryDriver=temp.name;v21Log('Temporary Coverage',`${temp.name} temporarily assigned to Route ${r.id}.`)}
+    }
+    if(!r.driver&&state.connected21.thresholds.openPostingOnUncovered){
+      let hasOpen=(state.hr203?.postings||[]).some(p=>p.status==='Open'&&/school bus driver/i.test(p.role||'')&&p.employmentType!=='Substitute');
+      if(!hasOpen){
+        let p={postingId:state.hr203.nextPostingId++,role:'School Bus Driver',employmentType:'Regular',status:'Open',openings:1,createdYear:state.year||2026,reason:`Permanent driver needed for Route ${r.id}`};
+        state.hr203.postings.push(p);if(state.hr14?.postings)state.hr14.postings.push(p);
+        v21Log('HR Chain',`Route ${r.id} has no permanent driver. HR automatically opened posting #${p.postingId}.`,true)
+      }
+    }
+  })
+}
+function v21OpenHub(){
+  ensureConnectedV21();let C=state.connected21,openRoutes=(state.routes||[]).filter(r=>!r.driver).length;
+  openModal('🔗 Connected District Simulation',`<div class="alert"><b>V21 connects Routing → HR → Dispatch → Fleet → Finance → Visual World.</b><br>Changes in one system can now create consequences in the others.</div>
+  <div class="v21-hub">
+    <div class="v21-card"><b>🛣️ Route Workflow</b><div class="v21-score">${C.routeWorkflow.filter(x=>x.status!=='Active').length}</div><span class="small">plans in progress</span><br><button class="btn" onclick="v21RouteWorkflowBoard()">Open</button></div>
+    <div class="v21-card"><b>👥 Staffing Chain</b><div class="v21-score">${openRoutes}</div><span class="small">routes without permanent driver</span><br><button class="btn" onclick="v203OpenApplicantBoard()">Applicants</button></div>
+    <div class="v21-card"><b>🗳️ Annual Route Bid</b><div class="v21-score">${C.routeBid.active?'OPEN':'—'}</div><span class="small">${C.routeBid.awards.length} awards</span><br><button class="btn" onclick="v21OpenRouteBid()">Open</button></div>
+    <div class="v21-card"><b>💰 Unified Budget</b><div class="v21-score">${v13Money(v21BudgetRemaining())}</div><span class="small">remaining</span><br><button class="btn" onclick="v21OpenUnifiedBudget()">Open</button></div>
+    <div class="v21-card"><b>♿ Special Needs</b><div class="v21-score">${v21SpecialNeedsProblems().length}</div><span class="small">assignment issue(s)</span><br><button class="btn" onclick="v21OpenSpecialNeedsAudit()">Audit</button></div>
+    <div class="v21-card"><b>🧑‍💼 Probation</b><div class="v21-score">${Object.keys(C.probation).length}</div><span class="small">tracked</span><br><button class="btn" onclick="v21OpenProbation()">Open</button></div>
+    <div class="v21-card"><b>🚌 Deliveries</b><div class="v21-score">${C.busDeliveries.filter(x=>x.status==='Awaiting Assignment').length}</div><span class="small">awaiting assignment</span><br><button class="btn" onclick="v21OpenBusDeliveryBoard()">Open</button></div>
+    <div class="v21-card"><b>📅 Staff Schedules</b><div class="v21-score">${Object.values(C.employeeSchedules).filter(x=>x.leave).length}</div><span class="small">on leave</span><br><button class="btn" onclick="v21OpenSchedules()">Open</button></div>
+  </div><div class="v21-livechain"><b>Example live chain:</b> overcrowding → relief route → no driver → HR posting → applicant → interview → hire → orientation → route assignment → payroll/budget → Visual World.</div>`)
+}
+function v21CreateReliefWorkflow(sourceRoute,newRoute,moved,busId,driver){
+  ensureConnectedV21();let C=state.connected21,existing=C.routeWorkflow.find(x=>Number(x.route)===Number(newRoute));if(existing)return existing;
+  let wf={id:`RW${Date.now()}`,sourceRoute:Number(sourceRoute),route:Number(newRoute),moved:Number(moved||0),status:'Needs Staffing',busId:busId||null,driver:driver||null,steps:[
+    {name:'Route need identified',done:true},{name:'Relief route approved',done:true},{name:'Bus assigned',done:!!busId},{name:'Permanent driver assigned',done:!!driver},{name:'Special-needs compatibility checked',done:false},{name:'Budget impact posted',done:false},{name:'Route activated',done:false}]};
+  C.routeWorkflow.push(wf);v21ProcessRouteWorkflow(wf);return wf
+}
+function v21ProcessRouteWorkflow(wf){
+  let r=(state.routes||[]).find(x=>Number(x.id)===Number(wf.route));if(!r)return;
+  wf.busId=r.bus||wf.busId;wf.driver=r.driver||wf.driver;wf.steps[2].done=!!wf.busId;wf.steps[3].done=!!wf.driver;
+  wf.steps[4].done=v21SpecialNeedsProblems(wf.route).length===0;
+  if(!wf.steps[5].done){let src=(state.routes||[]).find(x=>Number(x.id)===Number(wf.sourceRoute))||r,cost=v202EstimateReliefCost?.(src,wf.moved)||25000;v21PostExpense('New Route Annualized Cost',cost,{key:`route-${wf.route}`,route:wf.route});wf.steps[5].done=true}
+  let ready=wf.steps.slice(2,6).every(x=>x.done);wf.steps[6].done=ready;wf.status=ready?'Active':'Needs Staffing';r.active=ready;if(!wf.driver)v21EnsurePermanentCoverage()
+}
+function v21RouteWorkflowBoard(){
+  ensureConnectedV21();let W=state.connected21.routeWorkflow;
+  openModal('🛣️ New Route Workflow',`${W.length?W.map(w=>`<div class="v203-posting active"><b>Route ${w.route}</b> — ${w.status}<div class="small">Created to relieve Route ${w.sourceRoute} • ${w.moved} riders moved</div>${w.steps.map((s,i)=>`<div class="v21-step ${s.done?'done':i===w.steps.findIndex(x=>!x.done)?'active':''}"><i>${s.done?'✓':i+1}</i><span>${s.name}</span><b>${s.done?'Complete':'Pending'}</b></div>`).join('')}<div class="actions"><button class="btn" onclick="v21TryAssignRoute(${w.route})">Assign Bus/Driver</button><button class="btn" onclick="v21ProcessRouteWorkflow(state.connected21.routeWorkflow.find(x=>x.route==${w.route}));v21RouteWorkflowBoard()">Recheck</button></div></div>`).join(''):'<div class="v203-empty">No connected route workflows yet. Create a relief route from Capacity / Relief to start one.</div>'}`)
+}
+function v21TryAssignRoute(routeId){
+  let r=(state.routes||[]).find(x=>Number(x.id)===Number(routeId));if(!r)return;
+  let bus=v202BestSpareBus?.(Math.max(Number(r.ops15?.ridersAM||0),Number(r.ops15?.ridersPM||0))),driver=v202BestAvailableDriver?.(routeId);
+  if(bus&&!r.bus)r.bus=bus.id;if(driver&&!r.driver&&driver.status!=='Substitute'){r.driver=driver.name;driver.route=routeId}
+  v21ProcessRouteWorkflow(state.connected21.routeWorkflow.find(x=>Number(x.route)===Number(routeId)));autosaveGame?.();v21RouteWorkflowBoard()
+}
+function v21OpenRouteBid(){
+  ensureConnectedV21();let B=state.connected21.routeBid;
+  if(B.year!==(state.year||2026)||!B.active){
+    let drivers=(state.staff||[]).filter(s=>s.status!=='Former'&&s.status!=='Substitute');
+    B.year=state.year||2026;B.active=true;B.available=(state.routes||[]).filter(r=>r.active!==false).map(r=>Number(r.id));B.order=drivers.sort((a,b)=>(b.years||0)-(a.years||0)).map(s=>s.name);B.awards=[]
+  }
+  let next=B.order.find(n=>!B.awards.some(a=>a.driver===n)),available=B.available.filter(id=>!B.awards.some(a=>Number(a.route)===Number(id)));
+  openModal('🗳️ Annual Route Bid',`<div class="alert">Drivers bid strictly in seniority order. Once a route is selected, it disappears from the board. Substitute drivers do not participate.</div>${B.awards.map(a=>`<div class="v21-bidrow"><b>${a.driver}</b><span>${a.years} yrs</span><b>Route ${a.route}</b><span>AWARDED</span></div>`).join('')}${next?`<div class="v21-good"><b>Now bidding: ${next}</b><br>${(state.staff||[]).find(s=>s.name===next)?.years||0} years seniority</div><label>Select Route<select id="v21BidRoute">${available.map(id=>`<option value="${id}">Route ${id}</option>`).join('')}</select></label><button class="btn primary" onclick="v21AwardBid('${next.replace(/'/g,"\\'")}')">Award Selected Route</button>`:'<div class="v21-good"><b>Route bid complete.</b></div>'}`)
+}
+function v21AwardBid(driverName){
+  let B=state.connected21.routeBid,routeId=Number($('v21BidRoute').value),d=(state.staff||[]).find(s=>s.name===driverName),r=(state.routes||[]).find(x=>Number(x.id)===routeId);if(!d||!r)return;
+  (state.routes||[]).forEach(x=>{if(x.driver===driverName)x.driver=null});r.driver=driverName;d.route=routeId;B.awards.push({driver:driverName,route:routeId,years:d.years||0});autosaveGame?.();v21OpenRouteBid()
+}
+function v21ApplicantInterview(applicantId){
+  ensureConnectedV21();let a=(state.hr203?.applicants||[]).find(x=>String(x.applicantId)===String(applicantId));if(!a)return;
+  if(!state.connected21.interviews[a.applicantId]){
+    let reliability=55+Math.floor(Math.random()*46),safety=55+Math.floor(Math.random()*46),communication=55+Math.floor(Math.random()*46),attendance=60+Math.floor(Math.random()*41);
+    state.connected21.interviews[a.applicantId]={reliability,safety,communication,attendance,overall:Math.round((reliability+safety+communication+attendance)/4),revealed:0,questions:[
+      {q:'A student refuses to remain seated. What do you do?',a:'Follow district safety procedure, keep the bus secure, and involve school/transportation staff instead of arguing while driving.',score:safety},
+      {q:'A route is running 10 minutes late. What is your response?',a:'Drive safely, notify Dispatch, and never speed to make up time.',score:reliability},
+      {q:'How would you handle an upset parent at a bus stop?',a:'Stay professional, protect confidentiality, and route the concern through Transportation or the school.',score:communication}]}
+  }
+  let I=state.connected21.interviews[a.applicantId];
+  openModal(`🎤 Interview — ${a.name}`,`<div class="alert">Interview traits are hidden until you ask questions.</div>${I.questions.map((q,i)=>`<div class="v21-candidate"><b>${q.q}</b>${I.revealed>i?`<div>${q.a}</div><div class="small">Interview signal: ${q.score}/100</div>`:`<div class="small">Not asked yet</div>`}</div>`).join('')}<div class="actions">${I.revealed<I.questions.length?`<button class="btn primary" onclick="v21RevealInterview('${String(a.applicantId).replace(/'/g,"\\'")}')">Ask Next Question</button>`:`<button class="btn primary" onclick="v203AdvanceApplicant('${String(a.applicantId).replace(/'/g,"\\'")}')">Advance Candidate</button>`}</div>${I.revealed===I.questions.length?`<div class="v21-good"><b>Overall interview score: ${I.overall}/100</b><br><span class="v21-trait">Reliability ${I.reliability}</span><span class="v21-trait">Safety ${I.safety}</span><span class="v21-trait">Communication ${I.communication}</span><span class="v21-trait">Attendance ${I.attendance}</span></div>`:''}`)
+}
+function v21RevealInterview(id){let I=state.connected21.interviews[id];if(I)I.revealed=Math.min(I.questions.length,I.revealed+1);v21ApplicantInterview(id)}
+function v21OpenSchedules(){
+  ensureConnectedV21();v21EnsureSchedules();let all=[...(state.staff||[]).map(e=>({...e,_type:'Driver'})),...(state.supportStaff||[]).map(e=>({...e,_type:e.role||'Support'}))];
+  openModal('📅 Employee Schedules, Leave & Attendance',`${all.map(e=>{let s=state.connected21.employeeSchedules[e.name];return `<div class="v203-app"><b>${e.name}</b> <span class="v203-tag">${e._type}</span><div class="small">${s.pattern} • Attendance ${s.attendanceScore}/100 • Vacation ${s.vacationDays} day(s)</div>${s.leave?`<div class="v21-warning">On ${s.leave.type} until day ${s.leave.returnDay}</div>`:''}<div class="actions"><button class="btn" onclick="v21SetLeave('${e.name.replace(/'/g,"\\'")}')">Set Leave</button><button class="btn" onclick="v21ClearLeave('${e.name.replace(/'/g,"\\'")}')">Return to Work</button></div></div>`}).join('')}`)
+}
+function v21SetLeave(name){
+  let s=state.connected21.employeeSchedules[name];if(!s)return;s.leave={type:'Approved Leave',returnDay:v21DayOrdinal()+7};s.status='On Leave';
+  let r=(state.routes||[]).find(r=>r.driver===name);if(r){r.temporaryDriver=null;v21Log('Leave Coverage',`${name} is on leave. Dispatch must cover Route ${r.id}.`,true)}v21EnsurePermanentCoverage();autosaveGame?.();v21OpenSchedules()
+}
+function v21ClearLeave(name){let s=state.connected21.employeeSchedules[name];if(s){s.leave=null;s.status='Scheduled'}autosaveGame?.();v21OpenSchedules()}
+function v21OpenProbation(){
+  ensureConnectedV21();v21EnsureProbation();let P=state.connected21.probation;
+  openModal('🧑‍💼 30 / 60 / 90 Day Probation & Evaluations',`${Object.entries(P).map(([name,p])=>`<div class="v203-app"><b>${name}</b><div class="small">Performance score ${p.score}/100</div><div class="v21-flow"><span>30-day ${p.day30?'✓':'○'}</span><span>60-day ${p.day60?'✓':'○'}</span><span>90-day ${p.day90?'✓':'○'}</span></div><button class="btn" onclick="v21RunProbationReview('${name.replace(/'/g,"\\'")}')">Run Next Review</button></div>`).join('')||'<div class="v203-empty">No employees currently in probation.</div>'}`)
+}
+function v21RunProbationReview(name){
+  let p=state.connected21.probation[name];if(!p)return;let key=!p.day30?'day30':!p.day60?'day60':!p.day90?'day90':null;if(!key)return;p[key]=true;p.score=Math.max(50,Math.min(100,p.score+Math.floor(Math.random()*11)-3));
+  let stage=key==='day30'?'30-day':key==='day60'?'60-day':'90-day',note=`${stage} review: ${p.score>=90?'Excellent':p.score>=75?'Meets expectations':'Needs coaching'} (${p.score}/100).`;p.notes.push(note);v21Log('Probation Review',`${name}: ${note}`);if(p.score<70)v20Inbox?.('HR',`${name} needs coaching`,`Probation score is ${p.score}/100. Consider coaching or progressive discipline.`,true,false);autosaveGame?.();v21OpenProbation()
+}
+function v21SpecialNeedsProblems(routeFilter=null){
+  ensureConnectedV21();let problems=[],students=state.riders16?.students||[];
+  students.filter(s=>s.active!==false&&s.specialNeeds).forEach(s=>{
+    let rid=Number(s.routeAM||s.routePM),r=(state.routes||[]).find(x=>Number(x.id)===rid);if(routeFilter!=null&&rid!==Number(routeFilter))return;if(!r){problems.push({student:s.name,route:rid||'—',issue:'No route assigned'});return}
+    let b=(state.buses||[]).find(x=>Number(x.id)===Number(r.bus)),plan=s.specialNeedsPlan||{},wheel=!!(plan.wheelchair||s.wheelchair),aide=!!(plan.aide||s.aideRequired);
+    if(wheel&&!(b?.lift||b?.wheelchairPositions>0))problems.push({student:s.name,route:rid,issue:'Wheelchair rider assigned to bus without compatible lift/positions'});
+    if(aide){let ok=!!r.aide||(state.supportStaff||[]).some(x=>/aide|monitor/i.test(x.role||'')&&Number(x.route)===rid);if(!ok)problems.push({student:s.name,route:rid,issue:'Aide required but no aide assigned'})}
+  });return problems
+}
+function v21OpenSpecialNeedsAudit(){let probs=v21SpecialNeedsProblems();openModal('♿ Special-Needs Routing Audit',`<div class="alert">Nicole Grant checks wheelchair compatibility, aide requirements, and route assignment before pull-out.</div>${probs.length?probs.map(p=>`<div class="v21-special"><b>${p.student}</b> — Route ${p.route}<br>${p.issue}</div>`).join(''):'<div class="v21-good"><b>No special-needs assignment conflicts found.</b></div>'}`)}
+function v21RegisterBusDelivery(bus){
+  ensureConnectedV21();if(!bus)return;let C=state.connected21;if(C.busDeliveries.some(x=>Number(x.busId)===Number(bus.id)))return;C.busDeliveries.push({busId:bus.id,status:'Awaiting Assignment',deliveredYear:state.year||2026,parking:null,route:null,driver:null,dispositionOld:null})
+}
+function v21OpenBusDeliveryBoard(){
+  ensureConnectedV21();(state.buses||[]).filter(b=>!(state.routes||[]).some(r=>Number(r.bus)===Number(b.id))&&Number(b.year||0)>=Number(state.year||2026)-1).forEach(v21RegisterBusDelivery);let D=state.connected21.busDeliveries;
+  openModal('🚌 New Bus Delivery & Assignment',`${D.length?D.map(d=>{let b=(state.buses||[]).find(x=>Number(x.id)===Number(d.busId));return `<div class="v203-posting active"><b>Bus ${d.busId}</b> — ${b?.year||''} ${b?.make||''} ${b?.model||''}<div class="small">${d.status}</div><button class="btn primary" onclick="v21AssignDeliveredBus(${d.busId})">Assign / Place in Service</button></div>`}).join(''):'<div class="v203-empty">No delivered buses are awaiting assignment.</div>'}`)
+}
+function v21AssignDeliveredBus(busId){
+  let d=state.connected21.busDeliveries.find(x=>Number(x.busId)===Number(busId)),b=(state.buses||[]).find(x=>Number(x.id)===Number(busId));if(!d||!b)return;let availableRoutes=(state.routes||[]).filter(r=>!r.bus||Number(r.bus)===Number(busId));
+  openModal(`🚌 Assign Bus ${busId}`,`<label>Fleet Number<input id="v21FleetNo" type="number" value="${b.id}"></label><label>Parking Space<input id="v21Parking" type="text" value="${d.parking||b.id}"></label><label>Route<select id="v21BusRoute"><option value="">Spare / Unassigned</option>${availableRoutes.map(r=>`<option value="${r.id}">Route ${r.id}</option>`).join('')}</select></label><label>Primary Driver<select id="v21BusDriver"><option value="">No primary driver</option>${(state.staff||[]).filter(s=>s.status!=='Former'&&s.status!=='Substitute').map(s=>`<option>${s.name}</option>`).join('')}</select></label><label>Old Bus Disposition<select id="v21OldDisposition"><option>Keep as Spare</option><option>Trade-In</option><option>Auction</option><option>Training Bus</option><option>Preserve</option></select></label><button class="btn primary" onclick="v21SaveDeliveredBus(${busId})">Place Bus in Service</button>`)
+}
+function v21SaveDeliveredBus(busId){
+  let d=state.connected21.busDeliveries.find(x=>Number(x.busId)===Number(busId)),b=(state.buses||[]).find(x=>Number(x.id)===Number(busId));if(!d||!b)return;
+  let newNo=Number($('v21FleetNo').value)||b.id,routeId=Number($('v21BusRoute').value)||null,driver=$('v21BusDriver').value||null;if(newNo!==Number(b.id)&&!(state.buses||[]).some(x=>Number(x.id)===newNo)){let old=b.id;b.id=newNo;(state.routes||[]).forEach(r=>{if(Number(r.bus)===Number(old))r.bus=newNo});d.busId=newNo}
+  d.parking=$('v21Parking').value||String(newNo);d.route=routeId;d.driver=driver;d.dispositionOld=$('v21OldDisposition').value;d.status='In Service';if(routeId){let r=(state.routes||[]).find(x=>Number(x.id)===routeId);if(r){r.bus=newNo;if(driver){r.driver=driver;let emp=(state.staff||[]).find(s=>s.name===driver);if(emp)emp.route=routeId}}}
+  v21Log('Fleet Delivery',`Bus ${newNo} placed in service${routeId?' on Route '+routeId:' as a spare'}.`);autosaveGame?.();closeModal();v21OpenBusDeliveryBoard()
+}
+function v21PostExpense(category,amount,meta={}){
+  ensureConnectedV21();let F=state.connected21.finance;if(meta.key&&F.transactions.some(t=>t.key===meta.key))return;F.transactions.push({id:Date.now()+Math.random(),date:v20DayKey?.()||'',category,amount:Number(amount||0),meta,key:meta.key||null});F.spent=F.transactions.reduce((a,t)=>a+Number(t.amount||0),0);state.operatingBudget=Math.max(0,Number(F.openingBudget||0)-F.spent)
+}
+function v21BudgetRemaining(){ensureConnectedV21();let F=state.connected21.finance;return Math.max(0,Number(F.openingBudget||0)-Number(F.spent||0))}
+function v21OpenUnifiedBudget(){
+  ensureConnectedV21();let F=state.connected21.finance,groups={};F.transactions.forEach(t=>groups[t.category]=(groups[t.category]||0)+Number(t.amount||0));
+  openModal('💰 Unified Transportation Budget',`<div class="alert">V21 uses this ledger as the single source of truth for connected-system expenses, reducing double-counting between route, fuel, labor and payroll systems.</div><div class="v21-hub"><div class="v21-card"><b>Opening Budget</b><div class="v21-score">${v13Money(F.openingBudget)}</div></div><div class="v21-card"><b>Connected Spending</b><div class="v21-score">${v13Money(F.spent)}</div></div><div class="v21-card"><b>Remaining</b><div class="v21-score">${v13Money(v21BudgetRemaining())}</div></div></div>${Object.entries(groups).map(([k,v])=>`<div class="v21-budgetrow"><b>${k}</b><span>${v13Money(v)}</span><span>${Math.round(v/Math.max(1,F.openingBudget)*100)}%</span></div>`).join('')||'<div class="v203-empty">No connected-system expenses posted yet.</div>'}`)
+}
+function v21SmartBalanceScore(student,route){
+  let score=0;if(student.school&&(route.ops15?.schools||[]).includes(student.school))score+=35;if(student.school&&route.ops15?.school===student.school)score+=35;
+  let stop=String(student.stopName||'').toLowerCase(),routeStops=(route.ops15?.stops||[]).map(s=>String(s.name||'').toLowerCase());if(routeStops.some(x=>x&&stop&&x.split(' ')[0]===stop.split(' ')[0]))score+=20;
+  let cap=v202RouteCapacity(route),r=v202RouteRiders(route);score+=Math.max(0,25-Math.round(r/Math.max(1,cap)*25));
+  if(student.specialNeeds){let b=(state.buses||[]).find(x=>Number(x.id)===Number(route.bus)),plan=student.specialNeedsPlan||{};if(plan.wheelchair&&(b?.lift||b?.wheelchairPositions>0))score+=30;if(plan.wheelchair&&!(b?.lift||b?.wheelchairPositions>0))score-=100}
+  return score
+}
+function v21RecommendRouteForStudent(student,excludeId){return (state.routes||[]).filter(r=>Number(r.id)!==Number(excludeId)&&r.active!==false).map(r=>({r,score:v21SmartBalanceScore(student,r)})).sort((a,b)=>b.score-a.score)[0]?.r||null}
+function v21ProcessDay(){
+  ensureConnectedV21();let C=state.connected21,key=v20DayKey?.()||String(v21DayOrdinal());if(C.lastProcessedDay===key)return;C.lastProcessedDay=key;
+  v21NaturalApplicantTick();v21EnsurePermanentCoverage();v21EnsureSchedules();v21EnsureProbation();
+  Object.entries(C.employeeSchedules).forEach(([name,s])=>{if(s.leave&&v21DayOrdinal()>=Number(s.leave.returnDay)){s.leave=null;s.status='Scheduled';v21Log('Leave Return',`${name} returned from approved leave.`)}});
+  C.routeWorkflow.forEach(v21ProcessRouteWorkflow);let probs=v21SpecialNeedsProblems();if(probs.length&&C.thresholds.autoSpecialNeedsFlag)v20Inbox?.('Nicole Grant','Special-needs routing conflicts',`${probs.length} assignment issue(s) require correction before pull-out.`,true,false)
+}
+
 /* V13.1 startup guard + living clock */
 window.addEventListener('load',()=>{
  try{ensureV13();renderV13World(window.v13view||'campus')}catch(e){console.error('V13.1 load guard',e)}
@@ -5604,7 +6253,7 @@ window.addEventListener('load',()=>{
  },1000);
 });
 
-window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
+window.addEventListener('load',()=>{try{ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
 
 render();
 </script>
