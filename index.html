@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V22.4 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V23.0.2 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V22.4 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V23.0.2 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -7601,7 +7601,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V22.4 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V23.0.2 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7764,7 +7764,7 @@ function v224ProtectCurrentPurchasedBuses(){
 
 /* ===== V22.5 LIVING DRIVERS + BUSES ===== */
 function ensureV225(){ensureV222?.();state.v225=state.v225||{drivers:{},buses:{},morning:[],memories:[]};let V=state.v225,pick=(a,n)=>a[Math.abs(n)%a.length];(state.staff||[]).forEach((d,i)=>{if(!d.employeeId)d.employeeId=`DRV-${i+1}`;let s=(d.name||'').split('').reduce((a,c)=>a+c.charCodeAt(0),i);V.drivers[d.employeeId]??={name:d.name,traits:[pick(['Very Reliable','Reliable','Usually On Time'],s),pick(['Excellent with Students','Calm & Patient','Firm but Fair'],s+1),pick(['Mechanical Eye','Good Pre-Trip','Average Mechanical Awareness'],s+2),pick(['Excellent in Snow','Confident in Winter','Cautious in Snow'],s+3),pick(['Loves Trips','Prefers Athletics','Prefers Day Trips'],s+4)],vehicle:pick(['pickup','SUV','sedan','crossover','minivan'],s+5),routes:[],busHistory:[],memories:[],attendance:[]}});(state.buses||[]).forEach((b,i)=>{V.buses[String(b.id)]??={fuel:55+((Number(b.id)||i)*7)%40,clean:82+((Number(b.id)||i)*3)%18,lifetimeFuel:Math.round(Number(b.miles||0)/7),maintenance:Number(b.repairSpend||0),breakdowns:Number(b.breakdowns||0),accidents:Number(b.accidents||0),drivers:[],memories:[]}});v225Sync();return V}
-function v225Sync(){let V=state.v225;(state.staff||[]).forEach(d=>{let p=V.drivers[d.employeeId];if(!p)return;let r=(state.routes||[]).find(x=>x.driver===d.name),b=r?(state.buses||[]).find(x=>String(x.route||x.assignedRoute||'')===String(r.id)):null;p.route=r?.id||d.route||null;p.bus=b?.id||null;if(p.route&&!p.routes.some(x=>x.year==state.year&&x.route==p.route))p.routes.push({year:state.year,route:p.route});if(p.bus&&!p.busHistory.some(x=>x.year==state.year&&x.bus==p.bus))p.busHistory.push({year:state.year,bus:p.bus});if(b){let L=V.buses[String(b.id)];if(!L.drivers.some(x=>x.year==state.year&&x.name==d.name))L.drivers.push({year:state.year,name:d.name})}})}
+function v225Sync(){let V=state.v225;(state.staff||[]).forEach(d=>{let p=V.drivers[d.employeeId];if(!p)return;let r=(state.routes||[]).find(x=>x.driver===d.name),b=r?((state.buses||[]).find(x=>String(x.id)===String(r.bus))||(state.buses||[]).find(x=>String(x.route||x.assignedRoute||'')===String(r.id))):null;p.route=r?.id||d.route||null;p.bus=b?.id||null;if(p.route&&!p.routes.some(x=>x.year==state.year&&x.route==p.route))p.routes.push({year:state.year,route:p.route});if(p.bus&&!p.busHistory.some(x=>x.year==state.year&&x.bus==p.bus))p.busHistory.push({year:state.year,bus:p.bus});if(b){let L=V.buses[String(b.id)];if(!L.drivers.some(x=>x.year==state.year&&x.name==d.name))L.drivers.push({year:state.year,name:d.name})}})}
 function v225DriverProfile(name){ensureV225();let d=(state.staff||[]).find(x=>x.name===name);if(!d)return;let p=state.v225.drivers[d.employeeId];openModal(`👤 ${d.name}`,`<div class="alert"><b>${d.status||'Active'} Driver</b><div class="small">Age ${d.age||'—'} • ${d.years||0} years service • ${p.vehicle}</div></div><div>${p.traits.map(t=>`<span class="badge">${t}</span>`).join(' ')}</div><div class="kv"><span>Current Route</span><b>${p.route||'Unassigned'}</b></div><div class="kv"><span>Current Bus</span><b>${p.bus||'Unassigned'}</b></div><h3>Route History</h3><div class="small">${p.routes.map(x=>`${x.year}: Route ${x.route}`).join('<br>')||'No history yet'}</div><h3>Bus History</h3><div class="small">${p.busHistory.map(x=>`${x.year}: Bus ${x.bus}`).join('<br>')||'No history yet'}</div><h3>Memories</h3><div class="small">${p.memories.slice(-8).reverse().join('<br>')||'No notable memories yet.'}</div>`)}
 function v225BusProfile(id){ensureV225();let b=(state.buses||[]).find(x=>String(x.id)===String(id));if(!b)return;let L=state.v225.buses[String(id)];openModal(`🚌 Bus ${b.id} — ${b.year||''} ${b.model||''}`,`<div class="alert"><b>${Number(b.miles||0).toLocaleString()} miles</b><div class="small">${b.capacity||'—'} passenger • ${b.fuel||'Diesel'} • Condition ${b.condition||90}%</div></div><div class="kv"><span>Fuel</span><b>${Math.round(L.fuel)}%</b></div><div class="kv"><span>Cleanliness</span><b>${Math.round(L.clean)}%</b></div><div class="kv"><span>Lifetime Fuel</span><b>${L.lifetimeFuel.toLocaleString()} gal</b></div><div class="kv"><span>Lifetime Maintenance</span><b>${money(L.maintenance)}</b></div><div class="kv"><span>Breakdowns / Accidents</span><b>${L.breakdowns} / ${L.accidents}</b></div><h3>Driver History</h3><div class="small">${L.drivers.map(x=>`${x.year}: ${x.name}`).join('<br>')||'No history yet'}</div><h3>Bus Memories</h3><div class="small">${L.memories.slice(-10).reverse().join('<br>')||'No major events yet.'}</div>`)}
 function v225PreTrip(d,b){let p=state.v225.drivers[d.employeeId],L=state.v225.buses[String(b.id)],chance=p.traits.some(x=>/Mechanical Eye|Good Pre-Trip/.test(x))?.03:.012;if(Math.random()<chance){let issue=['brake warning light','low tire pressure','coolant leak','warning buzzer','headlight out'][Math.floor(Math.random()*5)];b.status='Maintenance';b.liveStatus='Shop';L.memories.push(`${state.gameDate||''}: ${d.name} caught ${issue} during pre-trip.`);p.memories.push(`Caught ${issue} on Bus ${b.id} during pre-trip.`);state.v221?.workOrders?.push({id:Date.now()+Number(b.id),bus:b.id,issue:`Pre-trip: ${issue}`,status:'Open',assigned:'Mike Evans',parts:'Diagnosis pending',eta:'TBD',opened:state.gameDate||''});return `${d.name} found a ${issue} on Bus ${b.id}; Shop notified.`}return `${d.name} completed pre-trip on Bus ${b.id}.`}
@@ -7776,6 +7776,35 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
+
+/* ===== V23.0.2 GARAGE COMPATIBILITY REPAIR ===== */
+function v2301Compat(){
+  if(!state.v225)return;
+  state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
+  state.v225.busLives=state.v225.buses||state.v225.busLives||{};
+  state.v225.morningEvents=state.v225.morning||state.v225.morningEvents||[];
+  Object.values(state.v225.driverProfiles).forEach(p=>{
+    if(p.currentRoute==null)p.currentRoute=p.route??null;
+    if(p.currentBus==null)p.currentBus=p.bus??null;
+    p.route=p.currentRoute??p.route??null;
+    p.bus=p.currentBus??p.bus??null;
+    p.compliments=p.compliments||[];
+    p.complaints=p.complaints||[];
+    p.memories=p.memories||[];
+    p.attendance=p.attendance||[];
+  });
+  Object.values(state.v225.busLives).forEach(L=>{
+    if(L.fuelPct==null)L.fuelPct=Number(L.fuel??100);
+    if(L.cleanliness==null)L.cleanliness=Number(L.clean??100);
+    if(L.condition==null)L.condition=85;
+    if(L.lifetimeMaintenance==null)L.lifetimeMaintenance=Number(L.maintenance||0);
+    L.fuel=Number(L.fuelPct); L.clean=Number(L.cleanliness); L.maintenance=Number(L.lifetimeMaintenance);
+    L.memories=L.memories||[]; L.drivers=L.drivers||[];
+  });
+}
+var v225PreTripEvent=(typeof v225PreTripEvent==='function')?v225PreTripEvent:function(d,b){v2301Compat();return v225PreTrip(d,b)};
+var v225EndOfDayBusLife=(typeof v225EndOfDayBusLife==='function')?v225EndOfDayBusLife:function(){v2301Compat();let r=v225EndDay();v2301Compat();return r};
+
 function ensureV226(){
   ensureV225?.();
   state.v226=state.v226||{
@@ -8045,7 +8074,7 @@ function v226AdvanceTraining(name){
 /* Enrich V22.5 pre-trip with real defects and spare-bus behavior. */
 const _v225PreTripEvent=v225PreTripEvent;
 v225PreTripEvent=function(d,b){
-  ensureV226();let p=state.v225.driverProfiles[d.employeeId],awareness=String(p.traits.mechanical||'');
+  ensureV226();let p=state.v225.driverProfiles[d.employeeId],awareness=Array.isArray(p.traits)?p.traits.join(' '):String(p.traits?.mechanical||'');
   let chance=awareness.includes('Mechanical Eye')?.04:awareness.includes('Good')?.03:.018;
   if(Math.random()<chance){
     let defect=v226CreateDefect(d,b);
@@ -8193,7 +8222,7 @@ function v227ResolveRequest(id,outcome){
 
 /* ===== V22.8 LIVING TRANSPORTATION DEPARTMENT ===== */
 function ensureV228(){
-  ensureV227?.();
+  ensureV227?.();v2301Compat?.();
   state.v228=state.v228||{
     compliance:{},busRequests:[],pmSchedule:[],formerEmployees:[],retiredFleet:[],
     yearbooks:[],senioritySnapshots:[],shopNotes:[],lastDaily:null,lastYearbook:null
@@ -8375,7 +8404,7 @@ function v228Daily(){
 
 /* ===== V23.0 TRANSPORTATION CAMPUS ===== */
 function ensureV230(){
-  ensureV228?.();
+  ensureV228?.();v2301Compat?.();
   state.v230=state.v230||{radio:[],campusEvents:[],reputation:{parents:72,administration:76,employees:74,board:70},lastRadioDay:null};
   return state.v230
 }
@@ -8418,7 +8447,7 @@ function v230Radio(){
   return state.v230.radio.slice(-14).map(x=>`<div style="margin:3px 0;${x.level==='attention'?'color:#ffb7b7;font-weight:800':''}">${x.time} • ${x.text}</div>`).join('')
 }
 function v230OpenCampus(){
-  ensureV230();ensureV227?.();v226SyncGarage?.();v230RadioSeed();
+  ensureV230();ensureV227?.();v2301Compat?.();v227UpdateMorale?.();v226SyncGarage?.();v230RadioSeed();
   let buses=(state.buses||[]).slice().sort((a,b)=>Number(a.id)-Number(b.id));
   let busSpaces=buses.map(b=>{
     let st=v230CampusBusStatus(b),driver=v226BusDriver?.(b),route=v226BusRoute?.(b);
