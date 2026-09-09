@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V23.2.2 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V23.3 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V23.2.2 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V23.3 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -7607,7 +7607,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V23.2.2 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V23.3 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7688,8 +7688,29 @@ function v2321SaveCandidates(){
 function v2321BestRecoverySave(){let c=v2321SaveCandidates();if(!c.length)return null;c.sort((a,b)=>b.score-a.score||b.ts-a.ts);return c[0]}
 function v2321LoadCandidate(key){
   let c=v2321SaveCandidates().find(x=>x.key===key);if(!c)return alert('That save is no longer available.');
-  try{window.__transportBooting=true;state=JSON.parse(c.raw);if(!state||!Array.isArray(state.buses))throw new Error('Invalid save');let restored=v224RestorePurchasedFleet();ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();window.__transportBooting=false;autosaveGame?.();closeModal?.();render?.();notify?.(`${c.name} recovered — Day ${state.schoolDay||state.day||0}, ${(state.staff||[]).length} staff, ${state.buses.length} buses.`,'decision')}
-  catch(e){window.__transportBooting=false;console.error(e);alert('That recovery save could not be loaded.')}
+  try{
+    window.__transportBooting=true;
+    // IMPORTANT: c.raw may be either a legacy raw state OR a V22.4 wrapped snapshot.
+    // v2321SaveCandidates already normalized both formats through v224Snapshot,
+    // so restore the normalized state object instead of JSON.parse(c.raw).
+    state=JSON.parse(JSON.stringify(c.state));
+    if(!state||!Array.isArray(state.buses))throw new Error('Snapshot has no fleet data');
+    v224RestorePurchasedFleet?.();
+    ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();
+    ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();
+    window.__transportBooting=false;
+    // Preserve the recovered snapshot immediately as the canonical manual save too.
+    v224PrepareSave?.();
+    localStorage.setItem('transportDirectorSave',JSON.stringify(state));
+    localStorage.setItem('transportDirectorSaveTime',String(Date.now()));
+    localStorage.setItem('transportAutosave',JSON.stringify(state));
+    localStorage.setItem('transportAutosaveTime',String(Date.now()));
+    closeModal?.();render?.();
+    notify?.(`${c.name} recovered — Day ${state.schoolDay||state.day||0}, ${(state.staff||state.drivers||[]).length} staff, ${state.buses.length} buses.`,'decision')
+  }catch(e){
+    window.__transportBooting=false;console.error('Snapshot recovery failed',e);
+    alert(`Recovery failed: ${e?.message||e}. The snapshot was not overwritten.`)
+  }
 }
 
 function v2322RecoveryUI(){
@@ -7708,7 +7729,7 @@ function v2322RecoveryUI(){
 }
 function v2321RecoveryCenter(){
   let C=v2321SaveCandidates().sort((a,b)=>b.score-a.score||b.ts-a.ts),best=C[0];
-  openModal('🛟 SAVE RECOVERY CENTER',`<div class="alert priority-green"><b>${best?`Recommended: ${best.name}`:'No saves found'}</b><div class="small">Recovery now prefers the most progressed district instead of blindly choosing the newest timestamp.</div></div>`+C.map(c=>`<div class="v232-panel"><b>${c.name}${c===best?' ⭐':''}</b><div class="small">${c.date||'No date'} • Day ${c.day} • ${c.staff} staff • ${c.routes} routes • ${c.buses} buses<br>Saved ${c.ts?new Date(c.ts).toLocaleString():'legacy timestamp'}</div><div class="actions"><button class="btn ${c===best?'primary':''}" onclick="v2321LoadCandidate('${c.key}')">Load This Snapshot</button></div></div>`).join(''))
+  openModal('🛟 SAVE RECOVERY CENTER',`<div class="alert priority-green"><b>${best?`Recommended: ${best.name}`:'No saves found'}</b><div class="small">Recovery now prefers the most progressed district instead of blindly choosing the newest timestamp.</div></div>`+C.map(c=>`<div class="v232-panel"><b>${c.name}${c===best?' ⭐':''}</b><div class="small">${c.date||'No date'} • Day ${c.day} • ${c.staff} staff • ${c.routes} routes • ${c.buses} buses<br>Saved ${c.ts?new Date(c.ts).toLocaleString():'legacy timestamp'} • Snapshot verified</div><div class="actions"><button class="btn ${c===best?'primary':''}" onclick="v2321LoadCandidate('${c.key}')">Load This Snapshot</button></div></div>`).join(''))
 }
 function v224SaveStatus(){
   let newest=v224NewestSave(),R=v224PurchasedFleetRegistry();
@@ -7741,7 +7762,7 @@ saveGame=function(){
 }
 autosaveGame=function(){
   if(typeof window!=='undefined'&&window.__transportBooting)return;
-  try{
+  try{ensureV233?.();v233RotatingBackups?.();
     let ts=v224PrepareSave(),payload=JSON.stringify(state);
     localStorage.setItem('transportAutosave',payload);
     localStorage.setItem('transportAutosaveTime',String(ts))
@@ -7814,7 +7835,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V23.2.2 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V23.3 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8571,7 +8592,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V23.2.2 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V23.3 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV2303?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8669,10 +8690,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V23.2.2: legacy R handler replaced by live-day keyboard controls. */
+/* V23.3: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V23.2.2 LIVE TRANSPORTATION DAY ===== */
+/* ===== V23.3 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8720,7 +8741,7 @@ function v231ProcessMinute(){
 function v231Tick(){
   let V=ensureV231();if(!V.running||V.paused||V.completed)return;
   let step=Math.max(1,Number(V.speed||1));
-  for(let i=0;i<step;i++){V.minute++;v231SetGameTime();v231ProcessMinute();v232TickHook?.();if(V.completed)break}
+  for(let i=0;i<step;i++){V.minute++;v231SetGameTime();v231ProcessMinute();v232TickHook?.();v233IncrementalOps?.();if(V.completed)break}
   v231RefreshIfOpen();v232Refresh?.()
 }
 function v231Start(){
@@ -8734,7 +8755,7 @@ function v231FinishDay(){
   let V=ensureV231();if(V.completed)return;V.completed=true;V.running=false;V.paused=true;
   v231AddEvent('Transportation day complete. Daily records are being posted.');
   try{runTransportationDay()}catch(e){console.error(e)}
-  v2303SyncMaintenanceToShop?.();v2303SyncFuelCardLog?.();v232EndDaySummary?.();autosaveGame?.();
+  v2303SyncMaintenanceToShop?.();v2303SyncFuelCardLog?.();v232EndDaySummary?.();v233PrepareNextDay?.();autosaveGame?.();
   v231RefreshIfOpen()
 }
 function v231Skip(){let V=ensureV231();V.minute=1140;v231SetGameTime();v231FinishDay()}
@@ -8782,7 +8803,50 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 }
 
 
-/* ===== V23.2.2 LIVING GARAGE ===== */
+
+/* ===== V23.3 RELIABILITY + REAL OPERATIONS ===== */
+function ensureV233(){state.v233=state.v233||{absences:{},repairs:{},routeRuntime:{},tomorrow:{date:null,issues:[]},liveProcessed:{},backupMeta:{lastDay:null,lastWeek:null},employeeHistory:{}};return state.v233}
+function v233Clone(x){return JSON.parse(JSON.stringify(x))}
+function v233DateKey(){return String(state.gameDate||state.date||'')}
+function v233ShiftDate(date,days){try{let d=new Date(date+'T00:00:00');d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}catch(e){return date}}
+function v233DaysBetween(a,b){try{return Math.round((Date.parse(b+'T00:00:00')-Date.parse(a+'T00:00:00'))/86400000)}catch(e){return 0}}
+function v233RouteBusId(r){return r?.tempBus||r?.temporaryBus||r?.bus||r?.busId||r?.assignedBus||null}
+function v233RouteDriverName(r){return r?.tempDriver||r?.temporaryDriver||r?.driver||null}
+function v233BusById(id){return (state.buses||[]).find(b=>String(b.id)===String(id))}
+function v233DriverByName(n){return (state.drivers||[]).find(d=>d.name===n)}
+function v233BusLife(id){ensureV225?.();let L=state.v225?.buses?.[String(id)];if(!L&&state.v225?.buses){state.v225.buses[String(id)]={fuel:100,clean:90,maintenance:[],breakdowns:0,accidents:0,drivers:[],memories:[]};L=state.v225.buses[String(id)]}return L}
+function v233BusFuel(id){let b=v233BusById(id),L=v233BusLife(id);let vals=[L?.fuel,L?.fuelPct,b?.fuel,b?.fuelPct].map(Number).filter(Number.isFinite);return vals.length?Math.max(0,Math.min(100,vals[0])):100}
+function v233SetBusFuel(id,pct){pct=Math.max(0,Math.min(100,Number(pct)||0));let b=v233BusById(id),L=v233BusLife(id);if(b){b.fuel=pct;b.fuelPct=pct}if(L){L.fuel=pct;L.fuelPct=pct}}
+function v233AddMileage(id,miles,detail='Route service'){let b=v233BusById(id);if(!b)return;miles=Math.max(0,Number(miles)||0);b.mileage=Number(b.mileage||0)+miles;let L=v233BusLife(id);if(L){L.mileage=Number(L.mileage||0)+miles;L.memories=L.memories||[];L.memories.unshift({date:v233DateKey(),text:`${detail}: ${miles.toFixed(1)} miles`});L.memories=L.memories.slice(0,80)}}
+function v233FuelBus(id,driver='District',reason='Route return'){ensureV226?.();ensureV233();let cur=v233BusFuel(id);if(cur>=92)return 0;let gallons=Math.max(1,(100-cur)*0.55),price=3.39,amount=Number((gallons*price).toFixed(2));v233SetBusFuel(id,100);state.v226.fuelLog=state.v226.fuelLog||[];let tx={date:v233DateKey(),bus:id,driver,amount,gallons:Number(gallons.toFixed(1)),detail:`${reason} — district fleet card`,fuelCard:true,time:v231Clock?.(v231Minute?.()||0)||''};state.v226.fuelLog.unshift(tx);state.v10=state.v10||{};state.v10.fuelCard=state.v10.fuelCard||{transactions:[]};state.v10.fuelCard.transactions=state.v10.fuelCard.transactions||[];state.v10.fuelCard.transactions.unshift({...tx,cardTxId:'V233-'+Date.now()+'-'+id});if(state.finance?.operating!=null)state.finance.operating=Number(state.finance.operating)-amount;return amount}
+function v233SetAbsence(driverName,days=1,reason='Called off'){ensureV233();state.v233.absences[driverName]={start:v233DateKey(),through:v233ShiftDate(v233DateKey(),Math.max(0,days-1)),reason,status:'Active'};let d=v233DriverByName(driverName);if(d){d.calledOff=true;d.absent=true}}
+function v233RefreshAbsences(){ensureV233();let today=v233DateKey();Object.entries(state.v233.absences).forEach(([name,a])=>{let d=v233DriverByName(name),active=!today||!a.through||today<=a.through;if(d){d.calledOff=active;d.absent=active}if(!active)a.status='Completed'})}
+function v233RepairDaysFor(issue){let s=String(issue||'').toLowerCase();if(/engine|transmission|rear end|major/.test(s))return 3;if(/brake|electrical|starter|alternator|coolant|air/.test(s))return 2;return 1}
+function v233SyncRepairs(){ensureV233();ensureV226?.();let today=v233DateKey();(state.buses||[]).forEach(b=>{let sources=v2303MaintenanceSources?.(b.id)||[];let needs=sources.length||/maintenance|shop|out of service/i.test(String(b.status||'')+' '+String(b.liveStatus||''));if(needs&&!state.v233.repairs[String(b.id)]){let issue=sources[0]?.issue||sources[0]?.detail||'Maintenance required';state.v233.repairs[String(b.id)]={bus:b.id,issue,start:today,days:v233RepairDaysFor(issue),status:'Waiting',parts:'Available',roadTest:false}}});let active=Object.values(state.v233.repairs).filter(r=>!['Released','Closed'].includes(r.status));active.sort((a,b)=>String(a.start).localeCompare(String(b.start)));active.forEach((r,i)=>{r.status=i<2?'In Bay':'Waiting';if(r.status==='In Bay'){let age=Math.max(0,v233DaysBetween(r.start,today));if(age>=r.days){r.status='Road Test';r.roadTest=true}}})}
+function v233ReleaseReadyRepairs(){ensureV233();let released=0;Object.values(state.v233.repairs).forEach(r=>{if(r.status==='Road Test'){r.status='Released';r.released=v233DateKey();let b=v233BusById(r.bus);if(b){b.status='Ready';b.liveStatus='Parked'}(state.v226?.defects||[]).forEach(d=>{if(String(d.bus)===String(r.bus)&&!['Closed','Resolved'].includes(d.status)){d.status='Closed';d.resolved=v233DateKey()}});(state.workOrders||[]).forEach(w=>{if(String(w.bus)===String(r.bus)&&!['Closed','Complete'].includes(w.status)){w.status='Closed';w.completed=v233DateKey()}});(state.routes||[]).forEach(route=>{let regular=route.bus||route.busId||route.assignedBus;if(String(regular)===String(r.bus)){route.tempBus=null;route.temporaryBus=null}});released++}});return released}
+function v233AssignTempSpare(route){if(!route)return null;let regular=v233BusById(route.bus||route.busId||route.assignedBus);let rep=regular?state.v233?.repairs?.[String(regular.id)]:null;if(regular&&!/maintenance|shop|out of service/i.test(String(regular.status||'')+' '+String(regular.liveStatus||''))&&(!rep||!['Waiting','In Bay','Road Test'].includes(rep.status)))return null;let used=new Set((state.routes||[]).map(r=>String(v233RouteBusId(r)||'')));let spare=(state.buses||[]).find(b=>!used.has(String(b.id))&&!/maintenance|shop|out of service/i.test(String(b.status||'')+' '+String(b.liveStatus||'')));if(spare){route.tempBus=spare.id;route.tempBusReason=`Regular Bus ${regular?.id||''} in shop`;return spare.id}return null}
+function v233MaintainSpareAssignments(){ensureV233();(state.routes||[]).forEach(r=>v233AssignTempSpare(r))}
+function v233RouteMiles(r){return Number(r.dailyMiles||r.miles||r.routeMiles||r.distance||0)}
+function v233ConsumeRouteFuel(busId,miles){let pct=Math.min(22,Math.max(3,Number(miles||0)*0.085));v233SetBusFuel(busId,v233BusFuel(busId)-pct)}
+function v233ProcessRouteDeparture(phase){ensureV233();v233RefreshAbsences();v233MaintainSpareAssignments();(state.routes||[]).forEach(r=>{let driver=v233RouteDriverName(r),d=v233DriverByName(driver);if(d&&(d.calledOff||d.absent))return;let busId=v233RouteBusId(r);if(!busId)return;let key=`${v233DateKey()}-${phase}-${r.id}`;if(state.v233.routeRuntime[key])return;state.v233.routeRuntime[key]={route:r.id,bus:busId,driver,phase,status:'Departed',depart:v231Minute?.()||0};let b=v233BusById(busId);if(b){b.liveStatus='Route';b.status='Route'}})}
+function v233ProcessRouteReturn(phase){ensureV233();(state.routes||[]).forEach(r=>{let key=`${v233DateKey()}-${phase}-${r.id}`,run=state.v233.routeRuntime[key];if(!run||run.status==='Returned')return;let miles=v233RouteMiles(r)/2;v233AddMileage(run.bus,miles,`${phase} route ${r.id}`);v233ConsumeRouteFuel(run.bus,miles);run.status='Returned';run.return=v231Minute?.()||0;run.miles=miles;let b=v233BusById(run.bus);if(b){b.liveStatus='Parked';b.status='Ready'}})}
+function v233FuelReturningBuses(){ensureV233();let spend=0;(state.routes||[]).forEach(r=>{let busId=v233RouteBusId(r),driver=v233RouteDriverName(r);if(busId&&v233BusFuel(busId)<55)spend+=v233FuelBus(busId,driver||'Driver','Post-route fueling')});return spend}
+function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V23.3 live event',key,e)}}}
+function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v232ResolveRoutineEvents?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
+function v233TomorrowDate(){return v233ShiftDate(v233DateKey(),1)}
+function v233BuildTomorrowBoard(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233MaintainSpareAssignments();let issues=[],tom=v233TomorrowDate();(state.routes||[]).forEach(r=>{let drv=v233RouteDriverName(r),d=v233DriverByName(drv);if(!drv||!d)issues.push({level:'danger',title:`Route ${r.id} — driver coverage needed`,detail:'No active assigned driver.'});else{let a=state.v233.absences[drv];if(a&&a.through>=tom)issues.push({level:'warn',title:`Route ${r.id} — ${drv} absent`,detail:`Absence continues through ${a.through}.`})}let regular=r.bus||r.busId||r.assignedBus,rep=state.v233.repairs[String(regular)];if(rep&&!['Released','Closed'].includes(rep.status)){issues.push({level:r.tempBus?'warn':'danger',title:`Route ${r.id} — Bus ${regular} in shop`,detail:r.tempBus?`Bus ${r.tempBus} remains assigned as temporary spare.`:'No temporary spare assigned yet.'})}});Object.values(state.v233.repairs).forEach(rep=>{if(!['Released','Closed'].includes(rep.status))issues.push({level:'warn',title:`Bus ${rep.bus} — ${rep.status}`,detail:`${rep.issue}; estimated ${rep.days} day repair.`})});let trips=(state.trips||[]).filter(t=>String(t.date||'')===tom&&!/cancel/i.test(String(t.status||'')));if(trips.length)issues.push({level:'good',title:`${trips.length} trip${trips.length===1?'':'s'} scheduled`,detail:'Confirm bus and driver coverage.'});state.v233.tomorrow={date:tom,issues,generated:v233DateKey()};return state.v233.tomorrow}
+function v233OpenTomorrowBoard(){let T=v233BuildTomorrowBoard();let body=T.issues.length?T.issues.map(i=>`<div class="v233-card v233-${i.level}"><b>${i.title}</b><div class="small">${i.detail}</div></div>`).join(''):`<div class="v233-card v233-good"><b>Tomorrow is ready.</b><div class="small">No unresolved transportation coverage issues were found.</div></div>`;openModal(`📋 Tomorrow Planning Board — ${T.date}`,`<div class="v233-board"><div>${body}</div><div class="v233-card"><h4>Director Actions</h4><div class="actions"><button class="btn primary" onclick="v233MaintainSpareAssignments();v233OpenTomorrowBoard()">Assign Available Spares</button><button class="btn" onclick="v232OpenPhone()">Open Director Phone</button><button class="btn" onclick="v2303OpenUnifiedShop()">Open Shop</button></div></div></div>`)}
+function v233EmployeeHistory(){ensureV233();(state.drivers||[]).forEach(d=>{let H=state.v233.employeeHistory[d.name]||{name:d.name,firstSeen:v233DateKey(),events:[]};H.years=Number(d.years||d.yearsEmployed||0);H.age=Number(d.age||0);H.currentBus=v233BusForDriver?.(d.name)?.id||null;H.currentRoute=v233RouteForDriver?.(d.name)?.id||null;state.v233.employeeHistory[d.name]=H})}
+function v233RecordEmployeeEvent(name,text){ensureV233();let H=state.v233.employeeHistory[name]||{name,firstSeen:v233DateKey(),events:[]};H.events=H.events||[];H.events.unshift({date:v233DateKey(),text});H.events=H.events.slice(0,100);state.v233.employeeHistory[name]=H}
+function v233BackupKey(type){return `transportV233Backup_${type}`}
+function v233Backup(type){try{localStorage.setItem(v233BackupKey(type),JSON.stringify(state));localStorage.setItem(v233BackupKey(type)+'Time',String(Date.now()));return true}catch(e){console.warn('backup failed',type,e);return false}}
+function v233RotatingBackups(){ensureV233();let dk=v233DateKey(),meta=state.v233.backupMeta;if(meta.lastDay!==dk){v233Backup('PreviousDay');meta.lastDay=dk}let day=Number(state.schoolDay||state.day||0);if(day&&day%5===0&&meta.lastWeek!==dk){v233Backup('PreviousWeek');meta.lastWeek=dk}v233Backup('Current')}
+function v233BackupCandidates(){return ['Current','PreviousDay','PreviousWeek'].map(type=>{let raw=localStorage.getItem(v233BackupKey(type));if(!raw)return null;try{let s=JSON.parse(raw);return {type,raw,state:s,time:Number(localStorage.getItem(v233BackupKey(type)+'Time')||0),score:v2321ProgressScore?.(s)||0}}catch(e){return null}}).filter(Boolean)}
+function v233OpenBackupCenter(){let A=v233BackupCandidates();openModal('🧰 Rotating Backups',A.length?A.map(x=>`<div class="v233-backup"><b>${x.type}</b><div class="small">${x.state.gameDate||''} • Day ${x.state.schoolDay||x.state.day||0} • ${(x.state.drivers||[]).length} drivers • ${(x.state.buses||[]).length} buses<br>${x.time?new Date(x.time).toLocaleString():''}</div><div class="actions"><button class="btn" onclick="v233LoadBackup('${x.type}')">Restore</button></div></div>`).join(''):'<div class="small">No rotating backups have been created yet.</div>')}
+function v233LoadBackup(type){let x=v233BackupCandidates().find(a=>a.type===type);if(!x)return alert('Backup unavailable.');try{window.__transportBooting=true;state=v233Clone(x.state);ensureV233();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();window.__transportBooting=false;localStorage.setItem('transportDirectorSave',JSON.stringify(state));localStorage.setItem('transportDirectorSaveTime',String(Date.now()));render?.();closeModal?.();notify?.(`${type} backup restored.`,'decision')}catch(e){window.__transportBooting=false;alert('Backup could not be restored: '+(e?.message||e))}}
+function v233PrepareNextDay(){ensureV233();v233RotatingBackups();v233EmployeeHistory();v233BuildTomorrowBoard()}
+
+/* ===== V23.3 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -8848,7 +8912,7 @@ function v232SyncStates(){
   v232AssignShopBays()
 }
 function v232AssignShopBays(){
-  let needs=(state.buses||[]).filter(b=>v232BusStatus(b)==='SHOP');
+  v233SyncRepairs?.(); let needs=(state.buses||[]).filter(b=>v232BusStatus(b)==='SHOP').sort((a,b)=>{let ra=state.v233?.repairs?.[String(a.id)]?.status,rb=state.v233?.repairs?.[String(b.id)]?.status;return (ra==='In Bay'?0:1)-(rb==='In Bay'?0:1)});
   state.v232.shopBays=state.v232.shopBays||[null,null];
   state.v232.shopBays=[needs[0]?.id||null,needs[1]?.id||null]
 }
@@ -8932,15 +8996,15 @@ function v232GarageHTML(){
     <div class="v232-side">
       <div class="v232-panel"><h4>🕒 ${v231Clock?.(v232Minute())||''}</h4><div class="small">${v230Phase?.()||'Transportation Operations'}</div><div class="actions"><button class="btn primary" onclick="v231Open()">Live Day Controls</button></div></div>
       <div class="v232-panel"><h4>🔧 Shop Bays</h4>${bayHtml}</div>
-      <div class="v232-panel"><h4>☎️ Director Phone</h4><div><b>${openPhone}</b> open item${openPhone===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v232OpenPhone()">Open Phone</button></div></div>
+      <div class="v232-panel"><h4>📋 Tomorrow</h4><div class="small">${state.v233?.tomorrow?.date||v233TomorrowDate?.()||''} • ${(state.v233?.tomorrow?.issues||[]).length} planning item${(state.v233?.tomorrow?.issues||[]).length===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v233OpenTomorrowBoard()">Open Planning Board</button></div></div><div class="v232-panel"><h4>☎️ Director Phone</h4><div><b>${openPhone}</b> open item${openPhone===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v232OpenPhone()">Open Phone</button></div></div>
       <div class="v232-panel"><h4>📻 Dispatch Feed</h4><div class="v232-feed">${(state.v231?.events||[]).slice(0,12).map(x=>`<div>${v231Clock?.(x.minute)||''} • ${x.text}</div>`).join('')}</div></div>
-      <div class="v232-panel"><div class="actions"><button class="btn primary" onclick="v2321RecoveryCenter()">🛟 Save Recovery</button><button class="btn" onclick="v232OpenSummary()">End-of-Day Briefing</button><button class="btn" onclick="v2303OpenDoorRequests()">Office Door</button></div></div>
+      <div class="v232-panel"><div class="actions"><button class="btn primary" onclick="v2321RecoveryCenter()">🛟 Save Recovery</button><button class="btn" onclick="v233OpenBackupCenter()">🧰 Backups</button><button class="btn" onclick="v233OpenTomorrowBoard()">📋 Tomorrow</button><button class="btn" onclick="v232OpenSummary()">End-of-Day Briefing</button><button class="btn" onclick="v2303OpenDoorRequests()">Office Door</button></div></div>
     </div>
   </div>`
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V23.2.2',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V23.3',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -9191,8 +9255,8 @@ window.addEventListener('load',()=>{
 window.addEventListener('load',()=>{try{
   window.__transportBooting=true;
   let recovery=v2321BestRecoverySave?.();
-  if(recovery){state=JSON.parse(recovery.raw);v224RestorePurchasedFleet?.()}
-  ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureFinanceV22();v22AuthorizedPositions();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();opsRenderAllV15();
+  if(recovery){state=JSON.parse(JSON.stringify(recovery.state));v224RestorePurchasedFleet?.()}
+  ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureFinanceV22();v22AuthorizedPositions();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();opsRenderAllV15();
   window.__transportBooting=false;
   if(recovery){autosaveGame?.();render?.();notify?.(`Recovered ${recovery.name}: Day ${state.schoolDay||state.day||0}, ${(state.staff||[]).length} staff, ${(state.buses||[]).length} buses.`,'decision')}
 }catch(e){window.__transportBooting=false;console.error('Safe load guard',e)}finally{setTimeout(()=>v2322RecoveryUI?.(),50)}});
