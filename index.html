@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V23.5 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V23.5.1 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V23.5 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V23.5.1 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -571,7 +571,7 @@ button,.btn,select,input{touch-action:manipulation}
  <div id="world12body"></div>
 </section>
 <section id="today" class="view">
- <div class="section-head"><div><h2>Today — Transportation Command Center</h2><div class="small">Everything that needs your attention before buses roll.</div></div><div class="actions"><button class="btn" onclick="undoLastAction()">↶ Undo</button><button class="btn" onclick="v224SaveStatus()">💾 Save / Recovery</button><button class="btn primary" onclick="saveGame()">Save Now</button></div></div>
+ <div class="section-head"><div><h2>Today — Transportation Command Center</h2><div class="small">Everything that needs your attention before buses roll.</div></div><div class="actions"><button class="btn" onclick="undoLastAction()">↶ Undo</button><button class="btn" onclick="v224SaveStatus()">💾 Save / Recovery</button><button class="btn primary" onclick="v2351Save()">Save Now</button></div></div>
  <div class="today-grid" id="todayKpis"></div><div class="app-launchpad" id="appLaunchpad">
   <button onclick="goView('inbox')">📥<b>Inbox</b><span id="launchInbox">0 new</span></button>
   <button onclick="goView('department')">👥<b>Employees</b><span>Full department</span></button>
@@ -930,7 +930,7 @@ button,.btn,select,input{touch-action:manipulation}
         <div class="kv"><span>Fleet readiness</span><b id="fleetReady">89%</b></div>
         <div class="kv"><span>Approved trips</span><b id="approvedTrips">0</b></div>
       </div></div>
-      <aside class="panel"><div class="section-head"><h2>Save Game</h2></div><div class="actions"><button class="btn" onclick="runButtonAuditV111()">Full Button Audit</button><button class="btn" onclick="runSystemCheckV104()">System Check</button><button class="btn primary" onclick="saveGame()">Save</button><button class="btn" onclick="loadGame()">Load</button><button class="btn" onclick="resetGame()">New Game</button><button class="btn" onclick="summerPlanning()">Summer Mode</button><button class="btn" onclick="yearEnd()">End School Year</button></div><div class="small" style="margin-top:10px">Saves locally in this browser.</div></aside>
+      <aside class="panel"><div class="section-head"><h2>Save Game</h2></div><div class="actions"><button class="btn" onclick="runButtonAuditV111()">Full Button Audit</button><button class="btn" onclick="runSystemCheckV104()">System Check</button><button class="btn primary" onclick="v2351Save()">Save</button><button class="btn" onclick="v2351Load()">Load</button><button class="btn" onclick="resetGame()">New Game</button><button class="btn" onclick="summerPlanning()">Summer Mode</button><button class="btn" onclick="yearEnd()">End School Year</button></div><div class="small" style="margin-top:10px">Saves locally in this browser.</div></aside>
     </div>
     <div class="grid2" style="margin-top:12px"><div class="panel"><div class="section-head"><h2>Daily Operations Reports</h2><button class="btn" onclick="openDailyReportHistoryV11()">Report History</button></div><div id="dailyReportPreviewV11"></div></div><div class="panel"><h2>Career & Fleet Planning</h2><div class="actions"><button class="btn" onclick="openCareerLadderV11()">Career Ladder</button><button class="btn" onclick="openInternalApplicationsV105()">Internal Applicants</button><button class="btn" onclick="openFleetReplacementPlanV11()">Fleet Replacement Plan</button><button class="btn" onclick="openSchoolYearBudgetV113()">Annual Budget</button></div></div></div><div class="panel" style="margin-top:12px"><h2 style="margin-top:0">Activity Log</h2><div id="log" class="log"></div></div>
   </section>
@@ -7035,7 +7035,7 @@ function v22GarageAlerts(){
   if(uncovered)a.push({c:'bad',t:`${uncovered} uncovered route${uncovered===1?'':'s'}`,d:'Assign a regular or substitute driver before pull-out.'});
   if(shop)a.push({c:'warn',t:`${shop} bus${shop===1?'':'es'} unavailable`,d:'Check the shop and spare fleet.'});
   if(over)a.push({c:'warn',t:`${over} route${over===1?'':'s'} over capacity`,d:'Move stops, assign a larger bus, or create relief.'});
-  /* V23.5: funded vacancies stay quiet until the director opens Hiring. */
+  /* V23.5.1: funded vacancies stay quiet until the director opens Hiring. */
   if(!a.length)a.push({c:'good',t:'Morning operation ready',d:'No major issues currently require Director attention.'});
   return a
 }
@@ -7122,7 +7122,7 @@ function v221NeedsAttention(){
   if(uncovered)arr.push({sev:'bad',title:`${uncovered} route${uncovered===1?'':'s'} uncovered`,detail:'Assign a substitute, double-route a qualified driver, or fill the vacancy.',action:`document.querySelector('[data-view="dispatch"]')?.click()`});
   if(over)arr.push({sev:'warn',title:`${over} route${over===1?'':'s'} over capacity`,detail:'Move stops, use a larger bus, or build relief service.',action:`document.querySelector('[data-view="routes"]')?.click()`});
   if(shop)arr.push({sev:'warn',title:`${shop} bus${shop===1?'':'es'} unavailable`,detail:'Review open work orders and spare coverage.',action:`v221OpenWorkOrders()`});
-  /* V23.5: no automatic vacancy nag. */
+  /* V23.5.1: no automatic vacancy nag. */
   if(proj.over>0)arr.push({sev:'bad',title:`Projected ${money(proj.over)} over operating budget`,detail:'Current spending pace will exhaust the annual appropriation.',action:`v221OpenFinancialForecast()`});
   if(inspections)arr.push({sev:'warn',title:`${inspections} inspection item${inspections===1?'':'s'} due`,detail:'Move them into the shop plan before service is affected.',action:`v221OpenWorkOrders()`});
   return arr
@@ -7609,7 +7609,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V23.5 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V23.5.1 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7739,7 +7739,7 @@ function v224SaveStatus(){
     `<div class="alert ${newest?'priority-green':'priority-yellow'}"><b>${newest?`Newest save: ${newest.name}`:'No save found'}</b>
       <div class="small">${newest?`${new Date(newest.ts||Date.now()).toLocaleString()} • ${newest.fleet} buses in snapshot`:''}</div></div>
      <div class="v222-card"><b>Purchased Fleet Safety Copy</b><div class="small">${(R.buses||[]).length} purchased bus${(R.buses||[]).length===1?'':'es'} protected separately from the main save.</div></div>
-     <div class="actions"><button class="btn primary" onclick="saveGame()">Save Everything Now</button><button class="btn" onclick="loadGame()">Load Recommended Save</button><button class="btn" onclick="v235RecoveryCenter()">🛟 Recovery Center</button><button class="btn" onclick="v224RestoreAndSave()">Recover Missing Purchased Buses</button></div>`)
+     <div class="actions"><button class="btn primary" onclick="v2351Save()">Save Everything Now</button><button class="btn" onclick="v2351Load()">Load Recommended Save</button><button class="btn" onclick="v235RecoveryCenter()">🛟 Recovery Center</button><button class="btn" onclick="v224RestoreAndSave()">Recover Missing Purchased Buses</button></div>`)
 }
 function v224RestoreAndSave(){
   let restored=v224RestorePurchasedFleet();
@@ -7837,7 +7837,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V23.5 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V23.5.1 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8594,7 +8594,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V23.5 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V23.5.1 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8692,10 +8692,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V23.5: legacy R handler replaced by live-day keyboard controls. */
+/* V23.5.1: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V23.5 LIVE TRANSPORTATION DAY ===== */
+/* ===== V23.5.1 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8806,7 +8806,7 @@ function v231Keyboard(e){
 }
 if(typeof window!=='undefined'&&!window.__v231KeyBound){
   window.__v231KeyBound=true;
-  /* V23.5 old keyboard listener disabled */
+  /* V23.5.1 old keyboard listener disabled */
 }
 
 
@@ -8814,7 +8814,125 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 
 
 
-/* ===== V23.5 SAVE REPAIR + DELEGATED OPERATIONS ===== */
+
+/* ===== V23.5.1 INDEXEDDB PRIMARY SAVE ===== */
+const V2351_DB='SchoolTransportationTycoon';
+const V2351_STORE='saves';
+function v2351Db(){
+  return new Promise((resolve,reject)=>{
+    if(!window.indexedDB)return reject(new Error('IndexedDB is not available in this browser.'));
+    let req=indexedDB.open(V2351_DB,1);
+    req.onupgradeneeded=()=>{let db=req.result;if(!db.objectStoreNames.contains(V2351_STORE))db.createObjectStore(V2351_STORE)};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error||new Error('Could not open save database'))
+  })
+}
+async function v2351Put(key,value){
+  let db=await v2351Db();
+  return new Promise((resolve,reject)=>{
+    let tx=db.transaction(V2351_STORE,'readwrite');
+    tx.objectStore(V2351_STORE).put(value,key);
+    tx.oncomplete=()=>{db.close();resolve(true)};
+    tx.onerror=()=>{let e=tx.error;db.close();reject(e||new Error('Save transaction failed'))};
+    tx.onabort=()=>{let e=tx.error;db.close();reject(e||new Error('Save transaction aborted'))}
+  })
+}
+async function v2351Get(key){
+  let db=await v2351Db();
+  return new Promise((resolve,reject)=>{
+    let tx=db.transaction(V2351_STORE,'readonly'),req=tx.objectStore(V2351_STORE).get(key);
+    req.onsuccess=()=>{let v=req.result;db.close();resolve(v||null)};
+    req.onerror=()=>{let e=req.error;db.close();reject(e||new Error('Load transaction failed'))}
+  })
+}
+async function v2351Save(){
+  try{
+    ensureV235?.();v224PrepareSave?.();
+    let snapshot=JSON.parse(JSON.stringify(state));
+    snapshot.v235=snapshot.v235||{};
+    snapshot.v235.savedAt=Date.now();
+    snapshot.v235.saveEngine='IndexedDB';
+    await v2351Put('current',snapshot);
+
+    // Once the durable save succeeds, remove oversized redundant localStorage state.
+    try{v235StorageCleanup?.()}catch(e){}
+    try{
+      localStorage.removeItem('transportDirectorSave');
+      localStorage.removeItem('transportDirectorSaveTime');
+      localStorage.setItem('transportV2351SaveMeta',JSON.stringify({
+        date:snapshot.gameDate||'',day:Number(snapshot.schoolDay||snapshot.day||0),
+        buses:(snapshot.buses||[]).length,staff:(snapshot.staff||snapshot.drivers||[]).length,
+        savedAt:Date.now(),engine:'IndexedDB'
+      }))
+    }catch(e){}
+
+    notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
+    return true
+  }catch(e){
+    console.error('IndexedDB save failed',e);
+    // Fallback only if IndexedDB itself is unavailable.
+    try{
+      let ok=v235SaveCurrent?.(true);
+      if(ok)return true
+    }catch(_){}
+    alert('Save failed: '+(e?.message||e));
+    return false
+  }
+}
+async function v2351Load(showNotice=true){
+  let snapshot=null,source='IndexedDB';
+  try{snapshot=await v2351Get('current')}catch(e){console.warn('IndexedDB load fallback',e)}
+  if(!v234ValidState?.(snapshot)){
+    source='legacy browser save';
+    snapshot=v234ReadRaw?.('transportDirectorSave')
+  }
+  if(!v234ValidState?.(snapshot)){
+    if(showNotice)alert('No valid saved district was found.');
+    return false
+  }
+  try{
+    window.__transportBooting=true;
+    state=JSON.parse(JSON.stringify(snapshot));
+    v224RestorePurchasedFleet?.();
+    ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();
+    ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();
+    ensureV231?.();ensureV232?.();ensureV233?.();ensureV235?.();
+    window.__transportBooting=false;
+    render?.();
+    if(showNotice)notify?.(`Loaded ${state.gameDate||''} • Day ${state.schoolDay||state.day||0} from ${source}.`,'decision');
+    return true
+  }catch(e){
+    window.__transportBooting=false;console.error('IndexedDB restore failed',e);
+    if(showNotice)alert('The saved district could not be restored.');
+    return false
+  }
+}
+async function v2351AutoRestore(){
+  try{
+    let snapshot=await v2351Get('current');
+    if(!v234ValidState?.(snapshot))return false;
+    let currentDay=Number(state.schoolDay||state.day||0),savedDay=Number(snapshot.schoolDay||snapshot.day||0);
+    let currentDate=String(state.gameDate||''),savedDate=String(snapshot.gameDate||'');
+    if(savedDay!==currentDay||savedDate!==currentDate){
+      await v2351Load(false);
+      notify?.(`Restored saved district: ${state.gameDate||''} • Day ${state.schoolDay||state.day||0}.`,'decision')
+    }
+    return true
+  }catch(e){return false}
+}
+
+/* Direct UI entry points. These bypass all legacy save/load wrappers. */
+window.v2351Save=v2351Save;
+window.v2351Load=v2351Load;
+window.saveGame=v2351Save;
+window.loadGame=v2351Load;
+window.autosaveGame=function(){
+  if(window.__transportBooting)return;
+  clearTimeout(window.__v2351AutoTimer);
+  window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
+};
+
+/* ===== V23.5.1 SAVE REPAIR + DELEGATED OPERATIONS ===== */
 function ensureV235(){
   state.v235=state.v235||{
     saveFormat:1,dispatcherLog:[],driverTouchpoints:[],interactionMilestones:{},quietVacancyPrompts:true
@@ -8867,7 +8985,7 @@ function v235SaveCurrent(showNotice=false){
     if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
     return true
   }catch(e){
-    console.error('V23.5 save failed',e);
+    console.error('V23.5.1 save failed',e);
     if(String(e?.name||'').includes('Quota')||String(e?.message||'').toLowerCase().includes('quota')){
       ['transportSave1','transportSave2','transportSave3'].forEach(k=>{
         try{
@@ -8883,7 +9001,7 @@ function v235SaveCurrent(showNotice=false){
         if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
         return true
       }catch(e2){
-        alert('Save storage is still full. V23.5 removed redundant old backups, but this browser still does not have enough local storage for this district.');
+        alert('Save storage is still full. V23.5.1 removed redundant old backups, but this browser still does not have enough local storage for this district.');
         return false
       }
     }
@@ -8964,7 +9082,7 @@ function v235DailyPeople(){
   if(Math.random()<.018)v235CreateDriverInteraction(false)
 }
 
-/* ===== V23.5 RELIABLE SAVES + INSTANT DAYS ===== */
+/* ===== V23.5.1 RELIABLE SAVES + INSTANT DAYS ===== */
 function ensureV234(){state.v234=state.v234||{lastManualSave:null,lastAutosave:null,lastDayResult:null};return state.v234}
 function v234ValidState(s){return !!(s&&Array.isArray(s.buses)&&Array.isArray(s.routes)&&(Array.isArray(s.staff)||Array.isArray(s.drivers)))}
 function v234ReadRaw(key){let raw=localStorage.getItem(key);if(!raw)return null;try{let s=JSON.parse(raw);return v234ValidState(s)?s:null}catch(e){return null}}
@@ -8988,7 +9106,7 @@ function v234LoadPrimary(){
 function v234RecoveryRows(){let rows=[['Manual Save','transportDirectorSave','transportDirectorSaveTime'],['Previous Manual','transportV234PreviousManual','transportV234PreviousManualTime'],['Autosave','transportAutosave','transportAutosaveTime'],['Slot 1','transportSave1','transportSave1Time'],['Slot 2','transportSave2','transportSave2Time'],['Slot 3','transportSave3','transportSave3Time']];return rows.map(([name,key,time])=>{let s=v234ReadRaw(key);return s?{name,key,state:s,ts:Number(localStorage.getItem(time)||0),day:Number(s.schoolDay||s.day||0),date:s.gameDate||'',staff:(s.staff||s.drivers||[]).length,buses:(s.buses||[]).length}:null}).filter(Boolean)}
 function v235RecoveryCenter(){let rows=v234RecoveryRows();openModal('🛟 Save Recovery Center',rows.length?rows.map(r=>`<div class="v233-backup"><b>${r.name}</b><div class="small">${r.date} • Day ${r.day} • ${r.staff} staff • ${r.buses} buses${r.ts?`<br>${new Date(r.ts).toLocaleString()}`:''}</div><button class="btn" onclick="v234RestoreKey('${r.key}')">Restore This Save</button></div>`).join(''):'<div class="alert">No valid saves found.</div>')}
 function v234RestoreKey(key){let s=v234ReadRaw(key);if(!s)return alert('Snapshot invalid.');window.__transportBooting=true;state=JSON.parse(JSON.stringify(s));window.__transportBooting=false;v234ManualSave();closeModal?.();render?.()}
-saveGame=v234ManualSave;autosaveGame=v234Autosave;loadGame=v234LoadPrimary;
+/* V23.5.1: legacy V23.4 save bindings disabled */
 
 function v234RunDayInstant(){
  try{
@@ -9000,11 +9118,11 @@ function v234RunDayInstant(){
   if(d2!==d||state.gameDate!==date){ensureV234();state.v234.lastDayResult={from:date,to:state.gameDate,day:d2};v234Autosave();notify?.(`Transportation day complete. Now ${state.gameDate||''} • Day ${d2}.`,'decision')}
  }catch(e){console.error(e);alert('Transportation day could not be completed: '+(e?.message||e))}finally{window.__v234InstantDay=false}
 }
-/* V23.5 final save bindings */
-saveGame=v235ManualSave;autosaveGame=v235Autosave;loadGame=v235Load;
+/* V23.5.1 final save bindings */
+/* V23.5.1: legacy V23.5 save bindings disabled */
 
 
-/* ===== V23.5 RUN DAY / KEYBOARD REPAIR ===== */
+/* ===== V23.5.1 RUN DAY / KEYBOARD REPAIR ===== */
 function ensureV2331(){state.v2331=state.v2331||{lastStart:null};return state.v2331}
 function v2331CurrentDayKey(){return String(state.gameDate||state.schoolDay||'')}
 function v2331RunDay(){
@@ -9051,7 +9169,7 @@ function v2331BindKeys(){
 function v231Minute(){return Number(state.v231?.minute||330)}
 
 if(typeof window!=='undefined')setTimeout(()=>v2331BindKeys(),0);
-/* ===== V23.5 RELIABILITY + REAL OPERATIONS ===== */
+/* ===== V23.5.1 RELIABILITY + REAL OPERATIONS ===== */
 function ensureV233(){state.v233=state.v233||{absences:{},repairs:{},routeRuntime:{},tomorrow:{date:null,issues:[]},liveProcessed:{},backupMeta:{lastDay:null,lastWeek:null},employeeHistory:{}};return state.v233}
 function v233Clone(x){return JSON.parse(JSON.stringify(x))}
 function v233DateKey(){return String(state.gameDate||state.date||'')}
@@ -9078,7 +9196,7 @@ function v233ConsumeRouteFuel(busId,miles){let pct=Math.min(22,Math.max(3,Number
 function v233ProcessRouteDeparture(phase){ensureV233();v233RefreshAbsences();v233MaintainSpareAssignments();(state.routes||[]).forEach(r=>{let driver=v233RouteDriverName(r),d=v233DriverByName(driver);if(d&&(d.calledOff||d.absent))return;let busId=v233RouteBusId(r);if(!busId)return;let key=`${v233DateKey()}-${phase}-${r.id}`;if(state.v233.routeRuntime[key])return;state.v233.routeRuntime[key]={route:r.id,bus:busId,driver,phase,status:'Departed',depart:v231Minute?.()||0};let b=v233BusById(busId);if(b){b.liveStatus='Route';b.status='Route'}})}
 function v233ProcessRouteReturn(phase){ensureV233();(state.routes||[]).forEach(r=>{let key=`${v233DateKey()}-${phase}-${r.id}`,run=state.v233.routeRuntime[key];if(!run||run.status==='Returned')return;let miles=v233RouteMiles(r)/2;v233AddMileage(run.bus,miles,`${phase} route ${r.id}`);v233ConsumeRouteFuel(run.bus,miles);run.status='Returned';run.return=v231Minute?.()||0;run.miles=miles;let b=v233BusById(run.bus);if(b){b.liveStatus='Parked';b.status='Ready'}})}
 function v233FuelReturningBuses(){ensureV233();let spend=0;(state.routes||[]).forEach(r=>{let busId=v233RouteBusId(r),driver=v233RouteDriverName(r);if(busId&&v233BusFuel(busId)<55)spend+=v233FuelBus(busId,driver||'Driver','Post-route fueling')});return spend}
-function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V23.5 live event',key,e)}}}
+function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V23.5.1 live event',key,e)}}}
 function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v232ResolveRoutineEvents?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
 function v233TomorrowDate(){return v233ShiftDate(v233DateKey(),1)}
 function v233BuildTomorrowBoard(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233MaintainSpareAssignments();let issues=[],tom=v233TomorrowDate();(state.routes||[]).forEach(r=>{let drv=v233RouteDriverName(r),d=v233DriverByName(drv);if(!drv||!d)issues.push({level:'danger',title:`Route ${r.id} — driver coverage needed`,detail:'No active assigned driver.'});else{let a=state.v233.absences[drv];if(a&&a.through>=tom)issues.push({level:'warn',title:`Route ${r.id} — ${drv} absent`,detail:`Absence continues through ${a.through}.`})}let regular=r.bus||r.busId||r.assignedBus,rep=state.v233.repairs[String(regular)];if(rep&&!['Released','Closed'].includes(rep.status)){issues.push({level:r.tempBus?'warn':'danger',title:`Route ${r.id} — Bus ${regular} in shop`,detail:r.tempBus?`Bus ${r.tempBus} remains assigned as temporary spare.`:'No temporary spare assigned yet.'})}});Object.values(state.v233.repairs).forEach(rep=>{if(!['Released','Closed'].includes(rep.status))issues.push({level:'warn',title:`Bus ${rep.bus} — ${rep.status}`,detail:`${rep.issue}; estimated ${rep.days} day repair.`})});let trips=(state.trips||[]).filter(t=>String(t.date||'')===tom&&!/cancel/i.test(String(t.status||'')));if(trips.length)issues.push({level:'good',title:`${trips.length} trip${trips.length===1?'':'s'} scheduled`,detail:'Confirm bus and driver coverage.'});state.v233.tomorrow={date:tom,issues,generated:v233DateKey()};return state.v233.tomorrow}
@@ -9093,7 +9211,7 @@ function v233OpenBackupCenter(){let A=v233BackupCandidates();openModal('🧰 Rot
 function v233LoadBackup(type){let x=v233BackupCandidates().find(a=>a.type===type);if(!x)return alert('Backup unavailable.');try{window.__transportBooting=true;state=v233Clone(x.state);ensureV233();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();window.__transportBooting=false;localStorage.setItem('transportDirectorSave',JSON.stringify(state));localStorage.setItem('transportDirectorSaveTime',String(Date.now()));render?.();closeModal?.();notify?.(`${type} backup restored.`,'decision')}catch(e){window.__transportBooting=false;alert('Backup could not be restored: '+(e?.message||e))}}
 function v233PrepareNextDay(){ensureV233();v233RotatingBackups();v233EmployeeHistory();v233BuildTomorrowBoard()}
 
-/* ===== V23.5 LIVING GARAGE ===== */
+/* ===== V23.5.1 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -9251,7 +9369,7 @@ function v232GarageHTML(){
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V23.5',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V23.5.1',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -9519,6 +9637,17 @@ function v235RestoreSave(key){
   let s=v234ReadRaw?.(key);if(!s)return alert('That save is not valid.');
   try{window.__transportBooting=true;state=JSON.parse(JSON.stringify(s));window.__transportBooting=false;ensureV235?.();v235SaveCurrent(true);closeModal?.();render?.()}catch(e){window.__transportBooting=false;alert('That save could not be restored.')}
 }
+
+
+/* V23.5.1 FINAL SAVE/LOAD BINDING */
+window.saveGame=v2351Save;
+window.loadGame=v2351Load;
+window.autosaveGame=function(){
+  if(window.__transportBooting)return;
+  clearTimeout(window.__v2351AutoTimer);
+  window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
+};
+window.addEventListener('load',()=>setTimeout(()=>v2351AutoRestore?.(),150));
 
 render();
 </script>
