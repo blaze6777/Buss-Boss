@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V23.3.3 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V23.4 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V23.3.3 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V23.4 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -604,7 +604,7 @@ button,.btn,select,input{touch-action:manipulation}
     <div class="panel">
       <div class="section-head">
         <div><h2>Transportation Center & Bus Lot</h2><div class="small">Buses disappear from their parking spaces when dispatched.</div></div>
-        <div class="actions"><button class="btn primary" onclick="v2331RunDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="renderBuses()">Refresh Garage</button><button class="btn" onclick="goView('shop')">Repair Shop</button><button class="btn" onclick="openFuelCardV10()">Fuel Card</button></div>
+        <div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="renderBuses()">Refresh Garage</button><button class="btn" onclick="goView('shop')">Repair Shop</button><button class="btn" onclick="openFuelCardV10()">Fuel Card</button></div>
       </div>
 
       <div class="parking-lot">
@@ -908,7 +908,7 @@ button,.btn,select,input{touch-action:manipulation}
   <div class="season-banner"><b id="seasonLabel">School Year Operations</b> • <span id="seasonHelp">Watch the department run and intervene when needed.</span></div>
   <div class="section-head" style="margin-top:10px">
     <div><h2>🚌 Daily Operations Command</h2><div class="small">One full transportation day now processes routes, traffic, mileage, fuel, shop needs and service performance together.</div></div>
-    <div class="actions"><button class="btn primary" onclick="v2331RunDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="opsMorningDecisionV15()">5:15 AM Brief</button><button class="btn" onclick="openWeatherCenter()">Weather</button></div>
+    <div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="opsMorningDecisionV15()">5:15 AM Brief</button><button class="btn" onclick="openWeatherCenter()">Weather</button></div>
   </div>
   <div class="today-grid" id="opsKpisV15"></div>
   <div class="grid2">
@@ -938,7 +938,7 @@ button,.btn,select,input{touch-action:manipulation}
   <section id="desk" class="view"><div class="actions" style="margin-bottom:12px"><button class="btn" onclick="exportSaveFile()">Export Save File</button><button class="btn" onclick="importSaveFile()">Import Save File</button><button class="btn" onclick="openRecognitionBanquet()">Recognition Banquet</button><button class="btn" onclick="openSummerOperations()">Summer Operations</button></div>
     <div class="grid2">
       <div class="panel">
-        <div class="section-head"><div><h2>Director’s Office</h2><div class="small">Run the department from your desk.</div></div><button class="btn primary" onclick="v2331RunDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div>
+        <div class="section-head"><div><h2>Director’s Office</h2><div class="small">Run the department from your desk.</div></div><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div>
         <div class="facility-grid">
           <button class="facility" onclick="deskApp('Routing')">🗺️<b> Routing</b><div class="small">Stops, loads, maps</div></button>
           <button class="facility" onclick="deskApp('Students')">🎒<b> Students</b><div class="small">Riders & households</div></button>
@@ -2542,7 +2542,7 @@ function hud12(){
 }
 function campus12(){
  let shop=state.buses.filter(b=>busWorldStatus12(b)==='shop');
- return `<div class="world12"><div class="world12hud">${hud12()}</div><div class="world12tabs"><button class="btn primary" onclick="renderWorld12('campus')">🏢 Transportation Campus</button><button class="btn" onclick="renderWorld12('map')">🗺️ Real Warsaw Map</button><button class="btn" onclick="v2331RunDay()">▶ Run Transportation Day</button></div><div class="campus12"><div><div class="building12"><b>WARSAW TRANSPORTATION CENTER</b><div class="small">Director • Dispatch • Drivers • Training</div><div class="rooms12"><div class="room12" onclick="room12('Director')">👔 <b>Director's Office</b><div class="small">Command Center & decisions</div></div><div class="room12" onclick="room12('Dispatch')">📻 <b>Dispatch</b><div class="small">Radio & route coverage</div></div><div class="room12" onclick="room12('Drivers')">👨‍✈️ <b>Driver Room</b><div class="small">Staff & assignments</div></div><div class="room12" onclick="room12('Training')">🎓 <b>Training Room</b><div class="small">CDL & in-service</div></div></div></div><div class="shop12">${[0,1,2].map(i=>`<div class="bay12" onclick="room12('Shop')"><b>SHOP BAY ${i+1}</b>${shop[i]?`<div style="margin-top:6px">${busGraphic12(shop[i])}</div>`:'<div class="small" style="margin-top:15px">Available</div>'}</div>`).join('')}</div></div><div class="lot12"><div style="color:white;font-weight:900;margin-bottom:8px">NUMBERED BUS LOT • Click any bus</div><div class="spaces12">${state.buses.map(b=>{let s=busWorldStatus12(b);return `<div class="space12">${s==='lot'?busGraphic12(b):`<div class="empty12">BUS ${b.id}<br>${s==='route'?'OUT ON ROUTE':'IN SHOP'}</div>`}<div class="spacenum12">SPACE ${b.id}</div></div>`}).join('')}</div></div></div></div>`;
+ return `<div class="world12"><div class="world12hud">${hud12()}</div><div class="world12tabs"><button class="btn primary" onclick="renderWorld12('campus')">🏢 Transportation Campus</button><button class="btn" onclick="renderWorld12('map')">🗺️ Real Warsaw Map</button><button class="btn" onclick="v234RunDayInstant()">▶ Run Transportation Day</button></div><div class="campus12"><div><div class="building12"><b>WARSAW TRANSPORTATION CENTER</b><div class="small">Director • Dispatch • Drivers • Training</div><div class="rooms12"><div class="room12" onclick="room12('Director')">👔 <b>Director's Office</b><div class="small">Command Center & decisions</div></div><div class="room12" onclick="room12('Dispatch')">📻 <b>Dispatch</b><div class="small">Radio & route coverage</div></div><div class="room12" onclick="room12('Drivers')">👨‍✈️ <b>Driver Room</b><div class="small">Staff & assignments</div></div><div class="room12" onclick="room12('Training')">🎓 <b>Training Room</b><div class="small">CDL & in-service</div></div></div></div><div class="shop12">${[0,1,2].map(i=>`<div class="bay12" onclick="room12('Shop')"><b>SHOP BAY ${i+1}</b>${shop[i]?`<div style="margin-top:6px">${busGraphic12(shop[i])}</div>`:'<div class="small" style="margin-top:15px">Available</div>'}</div>`).join('')}</div></div><div class="lot12"><div style="color:white;font-weight:900;margin-bottom:8px">NUMBERED BUS LOT • Click any bus</div><div class="spaces12">${state.buses.map(b=>{let s=busWorldStatus12(b);return `<div class="space12">${s==='lot'?busGraphic12(b):`<div class="empty12">BUS ${b.id}<br>${s==='route'?'OUT ON ROUTE':'IN SHOP'}</div>`}<div class="spacenum12">SPACE ${b.id}</div></div>`}).join('')}</div></div></div></div>`;
 }
 function districtMap12(){
  let osm='https://www.openstreetmap.org/export/embed.html?bbox=-85.920%2C41.205%2C-85.785%2C41.285&layer=mapnik&marker=41.261%2C-85.844';
@@ -2770,7 +2770,7 @@ function renderDispatch(){
   <div class="alert priority-green">4. Afternoon routes</div>
   <div class="alert priority-green">5. Return, fuel & shutdown</div>
   <div class="small" style="margin-top:8px">These steps are now processed together when you run the transportation day.</div>`;
- $('readiness').innerHTML=`<div class="kv"><span>Date</span><b>${formatGameDate()}</b></div><div class="kv"><span>Routes ready</span><b>${covered}/${state.routes.length}</b></div><div class="kv"><span>Spare buses</span><b>${state.buses.filter(b=>b.designation==='Spare'&&b.status!=='Maintenance').length}</b></div><div class="kv"><span>Substitute drivers</span><b>${state.staff.filter(s=>s.status==='Substitute'&&!s.route).length}</b></div><div class="actions"><button class="btn primary" onclick="v2331RunDay()">Run Full Day</button></div>`;
+ $('readiness').innerHTML=`<div class="kv"><span>Date</span><b>${formatGameDate()}</b></div><div class="kv"><span>Routes ready</span><b>${covered}/${state.routes.length}</b></div><div class="kv"><span>Spare buses</span><b>${state.buses.filter(b=>b.designation==='Spare'&&b.status!=='Maintenance').length}</b></div><div class="kv"><span>Substitute drivers</span><b>${state.staff.filter(s=>s.status==='Substitute'&&!s.route).length}</b></div><div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">Run Full Day</button></div>`;
 }
 
 function startDispatch(){runTransportationDay()}
@@ -3557,7 +3557,7 @@ function renderOperations(){
  $('seasonHelp').textContent=state.season==='Summer'?'Inspections, route planning, hiring, training, bidding and opening-day preparation.':'Resolve coverage, review weather and trips, then run the entire transportation day with one action.';
  $('opsHeadline').textContent='Daily Operations';
  let coveredNow=state.routes.filter(r=>routeCoverage(r).ok).length;
- $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="v2331RunDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
+ $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
  let cats=state.budgetCategories;$('budgetDetailMini').innerHTML=Object.entries(cats).slice(0,6).map(([k,v])=>`<div class="alert"><b>${k}</b><div>${money(v)}</div></div>`).join('');
  $('newsFeed').innerHTML=(state.news.slice(0,4).map(n=>`<div class="news">${n.text}</div>`).join('')||'<div class="small">No district news yet.</div>');$('reputationBadge').textContent=state.reputation>=90?'Excellent':state.reputation>=75?'Good':'Needs Attention';
  let open=state.workOrders.filter(w=>w.status!=='Completed');$('workOrderMini').innerHTML=open.slice(0,5).map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)}</div></span><button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button></div>`).join('')||'<div class="small">No open work orders.</div>';
@@ -3657,7 +3657,7 @@ function runTransportationDay(){
  state.day++;state.schoolDay=(state.schoolDay||0)+1;if(state.schoolDay>=state.schoolDaysPerYear+(state.v11.makeupDays||0)){state.v11.makeupDays=0;yearEnd();return}
  advanceToNextSchoolDay();state.simMinutes=315;state.dispatchStep=0;state.buses.forEach(b=>b.liveStatus='Parked / Pre-Trip');maybeMaintenanceEvent();v2303SyncMaintenanceToShop?.();reconcileTemporaryCoverage();
  if(Math.random()<.35)generateTrip();if(Math.random()<.25)generateApplicant();if(Math.random()<.3)createDriverCalloff();
- let f=[{condition:'Clear',temp:68,roads:'Dry'},{condition:'Partly Cloudy',temp:62,roads:'Dry'},{condition:'Light Rain',temp:57,roads:'Wet'},{condition:'Dense Fog',temp:54,roads:'Reduced visibility'},{condition:'Snow',temp:27,roads:'Snow covered'},{condition:'Extreme Cold',temp:3,roads:'Dry / icy spots possible'}];if(Math.random()<.38)state.weather={...f[Math.floor(Math.random()*f.length)]};autosaveGame();render();openDailyReportV11(0);
+ let f=[{condition:'Clear',temp:68,roads:'Dry'},{condition:'Partly Cloudy',temp:62,roads:'Dry'},{condition:'Light Rain',temp:57,roads:'Wet'},{condition:'Dense Fog',temp:54,roads:'Reduced visibility'},{condition:'Snow',temp:27,roads:'Snow covered'},{condition:'Extreme Cold',temp:3,roads:'Dry / icy spots possible'}];if(Math.random()<.38)state.weather={...f[Math.floor(Math.random()*f.length)]};autosaveGame();render();if(!window.__v234InstantDay)openDailyReportV11(0);
 }
 function advanceTime(){runTransportationDay()}
 function runToNextPhase(){runTransportationDay()}
@@ -5245,7 +5245,7 @@ function runTransportationDay(){
    console.error('V21.7 next-day advance failed',e);
    try{advanceCalendarDay()}catch(e2){}
  }
- autosaveGame();render();opsEndOfDayReportV15()
+ autosaveGame();render();if(!window.__v234InstantDay)opsEndOfDayReportV15()
 }
 function opsEndOfDayReportV15(){
  let d=state.ops15.lastDayReport;openModal('🌙 Transportation Day Complete',`<div class="today-grid"><div class="panel"><div class="small">ON TIME</div><div class="big-kpi">${d.onTime}%</div></div><div class="panel"><div class="small">ROUTE MILES</div><div class="big-kpi">${d.miles.toFixed(0)}</div></div><div class="panel"><div class="small">LATE ROUTES</div><div class="big-kpi">${d.lateRoutes}</div></div><div class="panel"><div class="small">ROAD CALLS</div><div class="big-kpi">${d.roadCalls}</div></div></div><div class="ops15-econ" style="margin-top:10px"><div><div class="small">Route fuel</div><div class="ops15-cost">${v13Money(d.fuelCost)}</div></div><div><div class="small">Daily labor estimate</div><div class="ops15-cost">${v13Money(d.laborCost)}</div></div></div><div class="alert" style="margin-top:10px">${d.roadCalls?'Shop has received the road-call information and will assess affected buses.':'No major mechanical road calls were recorded today.'}</div><div class="v21-good" style="margin-top:10px"><b>Next operating day:</b> ${formatGameDate()}<br><span class="small">The calendar has advanced and buses are reset for morning pre-trip.</span></div>`)
@@ -7043,7 +7043,7 @@ function renderGarageCommandV22(){
   let routes=(state.routes||[]).filter(r=>r.active!==false),covered=routes.filter(r=>r.driver).length;
   $('garageCommandV22').innerHTML=`
     <div class="section-head"><div><h2 style="margin:0">🚌 Transportation Command Center</h2><div class="small">${formatGameDate()} • ${minsToTime(state.simMinutes||315)} • School Day ${Number(state.schoolDay||1)} of ${Number(state.schoolDaysPerYear||180)}</div></div>
-    <div class="actions"><button class="btn primary" onclick="v2331RunDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div></div>
+    <div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div></div>
     <div class="v22-command-grid">
       <div><div class="small">OPERATING REMAINING</div><div class="v22-money">${money(remaining)}</div><div class="small">${money(spent)} spent of ${money(annual)}</div><div class="v22-budgetbar"><span style="width:${sp}%"></span></div></div>
       <div><div class="small">BUDGET PACE</div><div class="v22-money">${pace.diff>=0?money(pace.diff)+' under':money(Math.abs(pace.diff))+' over'}</div><div class="small">Expected spend ${money(pace.expected)}</div></div>
@@ -7279,7 +7279,7 @@ function renderGarageCommandV22(){
   let routes=(state.routes||[]).filter(r=>r.active!==false),covered=routes.filter(r=>r.driver).length;
   $('garageCommandV22').innerHTML=`
     <div class="section-head"><div><h2 style="margin:0">🚌 Transportation Command Center</h2><div class="small">${formatGameDate()} • ${minsToTime(state.simMinutes||315)} • School Day ${Number(state.schoolDay||1)} of ${Number(state.schoolDaysPerYear||180)}</div></div>
-    <div class="actions"><button class="btn ${alerts.length?'primary':''}" onclick="v221OpenAttention()">⚠ Needs Attention (${alerts.length})</button><button class="btn primary" onclick="v2331RunDay()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div></div>
+    <div class="actions"><button class="btn ${alerts.length?'primary':''}" onclick="v221OpenAttention()">⚠ Needs Attention (${alerts.length})</button><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div></div>
     <div class="v22-command-grid">
       <div><div class="small">OPERATING REMAINING</div><div class="v22-money">${money(remaining)}</div><div class="small">${money(spent)} spent of ${money(annual)}</div><div class="v22-budgetbar"><span style="width:${sp}%"></span></div></div>
       <div><div class="small">YEAR-END FORECAST</div><div class="v22-money">${proj.over?money(proj.over)+' over':money(proj.under)+' under'}</div><div class="small">Projected spend ${money(proj.projected)}</div></div>
@@ -7289,7 +7289,7 @@ function renderGarageCommandV22(){
       <div><div class="small">FUNDED VACANCIES</div><div class="v22-money">${v22AuthorizedPositions().filter(p=>p.status==='Vacant').length}</div><div class="small">Authorized positions</div></div>
     </div>
     <div class="v22-alertgrid">${(alerts.length?alerts.slice(0,4):[{sev:'good',title:'Morning operation ready',detail:'No major issues currently require Director attention.'}]).map(x=>`<div class="v22-alert ${x.sev}"><b>${x.title}</b><div class="small">${x.detail}</div></div>`).join('')}</div>
-    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v223RepairOperatingFund()">💰 Repair Operating Fund</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn primary" onclick="v232OpenLivingGarage()">🚌 Living Garage</button><button class="btn" onclick="v230OpenCampus()">🏫 Transportation Campus</button><button class="btn primary" onclick="v2331RunDay()">▶ Live Transportation Day</button><button class="btn primary" onclick="v225OpenMorning()">🌅 Transportation Morning</button><button class="btn" onclick="v226GarageBoard()">🅿️ Garage Board</button><button class="btn" onclick="v226KeyBoard()">🔑 Key Board</button><button class="btn" onclick="v226OpenSubCalls()">📞 Substitute Calls</button><button class="btn" onclick="v226OpenDVIR()">📝 DVIR</button><button class="btn" onclick="v226OpenParts()">📦 Parts</button><button class="btn" onclick="v226OpenFuelLog()">⛽ Fuel Log</button><button class="btn" onclick="v227OpenMorale()">😊 Driver Morale</button><button class="btn" onclick="v227OpenRequests()">🚪 Driver Conversations</button><button class="btn" onclick="v228OpenSeniority()">📜 Seniority</button><button class="btn" onclick="v228OpenBusRequests()">🚌 Bus Requests</button><button class="btn" onclick="v228OpenCompliance()">🪪 CDL / Training</button><button class="btn" onclick="v2303OpenUnifiedShop()">🔧 Mike’s Shop</button><button class="btn" onclick="v228GarageTimeView()">🕒 Living Garage</button><button class="btn" onclick="v228OpenFormer()">🏅 Former Employees</button><button class="btn" onclick="v228OpenRetiredFleet()">🏛️ Retired Fleet</button><button class="btn" onclick="v228OpenYearbooks()">📚 Yearbooks</button><button class="btn" onclick="v225LivingDrivers()">👤 Living Drivers</button><button class="btn" onclick="v225LivingFleet()">🚌 Living Fleet</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
+    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v223RepairOperatingFund()">💰 Repair Operating Fund</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn primary" onclick="v232OpenLivingGarage()">🚌 Living Garage</button><button class="btn" onclick="v230OpenCampus()">🏫 Transportation Campus</button><button class="btn primary" onclick="v234RunDayInstant()">▶ Live Transportation Day</button><button class="btn primary" onclick="v225OpenMorning()">🌅 Transportation Morning</button><button class="btn" onclick="v226GarageBoard()">🅿️ Garage Board</button><button class="btn" onclick="v226KeyBoard()">🔑 Key Board</button><button class="btn" onclick="v226OpenSubCalls()">📞 Substitute Calls</button><button class="btn" onclick="v226OpenDVIR()">📝 DVIR</button><button class="btn" onclick="v226OpenParts()">📦 Parts</button><button class="btn" onclick="v226OpenFuelLog()">⛽ Fuel Log</button><button class="btn" onclick="v227OpenMorale()">😊 Driver Morale</button><button class="btn" onclick="v227OpenRequests()">🚪 Driver Conversations</button><button class="btn" onclick="v228OpenSeniority()">📜 Seniority</button><button class="btn" onclick="v228OpenBusRequests()">🚌 Bus Requests</button><button class="btn" onclick="v228OpenCompliance()">🪪 CDL / Training</button><button class="btn" onclick="v2303OpenUnifiedShop()">🔧 Mike’s Shop</button><button class="btn" onclick="v228GarageTimeView()">🕒 Living Garage</button><button class="btn" onclick="v228OpenFormer()">🏅 Former Employees</button><button class="btn" onclick="v228OpenRetiredFleet()">🏛️ Retired Fleet</button><button class="btn" onclick="v228OpenYearbooks()">📚 Yearbooks</button><button class="btn" onclick="v225LivingDrivers()">👤 Living Drivers</button><button class="btn" onclick="v225LivingFleet()">🚌 Living Fleet</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
 }
 
 
@@ -7607,7 +7607,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V23.3.3 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V23.4 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7717,17 +7717,17 @@ function v2322RecoveryUI(){
   if(document.getElementById?.('v2322RecoveryFab'))return;
   let b=document.createElement('button');
   b.id='v2322RecoveryFab';b.className='v2322-recovery-fab';b.innerHTML='🛟 Save Recovery';
-  b.onclick=()=>v2321RecoveryCenter();
+  b.onclick=()=>v234RecoveryCenter();
   document.body.appendChild(b);
   let best=v2321BestRecoverySave?.();
   if(best){
     let n=document.createElement('div');n.id='v2322RecoveryBanner';n.className='v2322-recovery-banner';
     n.innerHTML=`Recovery available: <b>${best.name}</b> • Day ${best.day} • ${best.staff} staff • ${best.buses} buses`;
-    n.onclick=()=>v2321RecoveryCenter();n.style.cursor='pointer';
+    n.onclick=()=>v234RecoveryCenter();n.style.cursor='pointer';
     document.body.appendChild(n)
   }
 }
-function v2321RecoveryCenter(){
+function v234RecoveryCenter(){
   let C=v2321SaveCandidates().sort((a,b)=>b.score-a.score||b.ts-a.ts),best=C[0];
   openModal('🛟 SAVE RECOVERY CENTER',`<div class="alert priority-green"><b>${best?`Recommended: ${best.name}`:'No saves found'}</b><div class="small">Recovery now prefers the most progressed district instead of blindly choosing the newest timestamp.</div></div>`+C.map(c=>`<div class="v232-panel"><b>${c.name}${c===best?' ⭐':''}</b><div class="small">${c.date||'No date'} • Day ${c.day} • ${c.staff} staff • ${c.routes} routes • ${c.buses} buses<br>Saved ${c.ts?new Date(c.ts).toLocaleString():'legacy timestamp'} • Snapshot verified</div><div class="actions"><button class="btn ${c===best?'primary':''}" onclick="v2321LoadCandidate('${c.key}')">Load This Snapshot</button></div></div>`).join(''))
 }
@@ -7737,7 +7737,7 @@ function v224SaveStatus(){
     `<div class="alert ${newest?'priority-green':'priority-yellow'}"><b>${newest?`Newest save: ${newest.name}`:'No save found'}</b>
       <div class="small">${newest?`${new Date(newest.ts||Date.now()).toLocaleString()} • ${newest.fleet} buses in snapshot`:''}</div></div>
      <div class="v222-card"><b>Purchased Fleet Safety Copy</b><div class="small">${(R.buses||[]).length} purchased bus${(R.buses||[]).length===1?'':'es'} protected separately from the main save.</div></div>
-     <div class="actions"><button class="btn primary" onclick="saveGame()">Save Everything Now</button><button class="btn" onclick="loadGame()">Load Recommended Save</button><button class="btn" onclick="v2321RecoveryCenter()">🛟 Recovery Center</button><button class="btn" onclick="v224RestoreAndSave()">Recover Missing Purchased Buses</button></div>`)
+     <div class="actions"><button class="btn primary" onclick="saveGame()">Save Everything Now</button><button class="btn" onclick="loadGame()">Load Recommended Save</button><button class="btn" onclick="v234RecoveryCenter()">🛟 Recovery Center</button><button class="btn" onclick="v224RestoreAndSave()">Recover Missing Purchased Buses</button></div>`)
 }
 function v224RestoreAndSave(){
   let restored=v224RestorePurchasedFleet();
@@ -7835,7 +7835,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V23.3.3 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V23.4 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8592,7 +8592,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V23.3.3 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V23.4 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8690,10 +8690,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V23.3.3: legacy R handler replaced by live-day keyboard controls. */
+/* V23.4: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V23.3.3 LIVE TRANSPORTATION DAY ===== */
+/* ===== V23.4 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8797,20 +8797,58 @@ function v231RefreshIfOpen(){
 function v231Keyboard(e){
   let tag=String(e.target?.tagName||'').toLowerCase();if(['input','textarea','select'].includes(tag)||e.target?.isContentEditable||e.repeat)return;
   let k=String(e.key||'').toLowerCase();
-  if(k==='r'){e.preventDefault();v231Start();return}
+  if(k==='r'){e.preventDefault();v234RunDayInstant();return}
   if(k===' '){e.preventDefault();v231Pause();return}
   if(k==='g'){e.preventDefault();v232OpenLivingGarage();return}
   if(['1','2','4','8'].includes(k)){e.preventDefault();v231Speed(Number(k));return}
 }
 if(typeof window!=='undefined'&&!window.__v231KeyBound){
   window.__v231KeyBound=true;
-  /* V23.3.3 old keyboard listener disabled */
+  /* V23.4 old keyboard listener disabled */
 }
 
 
 
 
-/* ===== V23.3.3 RUN DAY / KEYBOARD REPAIR ===== */
+
+/* ===== V23.4 RELIABLE SAVES + INSTANT DAYS ===== */
+function ensureV234(){state.v234=state.v234||{lastManualSave:null,lastAutosave:null,lastDayResult:null};return state.v234}
+function v234ValidState(s){return !!(s&&Array.isArray(s.buses)&&Array.isArray(s.routes)&&(Array.isArray(s.staff)||Array.isArray(s.drivers)))}
+function v234ReadRaw(key){let raw=localStorage.getItem(key);if(!raw)return null;try{let s=JSON.parse(raw);return v234ValidState(s)?s:null}catch(e){return null}}
+function v234PrimarySave(){let m=v234ReadRaw('transportDirectorSave');if(m)return{name:'Manual Save',state:m};let a=v234ReadRaw('transportAutosave');if(a)return{name:'Autosave',state:a};return null}
+function v234ManualSave(){
+ try{
+  ensureV234();v224PrepareSave?.();state.v234.lastManualSave=Date.now();
+  let old=localStorage.getItem('transportDirectorSave');
+  if(old&&v234ReadRaw('transportDirectorSave')){localStorage.setItem('transportV234PreviousManual',old);localStorage.setItem('transportV234PreviousManualTime',localStorage.getItem('transportDirectorSaveTime')||String(Date.now()))}
+  let raw=JSON.stringify(state),ts=Date.now();
+  localStorage.setItem('transportDirectorSave',raw);localStorage.setItem('transportDirectorSaveTime',String(ts));
+  localStorage.setItem('transportAutosave',raw);localStorage.setItem('transportAutosaveTime',String(ts));
+  v224WritePurchasedFleetRegistry?.();log?.('Game saved locally.');render?.();notify?.(`Game saved — Day ${state.schoolDay||state.day||0}.`,'decision')
+ }catch(e){console.error(e);alert('Save failed: '+(e?.message||e))}
+}
+function v234Autosave(){if(window.__transportBooting)return;try{ensureV234();v224PrepareSave?.();state.v234.lastAutosave=Date.now();let raw=JSON.stringify(state),ts=Date.now();localStorage.setItem('transportAutosave',raw);localStorage.setItem('transportAutosaveTime',String(ts));v224WritePurchasedFleetRegistry?.()}catch(e){console.warn(e)}}
+function v234LoadPrimary(){
+ let p=v234PrimarySave();if(!p)return alert('No valid save found.');
+ try{window.__transportBooting=true;state=JSON.parse(JSON.stringify(p.state));v224RestorePurchasedFleet?.();ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();ensureV234?.();window.__transportBooting=false;render?.();notify?.(`${p.name} loaded — Day ${state.schoolDay||state.day||0}.`,'decision');return true}catch(e){window.__transportBooting=false;console.error(e);alert('That save could not be loaded.');return false}
+}
+function v234RecoveryRows(){let rows=[['Manual Save','transportDirectorSave','transportDirectorSaveTime'],['Previous Manual','transportV234PreviousManual','transportV234PreviousManualTime'],['Autosave','transportAutosave','transportAutosaveTime'],['Slot 1','transportSave1','transportSave1Time'],['Slot 2','transportSave2','transportSave2Time'],['Slot 3','transportSave3','transportSave3Time']];return rows.map(([name,key,time])=>{let s=v234ReadRaw(key);return s?{name,key,state:s,ts:Number(localStorage.getItem(time)||0),day:Number(s.schoolDay||s.day||0),date:s.gameDate||'',staff:(s.staff||s.drivers||[]).length,buses:(s.buses||[]).length}:null}).filter(Boolean)}
+function v234RecoveryCenter(){let rows=v234RecoveryRows();openModal('🛟 Save Recovery Center',rows.length?rows.map(r=>`<div class="v233-backup"><b>${r.name}</b><div class="small">${r.date} • Day ${r.day} • ${r.staff} staff • ${r.buses} buses${r.ts?`<br>${new Date(r.ts).toLocaleString()}`:''}</div><button class="btn" onclick="v234RestoreKey('${r.key}')">Restore This Save</button></div>`).join(''):'<div class="alert">No valid saves found.</div>')}
+function v234RestoreKey(key){let s=v234ReadRaw(key);if(!s)return alert('Snapshot invalid.');window.__transportBooting=true;state=JSON.parse(JSON.stringify(s));window.__transportBooting=false;v234ManualSave();closeModal?.();render?.()}
+saveGame=v234ManualSave;autosaveGame=v234Autosave;loadGame=v234LoadPrimary;
+
+function v234RunDayInstant(){
+ try{
+  ensureV231?.();if(state.v231){state.v231.running=false;state.v231.paused=true;state.v231.completed=false;state.v231.events=[]}
+  window.__v234InstantDay=true;
+  let d=Number(state.schoolDay||state.day||0),date=state.gameDate;
+  runTransportationDay();
+  let d2=Number(state.schoolDay||state.day||0);
+  if(d2!==d||state.gameDate!==date){ensureV234();state.v234.lastDayResult={from:date,to:state.gameDate,day:d2};v234Autosave();notify?.(`Transportation day complete. Now ${state.gameDate||''} • Day ${d2}.`,'decision')}
+ }catch(e){console.error(e);alert('Transportation day could not be completed: '+(e?.message||e))}finally{window.__v234InstantDay=false}
+}
+
+/* ===== V23.4 RUN DAY / KEYBOARD REPAIR ===== */
 function ensureV2331(){state.v2331=state.v2331||{lastStart:null};return state.v2331}
 function v2331CurrentDayKey(){return String(state.gameDate||state.schoolDay||'')}
 function v2331RunDay(){
@@ -8844,7 +8882,7 @@ function v2331KeyHandler(e){
   let tag=String(e.target?.tagName||'').toLowerCase();
   if(['input','textarea','select'].includes(tag)||e.target?.isContentEditable)return;
   let k=String(e.key||'').toLowerCase();
-  if(k==='r'){e.preventDefault();e.stopPropagation?.();if(window.__v2331Starting)return;window.__v2331Starting=true;try{v2331RunDay()}finally{setTimeout(()=>window.__v2331Starting=false,250)}return}
+  if(k==='r'){e.preventDefault();e.stopPropagation?.();if(window.__v2331Starting)return;window.__v2331Starting=true;try{v234RunDayInstant()}finally{setTimeout(()=>window.__v2331Starting=false,250)}return}
   if(k==='g'){e.preventDefault();e.stopPropagation?.();v232OpenLivingGarage?.();return}
   if(k===' '&&state.v231?.running){e.preventDefault();e.stopPropagation?.();v231Pause?.();return}
   if(['1','2','4','8'].includes(k)&&state.v231?.running){e.preventDefault();e.stopPropagation?.();v231Speed?.(Number(k));return}
@@ -8857,7 +8895,7 @@ function v2331BindKeys(){
 function v231Minute(){return Number(state.v231?.minute||330)}
 
 if(typeof window!=='undefined')setTimeout(()=>v2331BindKeys(),0);
-/* ===== V23.3.3 RELIABILITY + REAL OPERATIONS ===== */
+/* ===== V23.4 RELIABILITY + REAL OPERATIONS ===== */
 function ensureV233(){state.v233=state.v233||{absences:{},repairs:{},routeRuntime:{},tomorrow:{date:null,issues:[]},liveProcessed:{},backupMeta:{lastDay:null,lastWeek:null},employeeHistory:{}};return state.v233}
 function v233Clone(x){return JSON.parse(JSON.stringify(x))}
 function v233DateKey(){return String(state.gameDate||state.date||'')}
@@ -8884,7 +8922,7 @@ function v233ConsumeRouteFuel(busId,miles){let pct=Math.min(22,Math.max(3,Number
 function v233ProcessRouteDeparture(phase){ensureV233();v233RefreshAbsences();v233MaintainSpareAssignments();(state.routes||[]).forEach(r=>{let driver=v233RouteDriverName(r),d=v233DriverByName(driver);if(d&&(d.calledOff||d.absent))return;let busId=v233RouteBusId(r);if(!busId)return;let key=`${v233DateKey()}-${phase}-${r.id}`;if(state.v233.routeRuntime[key])return;state.v233.routeRuntime[key]={route:r.id,bus:busId,driver,phase,status:'Departed',depart:v231Minute?.()||0};let b=v233BusById(busId);if(b){b.liveStatus='Route';b.status='Route'}})}
 function v233ProcessRouteReturn(phase){ensureV233();(state.routes||[]).forEach(r=>{let key=`${v233DateKey()}-${phase}-${r.id}`,run=state.v233.routeRuntime[key];if(!run||run.status==='Returned')return;let miles=v233RouteMiles(r)/2;v233AddMileage(run.bus,miles,`${phase} route ${r.id}`);v233ConsumeRouteFuel(run.bus,miles);run.status='Returned';run.return=v231Minute?.()||0;run.miles=miles;let b=v233BusById(run.bus);if(b){b.liveStatus='Parked';b.status='Ready'}})}
 function v233FuelReturningBuses(){ensureV233();let spend=0;(state.routes||[]).forEach(r=>{let busId=v233RouteBusId(r),driver=v233RouteDriverName(r);if(busId&&v233BusFuel(busId)<55)spend+=v233FuelBus(busId,driver||'Driver','Post-route fueling')});return spend}
-function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V23.3.3 live event',key,e)}}}
+function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V23.4 live event',key,e)}}}
 function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v232ResolveRoutineEvents?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
 function v233TomorrowDate(){return v233ShiftDate(v233DateKey(),1)}
 function v233BuildTomorrowBoard(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233MaintainSpareAssignments();let issues=[],tom=v233TomorrowDate();(state.routes||[]).forEach(r=>{let drv=v233RouteDriverName(r),d=v233DriverByName(drv);if(!drv||!d)issues.push({level:'danger',title:`Route ${r.id} — driver coverage needed`,detail:'No active assigned driver.'});else{let a=state.v233.absences[drv];if(a&&a.through>=tom)issues.push({level:'warn',title:`Route ${r.id} — ${drv} absent`,detail:`Absence continues through ${a.through}.`})}let regular=r.bus||r.busId||r.assignedBus,rep=state.v233.repairs[String(regular)];if(rep&&!['Released','Closed'].includes(rep.status)){issues.push({level:r.tempBus?'warn':'danger',title:`Route ${r.id} — Bus ${regular} in shop`,detail:r.tempBus?`Bus ${r.tempBus} remains assigned as temporary spare.`:'No temporary spare assigned yet.'})}});Object.values(state.v233.repairs).forEach(rep=>{if(!['Released','Closed'].includes(rep.status))issues.push({level:'warn',title:`Bus ${rep.bus} — ${rep.status}`,detail:`${rep.issue}; estimated ${rep.days} day repair.`})});let trips=(state.trips||[]).filter(t=>String(t.date||'')===tom&&!/cancel/i.test(String(t.status||'')));if(trips.length)issues.push({level:'good',title:`${trips.length} trip${trips.length===1?'':'s'} scheduled`,detail:'Confirm bus and driver coverage.'});state.v233.tomorrow={date:tom,issues,generated:v233DateKey()};return state.v233.tomorrow}
@@ -8899,7 +8937,7 @@ function v233OpenBackupCenter(){let A=v233BackupCandidates();openModal('🧰 Rot
 function v233LoadBackup(type){let x=v233BackupCandidates().find(a=>a.type===type);if(!x)return alert('Backup unavailable.');try{window.__transportBooting=true;state=v233Clone(x.state);ensureV233();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();window.__transportBooting=false;localStorage.setItem('transportDirectorSave',JSON.stringify(state));localStorage.setItem('transportDirectorSaveTime',String(Date.now()));render?.();closeModal?.();notify?.(`${type} backup restored.`,'decision')}catch(e){window.__transportBooting=false;alert('Backup could not be restored: '+(e?.message||e))}}
 function v233PrepareNextDay(){ensureV233();v233RotatingBackups();v233EmployeeHistory();v233BuildTomorrowBoard()}
 
-/* ===== V23.3.3 LIVING GARAGE ===== */
+/* ===== V23.4 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -9047,17 +9085,17 @@ function v232GarageHTML(){
       <div style="padding:8px">${activeDrivers.slice(0,14).map(d=>`<span class="v232-person" onclick="v225DriverProfile('${d.employeeId||''}')">👤 ${d.name.split(' ')[0]} • ${v232DriverStatus(d.name)}</span>`).join('')}</div>
     </div>
     <div class="v232-side">
-      <div class="v232-panel"><h4>🕒 ${v231Clock?.(v232Minute())||''}</h4><div class="small">${v230Phase?.()||'Transportation Operations'}</div><div class="actions"><button class="btn primary" onclick="v2331RunDay()">▶ Run Transportation Day</button><button class="btn" onclick="v231Open()">Live Day Controls</button></div></div>
+      <div class="v232-panel"><h4>🕒 ${v231Clock?.(v232Minute())||''}</h4><div class="small">${v230Phase?.()||'Transportation Operations'}</div><div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v231Open()">Live Day Controls</button></div></div>
       <div class="v232-panel"><h4>🔧 Shop Bays</h4>${bayHtml}</div>
       <div class="v232-panel"><h4>📋 Tomorrow</h4><div class="small">${state.v233?.tomorrow?.date||v233TomorrowDate?.()||''} • ${(state.v233?.tomorrow?.issues||[]).length} planning item${(state.v233?.tomorrow?.issues||[]).length===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v233OpenTomorrowBoard()">Open Planning Board</button></div></div><div class="v232-panel"><h4>☎️ Director Phone</h4><div><b>${openPhone}</b> open item${openPhone===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v232OpenPhone()">Open Phone</button></div></div>
       <div class="v232-panel"><h4>📻 Dispatch Feed</h4><div class="v232-feed">${(state.v231?.events||[]).slice(0,12).map(x=>`<div>${v231Clock?.(x.minute)||''} • ${x.text}</div>`).join('')}</div></div>
-      <div class="v232-panel"><div class="actions"><button class="btn primary" onclick="v2321RecoveryCenter()">🛟 Save Recovery</button><button class="btn" onclick="v233OpenBackupCenter()">🧰 Backups</button><button class="btn" onclick="v233OpenTomorrowBoard()">📋 Tomorrow</button><button class="btn" onclick="v232OpenSummary()">End-of-Day Briefing</button><button class="btn" onclick="v2303OpenDoorRequests()">Office Door</button></div></div>
+      <div class="v232-panel"><div class="actions"><button class="btn primary" onclick="v234RecoveryCenter()">🛟 Save Recovery</button><button class="btn" onclick="v233OpenBackupCenter()">🧰 Backups</button><button class="btn" onclick="v233OpenTomorrowBoard()">📋 Tomorrow</button><button class="btn" onclick="v232OpenSummary()">End-of-Day Briefing</button><button class="btn" onclick="v2303OpenDoorRequests()">Office Door</button></div></div>
     </div>
   </div>`
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V23.3.3',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V23.4',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -9307,11 +9345,11 @@ window.addEventListener('load',()=>{
 
 window.addEventListener('load',()=>{try{
   window.__transportBooting=true;
-  let recovery=v2321BestRecoverySave?.();
+  let recovery=v234PrimarySave?.();
   if(recovery){state=JSON.parse(JSON.stringify(recovery.state));v224RestorePurchasedFleet?.()}
   ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureFinanceV22();v22AuthorizedPositions();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();opsRenderAllV15();
   window.__transportBooting=false;
-  if(recovery){autosaveGame?.();render?.();notify?.(`Recovered ${recovery.name}: Day ${state.schoolDay||state.day||0}, ${(state.staff||[]).length} staff, ${(state.buses||[]).length} buses.`,'decision')}
+  if(recovery){autosaveGame?.();render?.();notify?.(`Loaded ${recovery.name}: Day ${state.schoolDay||state.day||0}, ${(state.staff||[]).length} staff, ${(state.buses||[]).length} buses.`,'decision')}
 }catch(e){window.__transportBooting=false;console.error('Safe load guard',e)}finally{setTimeout(()=>v2322RecoveryUI?.(),50)}});
 
 render();
