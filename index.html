@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V23.2.1 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V23.2.2 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V23.2.1 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V23.2.2 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -7607,7 +7607,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V23.2.1 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V23.2.2 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7691,9 +7691,24 @@ function v2321LoadCandidate(key){
   try{window.__transportBooting=true;state=JSON.parse(c.raw);if(!state||!Array.isArray(state.buses))throw new Error('Invalid save');let restored=v224RestorePurchasedFleet();ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();window.__transportBooting=false;autosaveGame?.();closeModal?.();render?.();notify?.(`${c.name} recovered — Day ${state.schoolDay||state.day||0}, ${(state.staff||[]).length} staff, ${state.buses.length} buses.`,'decision')}
   catch(e){window.__transportBooting=false;console.error(e);alert('That recovery save could not be loaded.')}
 }
+
+function v2322RecoveryUI(){
+  if(document.getElementById?.('v2322RecoveryFab'))return;
+  let b=document.createElement('button');
+  b.id='v2322RecoveryFab';b.className='v2322-recovery-fab';b.innerHTML='🛟 Save Recovery';
+  b.onclick=()=>v2321RecoveryCenter();
+  document.body.appendChild(b);
+  let best=v2321BestRecoverySave?.();
+  if(best){
+    let n=document.createElement('div');n.id='v2322RecoveryBanner';n.className='v2322-recovery-banner';
+    n.innerHTML=`Recovery available: <b>${best.name}</b> • Day ${best.day} • ${best.staff} staff • ${best.buses} buses`;
+    n.onclick=()=>v2321RecoveryCenter();n.style.cursor='pointer';
+    document.body.appendChild(n)
+  }
+}
 function v2321RecoveryCenter(){
   let C=v2321SaveCandidates().sort((a,b)=>b.score-a.score||b.ts-a.ts),best=C[0];
-  openModal('🛟 Save Recovery Center',`<div class="alert priority-green"><b>${best?`Recommended: ${best.name}`:'No saves found'}</b><div class="small">Recovery now prefers the most progressed district instead of blindly choosing the newest timestamp.</div></div>`+C.map(c=>`<div class="v232-panel"><b>${c.name}${c===best?' ⭐':''}</b><div class="small">${c.date||'No date'} • Day ${c.day} • ${c.staff} staff • ${c.routes} routes • ${c.buses} buses<br>Saved ${c.ts?new Date(c.ts).toLocaleString():'legacy timestamp'}</div><div class="actions"><button class="btn ${c===best?'primary':''}" onclick="v2321LoadCandidate('${c.key}')">Load This Snapshot</button></div></div>`).join(''))
+  openModal('🛟 SAVE RECOVERY CENTER',`<div class="alert priority-green"><b>${best?`Recommended: ${best.name}`:'No saves found'}</b><div class="small">Recovery now prefers the most progressed district instead of blindly choosing the newest timestamp.</div></div>`+C.map(c=>`<div class="v232-panel"><b>${c.name}${c===best?' ⭐':''}</b><div class="small">${c.date||'No date'} • Day ${c.day} • ${c.staff} staff • ${c.routes} routes • ${c.buses} buses<br>Saved ${c.ts?new Date(c.ts).toLocaleString():'legacy timestamp'}</div><div class="actions"><button class="btn ${c===best?'primary':''}" onclick="v2321LoadCandidate('${c.key}')">Load This Snapshot</button></div></div>`).join(''))
 }
 function v224SaveStatus(){
   let newest=v224NewestSave(),R=v224PurchasedFleetRegistry();
@@ -7799,7 +7814,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V23.2.1 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V23.2.2 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8556,7 +8571,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V23.2.1 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V23.2.2 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV2303?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8654,10 +8669,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V23.2.1: legacy R handler replaced by live-day keyboard controls. */
+/* V23.2.2: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V23.2.1 LIVE TRANSPORTATION DAY ===== */
+/* ===== V23.2.2 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8767,7 +8782,7 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 }
 
 
-/* ===== V23.2.1 LIVING GARAGE ===== */
+/* ===== V23.2.2 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -8919,13 +8934,13 @@ function v232GarageHTML(){
       <div class="v232-panel"><h4>🔧 Shop Bays</h4>${bayHtml}</div>
       <div class="v232-panel"><h4>☎️ Director Phone</h4><div><b>${openPhone}</b> open item${openPhone===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v232OpenPhone()">Open Phone</button></div></div>
       <div class="v232-panel"><h4>📻 Dispatch Feed</h4><div class="v232-feed">${(state.v231?.events||[]).slice(0,12).map(x=>`<div>${v231Clock?.(x.minute)||''} • ${x.text}</div>`).join('')}</div></div>
-      <div class="v232-panel"><div class="actions"><button class="btn" onclick="v232OpenSummary()">End-of-Day Briefing</button><button class="btn" onclick="v2303OpenDoorRequests()">Office Door</button></div></div>
+      <div class="v232-panel"><div class="actions"><button class="btn primary" onclick="v2321RecoveryCenter()">🛟 Save Recovery</button><button class="btn" onclick="v232OpenSummary()">End-of-Day Briefing</button><button class="btn" onclick="v2303OpenDoorRequests()">Office Door</button></div></div>
     </div>
   </div>`
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V23.2.1',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V23.2.2',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -9180,7 +9195,7 @@ window.addEventListener('load',()=>{try{
   ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureFinanceV22();v22AuthorizedPositions();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();opsRenderAllV15();
   window.__transportBooting=false;
   if(recovery){autosaveGame?.();render?.();notify?.(`Recovered ${recovery.name}: Day ${state.schoolDay||state.day||0}, ${(state.staff||[]).length} staff, ${(state.buses||[]).length} buses.`,'decision')}
-}catch(e){window.__transportBooting=false;console.error('Safe load guard',e)}});
+}catch(e){window.__transportBooting=false;console.error('Safe load guard',e)}finally{setTimeout(()=>v2322RecoveryUI?.(),50)}});
 
 render();
 </script>
