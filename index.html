@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V23.2 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V23.2.1 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V23.2 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V23.2.1 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -7607,7 +7607,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V23.2 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V23.2.1 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7668,17 +7668,32 @@ function v224Snapshot(raw){
   }catch(e){return null}
 }
 function v224NewestSave(){
-  let candidates=[
-    ['Manual Save',localStorage.getItem('transportDirectorSave'),Number(localStorage.getItem('transportDirectorSaveTime')||0)],
-    ['Autosave',localStorage.getItem('transportAutosave'),Number(localStorage.getItem('transportAutosaveTime')||0)],
-    ['Save Slot 1',localStorage.getItem('transportSave1'),Number(localStorage.getItem('transportSave1Time')||0)],
-    ['Save Slot 2',localStorage.getItem('transportSave2'),Number(localStorage.getItem('transportSave2Time')||0)],
-    ['Save Slot 3',localStorage.getItem('transportSave3'),Number(localStorage.getItem('transportSave3Time')||0)]
-  ].map(([name,raw,legacyTs])=>{
-    let x=v224Snapshot(raw);return x?{name,raw,state:x.state,ts:Math.max(x.ts,legacyTs),fleet:x.fleet}:null
-  }).filter(Boolean);
-  candidates.sort((a,b)=>b.ts-a.ts || b.fleet-a.fleet);
-  return candidates[0]||null
+  let best=v2321BestRecoverySave?.();
+  if(best)return {name:best.name,raw:best.raw,state:best.state,ts:best.ts,fleet:best.buses,score:best.score};
+  return null
+}
+
+function v2321ProgressScore(s){
+  if(!s)return -1;
+  let y=Number(String(s.year||2026).match(/\d{4}/)?.[0]||2026),day=Number(s.schoolDay||s.day||0);
+  let staff=(s.staff||s.drivers||[]).length,routes=(s.routes||[]).length,buses=(s.buses||[]).length;
+  let history=(s.log||[]).length+(s.news||[]).length+(s.v225?.memories||[]).length;
+  let dateScore=0;try{dateScore=Math.floor(Date.parse((s.gameDate||'')+'T00:00:00Z')/86400000)||0}catch(e){}
+  return (y-2026)*1000000 + day*10000 + dateScore + staff*40 + routes*20 + buses*5 + Math.min(500,history)
+}
+function v2321SaveCandidates(){
+  let rows=[['Manual Save','transportDirectorSave','transportDirectorSaveTime'],['Autosave','transportAutosave','transportAutosaveTime'],['Save Slot 1','transportSave1','transportSave1Time'],['Save Slot 2','transportSave2','transportSave2Time'],['Save Slot 3','transportSave3','transportSave3Time']];
+  return rows.map(([name,key,timeKey])=>{let raw=localStorage.getItem(key),snap=v224Snapshot(raw);if(!snap)return null;let s=snap.state;return {name,key,timeKey,raw,state:s,ts:Math.max(Number(localStorage.getItem(timeKey)||0),snap.ts||0),score:v2321ProgressScore(s),year:s.year,date:s.gameDate,day:Number(s.schoolDay||s.day||0),staff:(s.staff||s.drivers||[]).length,buses:(s.buses||[]).length,routes:(s.routes||[]).length}}).filter(Boolean)
+}
+function v2321BestRecoverySave(){let c=v2321SaveCandidates();if(!c.length)return null;c.sort((a,b)=>b.score-a.score||b.ts-a.ts);return c[0]}
+function v2321LoadCandidate(key){
+  let c=v2321SaveCandidates().find(x=>x.key===key);if(!c)return alert('That save is no longer available.');
+  try{window.__transportBooting=true;state=JSON.parse(c.raw);if(!state||!Array.isArray(state.buses))throw new Error('Invalid save');let restored=v224RestorePurchasedFleet();ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();window.__transportBooting=false;autosaveGame?.();closeModal?.();render?.();notify?.(`${c.name} recovered — Day ${state.schoolDay||state.day||0}, ${(state.staff||[]).length} staff, ${state.buses.length} buses.`,'decision')}
+  catch(e){window.__transportBooting=false;console.error(e);alert('That recovery save could not be loaded.')}
+}
+function v2321RecoveryCenter(){
+  let C=v2321SaveCandidates().sort((a,b)=>b.score-a.score||b.ts-a.ts),best=C[0];
+  openModal('🛟 Save Recovery Center',`<div class="alert priority-green"><b>${best?`Recommended: ${best.name}`:'No saves found'}</b><div class="small">Recovery now prefers the most progressed district instead of blindly choosing the newest timestamp.</div></div>`+C.map(c=>`<div class="v232-panel"><b>${c.name}${c===best?' ⭐':''}</b><div class="small">${c.date||'No date'} • Day ${c.day} • ${c.staff} staff • ${c.routes} routes • ${c.buses} buses<br>Saved ${c.ts?new Date(c.ts).toLocaleString():'legacy timestamp'}</div><div class="actions"><button class="btn ${c===best?'primary':''}" onclick="v2321LoadCandidate('${c.key}')">Load This Snapshot</button></div></div>`).join(''))
 }
 function v224SaveStatus(){
   let newest=v224NewestSave(),R=v224PurchasedFleetRegistry();
@@ -7686,7 +7701,7 @@ function v224SaveStatus(){
     `<div class="alert ${newest?'priority-green':'priority-yellow'}"><b>${newest?`Newest save: ${newest.name}`:'No save found'}</b>
       <div class="small">${newest?`${new Date(newest.ts||Date.now()).toLocaleString()} • ${newest.fleet} buses in snapshot`:''}</div></div>
      <div class="v222-card"><b>Purchased Fleet Safety Copy</b><div class="small">${(R.buses||[]).length} purchased bus${(R.buses||[]).length===1?'':'es'} protected separately from the main save.</div></div>
-     <div class="actions"><button class="btn primary" onclick="saveGame()">Save Everything Now</button><button class="btn" onclick="loadGame()">Load Newest Save</button><button class="btn" onclick="v224RestoreAndSave()">Recover Missing Purchased Buses</button></div>`)
+     <div class="actions"><button class="btn primary" onclick="saveGame()">Save Everything Now</button><button class="btn" onclick="loadGame()">Load Recommended Save</button><button class="btn" onclick="v2321RecoveryCenter()">🛟 Recovery Center</button><button class="btn" onclick="v224RestoreAndSave()">Recover Missing Purchased Buses</button></div>`)
 }
 function v224RestoreAndSave(){
   let restored=v224RestorePurchasedFleet();
@@ -7710,6 +7725,7 @@ saveGame=function(){
   }
 }
 autosaveGame=function(){
+  if(typeof window!=='undefined'&&window.__transportBooting)return;
   try{
     let ts=v224PrepareSave(),payload=JSON.stringify(state);
     localStorage.setItem('transportAutosave',payload);
@@ -7783,7 +7799,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V23.2 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V23.2.1 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8540,7 +8556,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V23.2 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V23.2.1 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV2303?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8638,10 +8654,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V23.2: legacy R handler replaced by live-day keyboard controls. */
+/* V23.2.1: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V23.2 LIVE TRANSPORTATION DAY ===== */
+/* ===== V23.2.1 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8751,7 +8767,7 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 }
 
 
-/* ===== V23.2 LIVING GARAGE ===== */
+/* ===== V23.2.1 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -8909,7 +8925,7 @@ function v232GarageHTML(){
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V23.2',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V23.2.1',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -9157,7 +9173,14 @@ window.addEventListener('load',()=>{
  },1000);
 });
 
-window.addEventListener('load',()=>{try{v224ProtectCurrentPurchasedBuses?.();ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureFinanceV22();v22AuthorizedPositions();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();opsRenderAllV15()}catch(e){console.error('V16 load guard',e)}});
+window.addEventListener('load',()=>{try{
+  window.__transportBooting=true;
+  let recovery=v2321BestRecoverySave?.();
+  if(recovery){state=JSON.parse(recovery.raw);v224RestorePurchasedFleet?.()}
+  ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureOpsV15();ensureRidersV16();ensureWorkforceV17();ensureFleetV18();ensureAdminV19();ensureLivingV20();ensurePostingApplicantsV203();ensureConnectedV21();ensureFinanceV22();v22AuthorizedPositions();ensureRouteBuilderV211();v213NormalizeAllRoutes();ensureGrowthV214();v214InitializeBalancedStart();v215RebalanceOpeningYearIfNeeded();v214ApplyYearlyGrowth();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();opsRenderAllV15();
+  window.__transportBooting=false;
+  if(recovery){autosaveGame?.();render?.();notify?.(`Recovered ${recovery.name}: Day ${state.schoolDay||state.day||0}, ${(state.staff||[]).length} staff, ${(state.buses||[]).length} buses.`,'decision')}
+}catch(e){window.__transportBooting=false;console.error('Safe load guard',e)}});
 
 render();
 </script>
