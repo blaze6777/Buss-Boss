@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V23.7 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V23.8 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V23.7 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V23.8 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -702,7 +702,7 @@ button,.btn,select,input{touch-action:manipulation}
 </section>
 
 <section id="facilities" class="view">
- <div class="section-head"><div><h2>🏗️ Transportation Facility & Systems</h2><div class="small">Upgrade the garage, dispatch center, maintenance shop, bus wash, technology and fueling infrastructure.</div></div><button class="btn" onclick="openPartsInventory()">Parts Inventory</button></div>
+ <div class="section-head"><div><h2>🏗️ Transportation Facility & Systems</h2><div class="small">Upgrade the garage, dispatch center, maintenance shop, bus wash, technology and fueling infrastructure.</div></div><button class="btn" onclick="v238OpenGarageBoard()">Parts Inventory</button></div>
  <div class="today-grid" id="facilityKpis"></div>
  <div class="grid2" style="margin-top:12px">
    <div class="panel"><h2 style="margin-top:0">Facility Campus</h2><div id="facilityCampus"></div></div>
@@ -1560,7 +1560,7 @@ function renderShopV8(){
  $('shopKpis').innerHTML=[['Open Repairs',state.repairQueue.length,''],['Unavailable Buses',unavailable,''],['Mechanics',activeSupportByRole('Bus Mechanic').length+activeSupportByRole('Lead Mechanic').length,''],['Electric Chargers',state.chargers,''],['Avg Fleet Age',avgFleetAge().toFixed(1),'']].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
  $('repairQueue').innerHTML=state.repairQueue.length?state.repairQueue.map(q=>`<div class="repair-row"><b>Bus ${q.bus} — ${q.issue}</b><div class="small">${q.mechanic||'Unassigned'} • ${q.days} day(s) remaining ${q.part?'• Waiting/using '+q.part:''}</div><button class="btn" onclick="assignRepairMechanic(${q.id})">Assign Mechanic</button></div>`).join(''):'<div class="alert priority-green">✅ Shop queue is clear.</div>';
  $('energyPanel').innerHTML=Object.entries(state.fuelPrices).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${k==='Electric'?'$'+v.toFixed(2)+'/kWh':'$'+v.toFixed(2)+'/gal'}</b></div>`).join('')+`<div class="actions"><button class="btn" onclick="installCharger()">Install EV Charger • $18,000</button></div>`;
- $('partsPanel').innerHTML=Object.entries(state.parts).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')+`<button class="btn" onclick="openPartsInventory()">Order / Restock</button>`;
+ $('partsPanel').innerHTML=Object.entries(state.parts).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')+`<button class="btn" onclick="v238OpenGarageBoard()">Automatic Restock</button>`;
  $('replacementPanel').innerHTML=[...state.buses].sort((a,b)=>(busAge(b)*8+(100-Number(b.condition||80))+Number(b.miles||0)/10000)-(busAge(a)*8+(100-Number(a.condition||80))+Number(a.miles||0)/10000)).slice(0,7).map(b=>`<div class="alert"><b>Bus ${b.id}</b><div class="small">${busAge(b)} yrs • ${Number(b.miles||0).toLocaleString()} mi • ${Number(b.condition||80)}% condition<br>Inspection: ${b.inspection||'Current'}</div></div>`).join('');
 }
 function installCharger(){if(state.budget<18000)return alert('Not enough budget.');state.budget-=18000;state.chargers++;notify('New electric bus charger installed.','decision');render()}
@@ -3557,10 +3557,10 @@ function renderOperations(){
  $('seasonHelp').textContent=state.season==='Summer'?'Inspections, route planning, hiring, training, bidding and opening-day preparation.':'Resolve coverage, review weather and trips, then run the entire transportation day with one action.';
  $('opsHeadline').textContent='Daily Operations';
  let coveredNow=state.routes.filter(r=>routeCoverage(r).ok).length;
- $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
+ $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Garage repairs</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
  let cats=state.budgetCategories;$('budgetDetailMini').innerHTML=Object.entries(cats).slice(0,6).map(([k,v])=>`<div class="alert"><b>${k}</b><div>${money(v)}</div></div>`).join('');
  $('newsFeed').innerHTML=(state.news.slice(0,4).map(n=>`<div class="news">${n.text}</div>`).join('')||'<div class="small">No district news yet.</div>');$('reputationBadge').textContent=state.reputation>=90?'Excellent':state.reputation>=75?'Good':'Needs Attention';
- let open=state.workOrders.filter(w=>w.status!=='Completed');$('workOrderMini').innerHTML=open.slice(0,5).map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)}</div></span><button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button></div>`).join('')||'<div class="small">No open work orders.</div>';
+ let open=state.workOrders.filter(w=>w.status!=='Completed');$('workOrderMini').innerHTML=open.slice(0,5).map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)}</div></span><span class="badge">Garage handling</span></div>`).join('')||'<div class="small">No open work orders.</div>';
  if($('recognitionMini'))$('recognitionMini').innerHTML=(state.awards||[]).slice(0,4).map(a=>`<div class="alert">🏆 ${a.name} — ${a.award}</div>`).join('')||'<div class="small">No recognition recorded yet.</div>';
 }
 
@@ -3600,7 +3600,7 @@ function createDriverCalloff(){
    }
  }
  log(`${d.name} called off for ${duration} school day${duration===1?'':'s'}. Route ${d.route} needs substitute coverage.`);
- try{v236AutoCoverCalloffs?.()}catch(e){}
+ try{v2371AutoCoverAll?.()}catch(e){}
 }
 
 function applyDepartmentOperationalEffects(){
@@ -3651,7 +3651,7 @@ function openDailyReportV11(index=0){
 function openDailyReportHistoryV11(){let rs=state.v11?.dailyReports||[];openModal('📚 Daily Operations Report History',rs.length?rs.slice(0,20).map((r,i)=>`<div class="project-card"><b>${r.label}</b><div class="small">Fuel ${money(r.fuelTotal)} • Trips ${r.completedTrips.length} • Coverage ${r.coverage}/${r.totalRoutes}</div><button class="btn" onclick="openDailyReportV11(${i})">Open Report</button></div>`).join(''):'<div class="alert">Complete a transportation day to create the first report.</div>')}
 function runTransportationDay(){
  ensureCalendarData();ensureUXData();refreshSchoolCalendarV11();if(maybeSnowClosureV11())return;
- let staffCoverage=v236AutoCoverCalloffs?.()||{uncovered:[]};
+ let staffCoverage=v2371AutoCoverAll?.()||{uncovered:[]};
  let uncovered=state.routes.filter(r=>!routeCoverage(r).ok);if(uncovered.length){log(`${uncovered.length} route(s) need coverage before the day can run.`);document.querySelector('[data-view="today"]')?.click();render();alert(`${staffCoverage.manager||'Transportation staff'} could not cover ${uncovered.length} route(s). Director action is needed only for these exceptions.`);return}
  let snap=captureDailySnapshotV11(),today=formatGameDate();applyDepartmentOperationalEffects();generateDepartmentEvent();maybeHumanStaffEvent();advanceV8Systems();
  let routeMiles=state.routes.reduce((sum,r)=>sum+routeDailyMiles(r),0);addDailyRouteMileage();processTripsForCurrentDate();let charges=autoFuelLowBusesV10()||[];
@@ -3684,7 +3684,7 @@ function applyTimePhase(){
 }
 function randomOperationalEvent(){let events=[['Principal Call','The high school asks for a 15-minute early dismissal Friday.','Approve','Decline'],['Student Left Item','A parent reports a backpack was left on Bus 18.','Search bus','Call driver'],['Railroad Delay','A train is blocking two routes.','Reroute buses','Hold routes'],['Driver Compliment','A parent emailed praise for a driver helping a nervous kindergarten student.','Recognize driver','Log compliment'],['Minor Incident','A bus mirror clipped a trash cart. No injuries.','Document incident','Review camera']];let e=events[Math.floor(Math.random()*events.length)];openModal(e[0],`<div class="alert">${e[1]}</div><div class="actions"><button class="btn primary" onclick="resolveOperationalEvent('${e[2]}')">${e[2]}</button><button class="btn" onclick="resolveOperationalEvent('${e[3]}')">${e[3]}</button></div>`)}
 function resolveOperationalEvent(choice){state.incidents.push({day:state.day,type:'Operational event',decision:choice});state.reputation=Math.min(100,state.reputation+1);log(`Operational decision: ${choice}.`);closeModal();render()}
-function openMaintenanceCenter(){ensureV4Data();openModal('Maintenance Work Orders',`<div class="small">Maintenance is intentionally occasional. Routine PMs and repairs appear periodically, not every day.</div>${state.workOrders.map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)} • ${w.days||1} day(s)</div></span>${w.status!=='Completed'?`<button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button>`:'✅'}</div>`).join('')||'<div class="alert">✅ No open work orders.</div>'}<div class="actions"><button class="btn" onclick="createRoutineWorkOrder()">Add Routine PM</button></div>`)}
+function openMaintenanceCenter(){ensureV4Data();openModal('Autonomous Bus Garage',`<div class="small">Maintenance is intentionally occasional. Routine PMs and repairs appear periodically, not every day.</div>${state.workOrders.map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)} • ${w.days||1} day(s)</div></span>${w.status!=='Completed'?`<span class="badge">Garage handling</span>`:'✅'}</div>`).join('')||'<div class="alert">✅ No open work orders.</div>'}<div class="actions"><button class="btn" onclick="createRoutineWorkOrder()">Add Routine PM</button></div>`)}
 function createRoutineWorkOrder(){let candidates=state.buses.filter(b=>b.status!=='Maintenance');if(!candidates.length)return;let b=candidates[Math.floor(Math.random()*candidates.length)];let items=[['Oil / filter PM',420],['Brake inspection',280],['Tire rotation',360],['Annual inspection prep',525],['Battery test',190]];let it=items[Math.floor(Math.random()*items.length)];state.workOrders.push({id:Date.now(),bus:b.id,issue:it[0],cost:it[1],status:'Scheduled',days:1});log(`Routine work order opened for Bus ${b.id}: ${it[0]}.`);closeModal();render()}
 function completeWorkOrder(id){
  let w=state.workOrders.find(x=>x.id===id);
@@ -4147,7 +4147,7 @@ function renderDepartment(){
  `<div class="alert"><b>Operational effects</b><div class="small">Dispatch staffing supports daily coverage. Mechanics affect repair turnaround. Trainers and safety staff support compliance. Aides are required for specialized transportation. Routing staff support district growth.</div></div>`;
  $('departmentStaffGrid').innerHTML=state.supportStaff.filter(s=>s.status==='Active').map((s,i)=>`<button class="card" onclick="openSupportStaffFile(${i})"><b>${s.name}</b><div>${s.role}</div><div class="small">Age ${s.age} • ${s.years} yrs service</div><div class="small">Performance ${s.performance}% • Morale ${s.morale}%</div></button>`).join('');
  let open=state.workOrders.filter(w=>w.status!=='Completed');
- $('shopDepartment').innerHTML=`<div class="kv"><span>Mechanics on staff</span><b>${mechanics}</b></div><div class="kv"><span>Open work orders</span><b>${open.length}</b></div><div class="kv"><span>Repair capacity</span><b>${mechanics>=3?'Strong':mechanics>=2?'Normal':'Limited'}</b></div><div class="actions"><button class="btn" onclick="openMaintenanceCenter()">Open Work Orders</button></div>`;
+ $('shopDepartment').innerHTML=`<div class="kv"><span>Mechanics on staff</span><b>${mechanics}</b></div><div class="kv"><span>Garage repairs</span><b>${open.length}</b></div><div class="kv"><span>Repair capacity</span><b>${mechanics>=3?'Strong':mechanics>=2?'Normal':'Limited'}</b></div><div class="actions"><button class="btn" onclick="v238OpenGarageBoard()">Garage Status</button></div>`;
  let sr=state.routes.filter(r=>r.specialNeeds);
  $('specialDepartment').innerHTML=`<div class="kv"><span>Special routes</span><b>${sr.length}</b></div><div class="kv"><span>Aides / Monitors</span><b>${aides}</b></div><div class="kv"><span>Accessible buses</span><b>${state.buses.filter(b=>b.wheelchairLift).length}</b></div><div class="kv"><span>Coordinator</span><b>${departmentRoleCount('Special Needs Coordinator')?'Staffed':'Vacant'}</b></div>`;
 }
@@ -4184,13 +4184,14 @@ function openInternalOpportunitiesV105(){
  ensureV4Data();ensureUXData();
  let vac=departmentVacancies().filter(v=>internalOfficeRolesV105().includes(v.role));
  let apps=(state.v10.internalApplications||[]).filter(a=>a.status==='Applied');
- openModal('📈 Internal Transportation Opportunities',`<div class="alert"><b>Internal-first hiring</b><div class="small">Drivers may move into office/leadership jobs when qualified. Current office staff may apply upward when promotions open. Selecting an internal employee creates a vacancy in their old job, so career ladders can continue naturally.</div></div>${vac.length?vac.map(v=>`<div class="project-card"><b>${v.role}</b><div class="small">${v.target-v.current} opening(s) • ${apps.filter(a=>a.role===v.role).length} internal applicant(s)</div><button class="btn primary" onclick="openApplicantsForRoleV105('${v.role.replace(/'/g,"\\'")}')">View Eligible Employees</button></div>`).join(''):'<div class="alert priority-green">No office or leadership vacancies are currently open.</div>'}`);
+ if(!vac.length)return;openModal('📈 Internal Transportation Opportunities',`<div class="alert"><b>Internal-first hiring</b></div>${vac.map(v=>`<div class="project-card"><b>${v.role}</b><div class="small">${v.target-v.current} opening(s) • ${apps.filter(a=>a.role===v.role).length} internal applicant(s)</div><button class="btn primary" onclick="openApplicantsForRoleV105('${v.role.replace(/'/g,"\\'")}')">View Eligible Employees</button></div>`).join('')}`);
 }
 function openEmployeeOpportunitiesV105(type,ref){
  ensureV4Data();ensureUXData();
  let p=type==='driver'?state.staff.find(s=>s.name===ref):state.supportStaff[Number(ref)];
  if(!p)return;
  let vac=departmentVacancies().filter(v=>internalOfficeRolesV105().includes(v.role)&&eligibleForInternalRoleV105(type,p,v.role));
+ if(!vac.length)return;
  openModal(`Career Opportunities — ${p.name}`,`<div class="alert"><b>Current role:</b> ${type==='driver'?'School Bus Driver':p.role}<div class="small">Service ${Number(p.years||0)} years${type==='driver'?` • Safety ${Number(p.safetyScore||95)}% • Attendance ${Number(p.attendance||98)}%`:` • Performance ${Number(p.performance||85)}%`}</div></div>${vac.length?vac.map(v=>`<div class="project-card"><b>${v.role}</b><div class="small">${v.target-v.current} opening(s)</div><button class="btn primary" onclick="submitInternalApplicationV105('${type}','${String(p.name).replace(/'/g,"\\'")}','${v.role.replace(/'/g,"\\'")}')">Apply</button></div>`).join(''):'<div class="alert">No currently open positions match this employee’s experience and performance.</div>'}`);
 }
 function openApplicantsForRoleV105(role){
@@ -4306,7 +4307,7 @@ function renderToday(){
      <div class="kv"><span>Road Conditions</span><b>${w.roads}</b></div>
      <div class="kv"><span>Transportation Impact</span><b>${impact}</b></div>`;
  }
- $('coverageBoard').innerHTML=state.routes.map(r=>{let c=routeCoverage(r);return `<div class="coverage-card ${c.ok?'priority-green':'priority-red'}"><b>Route ${r.id}</b> — ${c.reason}<div class="small">${r.temporaryDriver||r.driver||'No driver'} • Bus ${r.temporaryBus||r.bus||'—'}</div>${!c.ok?`<div class="coverage-actions"><button class="btn" onclick="quickCover(${r.id},'sub')">Assign Sub</button><button class="btn" onclick="quickCover(${r.id},'spare')">Use Spare Bus</button><button class="btn" onclick="quickCover(${r.id},'combine')">Combine Route</button></div>`:''}</div>`}).join('');
+ $('coverageBoard').innerHTML=state.routes.map(r=>{let c=routeCoverage(r);return `<div class="coverage-card ${c.ok?'priority-green':'priority-red'}"><b>Route ${r.id}</b> — ${c.reason}<div class="small">${r.temporaryDriver||r.driver||'No driver'} • Bus ${r.temporaryBus||r.bus||'—'}</div>${!c.ok?`<div class="coverage-actions"><button class="btn" onclick="v2371SilentCoverageCheck()">Recheck Staff Coverage</button><button class="btn" onclick="quickCover(${r.id},'spare')">Use Spare Bus</button><button class="btn" onclick="quickCover(${r.id},'combine')">Combine Route</button></div>`:''}</div>`}).join('');
  let due=state.staff.filter(s=>s.training&&Object.values(s.training).some(v=>['Due Soon','Needs Training','Needs Endorsement'].includes(v))),deptVac=departmentVacancies();
  $('attentionBoard').innerHTML=[
    ...deptVac.slice(0,3).map(v=>`<div class="alert priority-yellow">🏢 Department vacancy: ${v.role}</div>`),
@@ -5188,7 +5189,7 @@ function runTransportationDay(){
  let overCapacity=enforceCapacityV16();
  if(overCapacity.length){openModal('🚫 Capacity Problem',`<div class="alert"><b>${overCapacity.length} route(s) exceed available bus capacity.</b><br>Students cannot be placed beyond the assigned bus capacity. Reassign riders, split the route, or assign a larger bus before running the day.</div>${overCapacity.map(x=>`<div class="r16-cap bad"><b>Route ${x.r.id}</b><br>AM ${x.am}/${x.c.cap} • PM ${x.pm}/${x.c.cap}</div>`).join('')}<button class="btn primary" onclick="closeModal();goView('riders')">Open Capacity Watch</button>`);return;}
  if(state.summerMode)return alert('Regular route service is not running during Summer Mode. Start the new school year first.');
- let dispatchCoverage=v235AutoAssignSubs?.()||{covered:0,uncovered:[]};
+ let dispatchCoverage=v2371AutoCoverAll?.()||{manager:v2371CoverageManager?.()||'Dispatch',uncovered:[]};
  let uncovered=state.routes.filter(r=>!routeCoverage(r).ok);
  if(uncovered.length){let spares=state.buses.filter(b=>(b.designation==='Spare'||b.status==='Spare')&&!b.ops15?.outOfService);uncovered.forEach(r=>{if(!r.bus&&spares.length)r.temporaryBus=spares.shift().id})}
  let still=state.routes.filter(r=>!routeCoverage(r).ok);
@@ -5223,7 +5224,7 @@ function runTransportationDay(){
  if(state.operatingBudget!=null)state.operatingBudget=Math.max(0,state.operatingBudget-dailyTotal);else state.budget=Math.max(0,state.budget-dailyTotal);
  state.ops15.performance={onTime:served?Math.round((served-late)/served*100):0,lateRoutes:late,roadCalls,missedStops:0,avgDelay:served?Number((totalDelay/served).toFixed(1)):0,parentComplaints:Math.max(0,late-2)};
  state.dailyStats.onTime=state.ops15.performance.onTime;
- state.simMinutes=1050;opsProcessPartOrdersV15();opsBuildShopBacklogV15();
+ state.simMinutes=1050;try{v238RunGarageDay?.()}catch(e){console.error('Autonomous garage',e)};opsBuildShopBacklogV15();
  state.ops15.lastDayReport={date:formatGameDate(),...state.ops15.performance,miles:totalMiles,fuelCost:state.ops15.dailyEconomics.fuel,laborCost:state.ops15.dailyEconomics.labor};
  opsRadioV15('DISPATCH',`Transportation day complete: ${served} routes served, ${totalMiles.toFixed(0)} route miles, ${state.ops15.performance.onTime}% on time.`);
  try{autoFuelLowBusesV106?.()}catch(e){}
@@ -5247,6 +5248,7 @@ function runTransportationDay(){
    try{v235DailyPeople?.()}catch(e){}
    try{v237DailyDriverConversation?.()}catch(e){}
    try{v237SyncGrowthRouting?.()}catch(e){}
+   try{v238AutonomousShopSweep?.()}catch(e){}
  }catch(e){
    console.error('V21.7 next-day advance failed',e);
    try{advanceCalendarDay()}catch(e2){}
@@ -7039,7 +7041,7 @@ function v22GarageAlerts(){
   if(uncovered)a.push({c:'bad',t:`${uncovered} uncovered route${uncovered===1?'':'s'}`,d:'Assign a regular or substitute driver before pull-out.'});
   if(shop)a.push({c:'warn',t:`${shop} bus${shop===1?'':'es'} unavailable`,d:'Check the shop and spare fleet.'});
   if(over)a.push({c:'warn',t:`${over} route${over===1?'':'s'} over capacity`,d:'Move stops, assign a larger bus, or create relief.'});
-  /* V23.7: funded vacancies stay quiet until the director opens Hiring. */
+  /* V23.8: funded vacancies stay quiet until the director opens Hiring. */
   if(!a.length)a.push({c:'good',t:'Morning operation ready',d:'No major issues currently require Director attention.'});
   return a
 }
@@ -7126,7 +7128,7 @@ function v221NeedsAttention(){
   if(uncovered)arr.push({sev:'bad',title:`${uncovered} route${uncovered===1?'':'s'} uncovered`,detail:'Assign a substitute, double-route a qualified driver, or fill the vacancy.',action:`document.querySelector('[data-view="dispatch"]')?.click()`});
   if(over)arr.push({sev:'warn',title:`${over} route${over===1?'':'s'} over capacity`,detail:'Move stops, use a larger bus, or build relief service.',action:`document.querySelector('[data-view="routes"]')?.click()`});
   if(shop)arr.push({sev:'warn',title:`${shop} bus${shop===1?'':'es'} unavailable`,detail:'Review open work orders and spare coverage.',action:`v221OpenWorkOrders()`});
-  /* V23.7: no automatic vacancy nag. */
+  /* V23.8: no automatic vacancy nag. */
   if(proj.over>0)arr.push({sev:'bad',title:`Projected ${money(proj.over)} over operating budget`,detail:'Current spending pace will exhaust the annual appropriation.',action:`v221OpenFinancialForecast()`});
   if(inspections)arr.push({sev:'warn',title:`${inspections} inspection item${inspections===1?'':'s'} due`,detail:'Move them into the shop plan before service is affected.',action:`v221OpenWorkOrders()`});
   return arr
@@ -7295,7 +7297,7 @@ function renderGarageCommandV22(){
       <div><div class="small">FUNDED VACANCIES</div><div class="v22-money">${v22AuthorizedPositions().filter(p=>p.status==='Vacant').length}</div><div class="small">Authorized positions</div></div>
     </div>
     <div class="v22-alertgrid">${(alerts.length?alerts.slice(0,4):[{sev:'good',title:'Morning operation ready',detail:'No major issues currently require Director attention.'}]).map(x=>`<div class="v22-alert ${x.sev}"><b>${x.title}</b><div class="small">${x.detail}</div></div>`).join('')}</div>
-    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v223RepairOperatingFund()">💰 Repair Operating Fund</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn primary" onclick="v232OpenLivingGarage()">🚌 Living Garage</button><button class="btn" onclick="v230OpenCampus()">🏫 Transportation Campus</button><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn primary" onclick="v225OpenMorning()">🌅 Transportation Morning</button><button class="btn" onclick="v226GarageBoard()">🅿️ Garage Board</button><button class="btn" onclick="v226KeyBoard()">🔑 Key Board</button><button class="btn" onclick="v226OpenSubCalls()">📞 Substitute Calls</button><button class="btn" onclick="v226OpenDVIR()">📝 DVIR</button><button class="btn" onclick="v226OpenParts()">📦 Parts</button><button class="btn" onclick="v226OpenFuelLog()">⛽ Fuel Log</button><button class="btn" onclick="v227OpenMorale()">😊 Driver Morale</button><button class="btn" onclick="v227OpenRequests()">🚪 Driver Conversations</button><button class="btn" onclick="v228OpenSeniority()">📜 Seniority</button><button class="btn" onclick="v228OpenBusRequests()">🚌 Bus Requests</button><button class="btn" onclick="v228OpenCompliance()">🪪 CDL / Training</button><button class="btn" onclick="v2303OpenUnifiedShop()">🔧 Mike’s Shop</button><button class="btn" onclick="v228GarageTimeView()">🕒 Living Garage</button><button class="btn" onclick="v228OpenFormer()">🏅 Former Employees</button><button class="btn" onclick="v228OpenRetiredFleet()">🏛️ Retired Fleet</button><button class="btn" onclick="v228OpenYearbooks()">📚 Yearbooks</button><button class="btn" onclick="v225LivingDrivers()">👤 Living Drivers</button><button class="btn" onclick="v225LivingFleet()">🚌 Living Fleet</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
+    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v223RepairOperatingFund()">💰 Repair Operating Fund</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn primary" onclick="v232OpenLivingGarage()">🚌 Living Garage</button><button class="btn" onclick="v230OpenCampus()">🏫 Transportation Campus</button><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn primary" onclick="v225OpenMorning()">🌅 Transportation Morning</button><button class="btn" onclick="v226GarageBoard()">🅿️ Garage Board</button><button class="btn" onclick="v226KeyBoard()">🔑 Key Board</button><button class="btn" onclick="v2371SilentCoverageCheck()">📞 Substitute Calls</button><button class="btn" onclick="v226OpenDVIR()">📝 DVIR</button><button class="btn" onclick="v238OpenGarageBoard()">📦 Parts</button><button class="btn" onclick="v226OpenFuelLog()">⛽ Fuel Log</button><button class="btn" onclick="v227OpenMorale()">😊 Driver Morale</button><button class="btn" onclick="v227OpenRequests()">🚪 Driver Conversations</button><button class="btn" onclick="v228OpenSeniority()">📜 Seniority</button><button class="btn" onclick="v228OpenBusRequests()">🚌 Bus Requests</button><button class="btn" onclick="v228OpenCompliance()">🪪 CDL / Training</button><button class="btn" onclick="v238OpenGarageBoard()">🔧 Mike’s Shop</button><button class="btn" onclick="v228GarageTimeView()">🕒 Living Garage</button><button class="btn" onclick="v228OpenFormer()">🏅 Former Employees</button><button class="btn" onclick="v228OpenRetiredFleet()">🏛️ Retired Fleet</button><button class="btn" onclick="v228OpenYearbooks()">📚 Yearbooks</button><button class="btn" onclick="v225LivingDrivers()">👤 Living Drivers</button><button class="btn" onclick="v225LivingFleet()">🚌 Living Fleet</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
 }
 
 
@@ -7613,7 +7615,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V23.7 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V23.8 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7841,7 +7843,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V23.7 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V23.8 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8539,7 +8541,7 @@ function v230OpenCampus(){
      <div class="v230-campus">
        <div class="v230-building v230-admin" onclick="v230DirectorOffice()"><b>🏢 ADMIN / DIRECTOR</b><div class="small">Your office • budget • board • decisions</div></div>${v2303DoorHTML?.()||""}
        <div class="v230-building v230-driver" onclick="v230DriverRoom()"><b>☕ DRIVER ROOM</b><div class="small">Staff • morale • seniority • keys</div></div>
-       <div class="v230-building v230-shop" onclick="v2303OpenUnifiedShop()"><b>🔧 MAINTENANCE SHOP</b><div class="small">Mike & Cole • bays • PM • parts • DVIR</div></div>
+       <div class="v230-building v230-shop" onclick="v238OpenGarageBoard()"><b>🔧 MAINTENANCE SHOP</b><div class="small">Mike & Cole • bays • PM • parts • DVIR</div></div>
        <div class="v230-building v230-fuel" onclick="v230FuelWash()"><b>⛽ FUEL / WASH</b><div class="small">Fueling records • cleanliness</div></div>
        <div class="v230-lot"><b>🅿️ BUS PARKING</b><div class="v230-spaces">${busSpaces}</div></div>
        <div class="v230-people">${v230Hour()<6.1?'🚶 🚶 🚗':v230Hour()>=13.5&&v230Hour()<15?'🚗 🚶 🚶':''}</div>
@@ -8598,7 +8600,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V23.7 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V23.8 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8699,10 +8701,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V23.7: legacy R handler replaced by live-day keyboard controls. */
+/* V23.8: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V23.7 LIVE TRANSPORTATION DAY ===== */
+/* ===== V23.8 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8813,7 +8815,7 @@ function v231Keyboard(e){
 }
 if(typeof window!=='undefined'&&!window.__v231KeyBound){
   window.__v231KeyBound=true;
-  /* V23.7 old keyboard listener disabled */
+  /* V23.8 old keyboard listener disabled */
 }
 
 
@@ -8824,7 +8826,237 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 
 
 
-/* ===== V23.7 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
+
+
+/* ===== V23.8 AUTONOMOUS BUS GARAGE ===== */
+function ensureV238(){
+  state.v238=state.v238||{
+    jobs:{},
+    partsLog:[],
+    shopLog:[],
+    lastShopDay:null,
+    suppressJobOpeningPopups:true
+  };
+  return state.v238
+}
+function v238MechanicCapacity(){
+  let mechs=(state.supportStaff||[]).filter(s=>/mechanic/i.test(String(s.role||s.title||''))&&s.status!=='Inactive').length||2;
+  let bays=Number(state.v13?.facility?.bays||state.facilityLevels?.maintenance||2);
+  return Math.max(1,Math.min(mechs,Math.max(2,bays)))
+}
+function v238IssueForBus(b){
+  let src=v2303MaintenanceSources?.(b.id)||[];
+  if(src.length)return src[0].issue||src[0].detail||'Maintenance repair';
+  try{
+    let pm=opsPMDueV15?.(b);
+    if(pm?.due)return 'Preventive Maintenance';
+  }catch(e){}
+  if(Number(b.ops15?.tirePct||100)<25)return 'Tire Replacement';
+  if(Number(b.ops15?.brakePct||100)<30)return 'Brake Service';
+  if(Number(b.ops15?.inspectionDueDays||999)<=7)return 'State Inspection Prep';
+  if(/maintenance|shop|out of service/i.test(String(b.status||'')+' '+String(b.liveStatus||'')))return 'Maintenance diagnosis';
+  return null
+}
+function v238PartForIssue(issue){
+  let s=String(issue||'').toLowerCase();
+  if(/tire/.test(s))return 'Tires';
+  if(/brake/.test(s))return 'Brake Sets';
+  if(/preventive|oil|filter|pm/.test(s))return 'Oil Filters';
+  return null
+}
+function v238DaysForIssue(issue){
+  let s=String(issue||'').toLowerCase();
+  if(/engine|transmission|major|rear end/.test(s))return 3;
+  if(/brake|electrical|starter|alternator|coolant|air/.test(s))return 2;
+  return 1
+}
+function v238EnsureOpsParts(){
+  ensureOpsV15?.();
+  state.ops15.parts=state.ops15.parts||{'Tires':8,'Brake Sets':4,'Oil Filters':12};
+  state.ops15.partOrders=state.ops15.partOrders||[]
+}
+function v238AutoOrderParts(){
+  ensureV238?.();v238EnsureOpsParts();
+  let targets={'Tires':6,'Brake Sets':4,'Oil Filters':10};
+  let orderQty={'Tires':8,'Brake Sets':6,'Oil Filters':16};
+  Object.entries(targets).forEach(([part,min])=>{
+    let onHand=Number(state.ops15.parts[part]||0);
+    let already=state.ops15.partOrders.some(o=>o.part===part);
+    if(onHand<=min&&!already){
+      let qty=orderQty[part],eta=2+Math.floor(Math.random()*2);
+      state.ops15.partOrders.push({part,qty,eta,auto:true});
+      state.v238.partsLog.unshift({date:state.gameDate||'',part,qty,action:'Auto ordered'});
+      state.v238.partsLog=state.v238.partsLog.slice(0,200);
+      log?.(`Shop automatically ordered ${qty} ${part}.`)
+    }
+  })
+}
+function v238ProcessParts(){
+  v238EnsureOpsParts();
+  state.ops15.partOrders.forEach(o=>o.eta--);
+  let arrived=state.ops15.partOrders.filter(o=>o.eta<=0);
+  arrived.forEach(o=>{
+    state.ops15.parts[o.part]=Number(state.ops15.parts[o.part]||0)+Number(o.qty||0);
+    state.v238.partsLog.unshift({date:state.gameDate||'',part:o.part,qty:o.qty,action:'Received'});
+    log?.(`Shop received ${o.qty} ${o.part}.`)
+  });
+  state.ops15.partOrders=state.ops15.partOrders.filter(o=>o.eta>0)
+}
+function v238ScanFleet(){
+  ensureV238?.();v238EnsureOpsParts();
+  (state.buses||[]).forEach(b=>{
+    let issue=v238IssueForBus(b);
+    if(!issue)return;
+    let key=String(b.id);
+    let j=state.v238.jobs[key];
+    if(!j||j.status==='Complete'){
+      state.v238.jobs[key]={
+        bus:b.id,issue,part:v238PartForIssue(issue),days:v238DaysForIssue(issue),
+        progress:0,status:'Queued',opened:state.gameDate||'',lastWorked:null
+      }
+    }
+    b.status='Maintenance';b.liveStatus='Shop'
+  })
+}
+function v238CloseLegacyMaintenance(busId){
+  (state.v226?.defects||[]).forEach(d=>{
+    if(String(d.bus)===String(busId)&&d.status!=='Closed'){d.status='Closed';d.resolved=state.gameDate||''}
+  });
+  (state.workOrders||[]).forEach(w=>{
+    if(String(w.bus)===String(busId)&&!/closed|complete/i.test(String(w.status||''))){w.status='Completed';w.completed=state.gameDate||''}
+  });
+  (state.v221?.workOrders||[]).forEach(w=>{
+    if(String(w.bus)===String(busId)&&!/closed|complete/i.test(String(w.status||''))){w.status='Complete';w.completed=state.gameDate||''}
+  });
+  if(state.v233?.repairs?.[String(busId)]){
+    state.v233.repairs[String(busId)].status='Released';
+    state.v233.repairs[String(busId)].released=state.gameDate||''
+  }
+}
+function v238FinishJob(j){
+  let b=(state.buses||[]).find(x=>String(x.id)===String(j.bus));if(!b)return;
+  if(j.part&&Number(state.ops15?.parts?.[j.part]||0)>0)state.ops15.parts[j.part]--;
+  let cost=/tire/i.test(j.issue)?2200:/brake/i.test(j.issue)?1450:/preventive|oil|filter|pm/i.test(j.issue)?620:750;
+  if(state.operatingBudget!=null)state.operatingBudget=Number(state.operatingBudget||0)-cost;
+  else if(state.budget!=null)state.budget=Number(state.budget||0)-cost;
+  if(b.ops15){
+    if(/tire/i.test(j.issue))b.ops15.tirePct=100;
+    if(/brake/i.test(j.issue))b.ops15.brakePct=100;
+    if(/preventive|oil|filter|pm/i.test(j.issue)){b.ops15.lastPM=Number(b.miles||0);b.ops15.nextPM=Number(b.miles||0)+Number(b.ops15.pmInterval||6000)}
+    if(/inspection/i.test(j.issue))b.ops15.inspectionDueDays=365
+  }
+  b.condition=Math.min(100,Number(b.condition||85)+5);
+  b.status='Ready';b.liveStatus='Parked / Pre-Trip';if(b.ops15)b.ops15.outOfService=false;
+  v238CloseLegacyMaintenance(b.id);
+  j.status='Complete';j.completed=state.gameDate||'';
+  state.v238.shopLog.unshift({date:state.gameDate||'',bus:b.id,issue:j.issue,result:'Completed'});
+  state.v238.shopLog=state.v238.shopLog.slice(0,250);
+  log?.(`Garage completed ${j.issue} on Bus ${b.id}.`)
+}
+function v238RunGarageDay(){
+  ensureV238?.();v238ProcessParts();v238AutoOrderParts();v238ScanFleet();
+  let cap=v238MechanicCapacity();
+  let active=Object.values(state.v238.jobs).filter(j=>j.status!=='Complete');
+  active.sort((a,b)=>(b.progress-a.progress)||String(a.opened).localeCompare(String(b.opened)));
+  let worked=0;
+  for(let j of active){
+    if(worked>=cap)break;
+    if(j.part&&Number(state.ops15.parts[j.part]||0)<=0){
+      j.status='Waiting for Parts';continue
+    }
+    j.status='In Shop';j.progress=Number(j.progress||0)+1;j.lastWorked=state.gameDate||'';worked++;
+    if(j.progress>=j.days)v238FinishJob(j)
+  }
+  v238AutoOrderParts();
+  state.v238.lastShopDay=state.gameDate||String(state.schoolDay||'');
+  return {worked,remaining:Object.values(state.v238.jobs).filter(j=>j.status!=='Complete').length}
+}
+function v238AutonomousShopSweep(){
+  ensureV238?.();
+  // Catch buses that got stuck in Maintenance in old saves and move them into a real repair job.
+  v238ScanFleet();
+  let stuck=Object.values(state.v238.jobs).filter(j=>j.status!=='Complete');
+  if(stuck.length&&state.v238.lastShopDay!==state.gameDate)v238RunGarageDay();
+}
+function v238OpenGarageBoard(){
+  ensureV238?.();v238ScanFleet();v238AutoOrderParts();
+  let jobs=Object.values(state.v238.jobs).filter(j=>j.status!=='Complete');
+  let completed=Object.values(state.v238.jobs).filter(j=>j.status==='Complete').slice(-8).reverse();
+  let parts=Object.entries(state.ops15?.parts||{}).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v} on hand</b></div>`).join('');
+  let orders=(state.ops15?.partOrders||[]).map(o=>`<div class="small">${o.part} × ${o.qty} • arriving in ${o.eta} day(s)</div>`).join('')||'<div class="small">No parts currently on order.</div>';
+  openModal('🔧 Autonomous Bus Garage',
+    `<div class="alert priority-green"><b>The garage handles routine bus issues automatically.</b><div class="small">Mike and Cole diagnose buses, open/close maintenance records, complete repairs, run PMs, and reorder parts. You do not need to create or complete work orders.</div></div>
+    <h3>Active Shop Work</h3>${jobs.length?jobs.map(j=>`<div class="v2303-card"><b>Bus ${j.bus}</b> — ${j.issue}<div class="small">${j.status} • repair day ${Math.min(j.progress+1,j.days)}/${j.days}${j.part?` • ${j.part}`:''}</div></div>`).join(''):'<div class="alert">✅ All buses are ready.</div>'}
+    <h3>Parts Room</h3>${parts}<h4>Automatic Orders</h4>${orders}
+    <h3>Recently Completed</h3>${completed.length?completed.map(j=>`<div class="small">Bus ${j.bus} — ${j.issue} • ${j.completed||''}</div>`).join(''):'<div class="small">No recent repairs.</div>'}`)
+}
+
+/* Routine hiring stays completely quiet unless the Director deliberately opens Hiring. */
+function v238QuietHiring(){
+  // Intentionally empty. No automatic "no openings" or "post a job" popup.
+  return false
+}
+
+/* ===== V23.8 AUTOMATIC SUBSTITUTE COVERAGE ===== */
+function ensureV2371(){
+  state.v2371=state.v2371||{coverageLog:[],lastCoverageDay:null};
+  return state.v2371
+}
+function v2371DriverUnavailable(name){
+  if(!name)return true;
+  let s=(state.staff||[]).find(x=>x.name===name);
+  if(s?.calledOff||s?.absent)return true;
+  let day=Number(state.day||state.schoolDay||0);
+  if((state.absences||[]).some(a=>a.driver===name&&Number(a.day)===day))return true;
+  if(state.living20?.attendance?.[name]?.calloff)return true;
+  return false
+}
+function v2371CoverageManager(){
+  let pool=[...(state.supportStaff||[]),...(state.staff||[])];
+  return pool.find(x=>/dispatcher/i.test(String(x.role||x.title||'')))?.name
+      || pool.find(x=>/route coordinator/i.test(String(x.role||x.title||'')))?.name
+      || pool.find(x=>/assistant director|operations supervisor/i.test(String(x.role||x.title||'')))?.name
+      || 'Dana Brooks'
+}
+function v2371AvailableSubs(){
+  let used=new Set((state.routes||[]).map(r=>r.temporaryDriver).filter(Boolean));
+  return (state.staff||[]).filter(s=>s.status==='Substitute'&&!used.has(s.name)&&!v2371DriverUnavailable(s.name))
+}
+function v2371AutoCoverAll(){
+  ensureV2371?.();ensureWorkforceV17?.();
+  let manager=v2371CoverageManager(),uncovered=[];
+  (state.routes||[]).forEach(r=>{
+    let regularUnavailable=!r.driver||v2371DriverUnavailable(r.driver);
+    if(!regularUnavailable){
+      if(r.temporaryDriver)r.temporaryDriver=null;
+      return
+    }
+    if(r.temporaryDriver&&!v2371DriverUnavailable(r.temporaryDriver))return;
+
+    let subs=v2371AvailableSubs();
+    subs.sort((a,b)=>(state.workforce17?.routeKnowledge?.[b.name]?.[r.id]||0)-(state.workforce17?.routeKnowledge?.[a.name]?.[r.id]||0));
+    let sub=subs[0];
+    if(sub){
+      r.temporaryDriver=sub.name;
+      state.v2371.coverageLog.unshift({date:state.gameDate||'',route:r.id,regular:r.driver||'Vacant',sub:sub.name,manager});
+      state.v2371.coverageLog=state.v2371.coverageLog.slice(0,250);
+      log?.(`${manager} assigned ${sub.name} to cover Route ${r.id}.`)
+    }else uncovered.push(r)
+  });
+  return {manager,uncovered}
+}
+
+/* All legacy manual-sub assignment prompts are suppressed.
+   Staff handles coverage; director is only told when no substitute exists. */
+function v2371SilentCoverageCheck(){
+  let result=v2371AutoCoverAll();
+  if(result.uncovered.length){
+    result.uncovered.forEach(r=>v231AddEvent?.(`${result.manager} could not find a substitute for Route ${r.id}.`))
+  }
+  return result
+}
+
+/* ===== V23.8 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
 function ensureV237(){
   state.v237=state.v237||{
     driverConversations:[],
@@ -8973,7 +9205,7 @@ function v237OpenGrowthRouting(){
   openModal('🏘️ New Developments & Route Growth',body)
 }
 
-/* ===== V23.7 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
+/* ===== V23.8 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
 const V236_DB='SchoolTransportationTycoon';
 const V236_STORE='saves';
 function ensureV236(){
@@ -9038,7 +9270,7 @@ async function v236ManualSave(){
     alert(`GAME SAVED\n\n${v236SaveSummary(snap)}`);
     return true
   }catch(e){
-    console.error('V23.7 manual save failed',e);
+    console.error('V23.8 manual save failed',e);
     alert('SAVE FAILED: '+(e?.message||e));
     return false
   }
@@ -9049,7 +9281,7 @@ async function v236Autosave(){
     let snap=v236Snapshot();
     await v236Put('autosave',snap);
     return true
-  }catch(e){console.warn('V23.7 autosave failed',e);return false}
+  }catch(e){console.warn('V23.8 autosave failed',e);return false}
 }
 async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
   if(!v236Validate(s)){if(showNotice)alert(`${source} is not a valid district save.`);return false}
@@ -9057,14 +9289,14 @@ async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
     window.__transportBooting=true;window.__v236Loading=true;
     // Restore EXACT saved state first. Do not merge fleet or rerun growth/init migrations here.
     state=v236Clone(s);
-    ensureV236?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();ensureV235?.();ensureV237?.();
+    ensureV236?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();ensureV235?.();ensureV237?.();ensureV2371?.();ensureV238?.();
     window.__transportBooting=false;window.__v236Loading=false;
     render?.();
     if(showNotice)alert(`GAME LOADED\n\n${v236SaveSummary(state)}\n\nSource: ${source}`);
     return true
   }catch(e){
     window.__transportBooting=false;window.__v236Loading=false;
-    console.error('V23.7 restore failed',e);
+    console.error('V23.8 restore failed',e);
     if(showNotice)alert('LOAD FAILED: '+(e?.message||e));
     return false
   }
@@ -9142,7 +9374,7 @@ function v236AutoCoverCalloffs(){
   return {manager,uncovered}
 }
 
-/* ===== V23.7 INDEXEDDB PRIMARY SAVE ===== */
+/* ===== V23.8 INDEXEDDB PRIMARY SAVE ===== */
 const V2351_DB='SchoolTransportationTycoon';
 const V2351_STORE='saves';
 function v2351Db(){
@@ -9259,7 +9491,7 @@ window.autosaveGame=function(){
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
 
-/* ===== V23.7 SAVE REPAIR + DELEGATED OPERATIONS ===== */
+/* ===== V23.8 SAVE REPAIR + DELEGATED OPERATIONS ===== */
 function ensureV235(){
   state.v235=state.v235||{
     saveFormat:1,dispatcherLog:[],driverTouchpoints:[],interactionMilestones:{},quietVacancyPrompts:true
@@ -9312,7 +9544,7 @@ function v235SaveCurrent(showNotice=false){
     if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
     return true
   }catch(e){
-    console.error('V23.7 save failed',e);
+    console.error('V23.8 save failed',e);
     if(String(e?.name||'').includes('Quota')||String(e?.message||'').toLowerCase().includes('quota')){
       ['transportSave1','transportSave2','transportSave3'].forEach(k=>{
         try{
@@ -9328,7 +9560,7 @@ function v235SaveCurrent(showNotice=false){
         if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
         return true
       }catch(e2){
-        alert('Save storage is still full. V23.7 removed redundant old backups, but this browser still does not have enough local storage for this district.');
+        alert('Save storage is still full. V23.8 removed redundant old backups, but this browser still does not have enough local storage for this district.');
         return false
       }
     }
@@ -9409,7 +9641,7 @@ function v235DailyPeople(){
   if(Math.random()<.018)v235CreateDriverInteraction(false)
 }
 
-/* ===== V23.7 RELIABLE SAVES + INSTANT DAYS ===== */
+/* ===== V23.8 RELIABLE SAVES + INSTANT DAYS ===== */
 function ensureV234(){state.v234=state.v234||{lastManualSave:null,lastAutosave:null,lastDayResult:null};return state.v234}
 function v234ValidState(s){return !!(s&&Array.isArray(s.buses)&&Array.isArray(s.routes)&&(Array.isArray(s.staff)||Array.isArray(s.drivers)))}
 function v234ReadRaw(key){let raw=localStorage.getItem(key);if(!raw)return null;try{let s=JSON.parse(raw);return v234ValidState(s)?s:null}catch(e){return null}}
@@ -9433,7 +9665,7 @@ function v234LoadPrimary(){
 function v234RecoveryRows(){let rows=[['Manual Save','transportDirectorSave','transportDirectorSaveTime'],['Previous Manual','transportV234PreviousManual','transportV234PreviousManualTime'],['Autosave','transportAutosave','transportAutosaveTime'],['Slot 1','transportSave1','transportSave1Time'],['Slot 2','transportSave2','transportSave2Time'],['Slot 3','transportSave3','transportSave3Time']];return rows.map(([name,key,time])=>{let s=v234ReadRaw(key);return s?{name,key,state:s,ts:Number(localStorage.getItem(time)||0),day:Number(s.schoolDay||s.day||0),date:s.gameDate||'',staff:(s.staff||s.drivers||[]).length,buses:(s.buses||[]).length}:null}).filter(Boolean)}
 function v235RecoveryCenter(){let rows=v234RecoveryRows();openModal('🛟 Save Recovery Center',rows.length?rows.map(r=>`<div class="v233-backup"><b>${r.name}</b><div class="small">${r.date} • Day ${r.day} • ${r.staff} staff • ${r.buses} buses${r.ts?`<br>${new Date(r.ts).toLocaleString()}`:''}</div><button class="btn" onclick="v234RestoreKey('${r.key}')">Restore This Save</button></div>`).join(''):'<div class="alert">No valid saves found.</div>')}
 function v234RestoreKey(key){let s=v234ReadRaw(key);if(!s)return alert('Snapshot invalid.');window.__transportBooting=true;state=JSON.parse(JSON.stringify(s));window.__transportBooting=false;v234ManualSave();closeModal?.();render?.()}
-/* V23.7: legacy V23.4 save bindings disabled */
+/* V23.8: legacy V23.4 save bindings disabled */
 
 function v234RunDayInstant(){
  try{
@@ -9445,11 +9677,11 @@ function v234RunDayInstant(){
   if(d2!==d||state.gameDate!==date){ensureV234();state.v234.lastDayResult={from:date,to:state.gameDate,day:d2};v234Autosave();notify?.(`Transportation day complete. Now ${state.gameDate||''} • Day ${d2}.`,'decision')}
  }catch(e){console.error(e);alert('Transportation day could not be completed: '+(e?.message||e))}finally{window.__v234InstantDay=false}
 }
-/* V23.7 final save bindings */
-/* V23.7: legacy V23.5 save bindings disabled */
+/* V23.8 final save bindings */
+/* V23.8: legacy V23.5 save bindings disabled */
 
 
-/* ===== V23.7 RUN DAY / KEYBOARD REPAIR ===== */
+/* ===== V23.8 RUN DAY / KEYBOARD REPAIR ===== */
 function ensureV2331(){state.v2331=state.v2331||{lastStart:null};return state.v2331}
 function v2331CurrentDayKey(){return String(state.gameDate||state.schoolDay||'')}
 function v2331RunDay(){
@@ -9496,7 +9728,7 @@ function v2331BindKeys(){
 function v231Minute(){return Number(state.v231?.minute||330)}
 
 if(typeof window!=='undefined')setTimeout(()=>v2331BindKeys(),0);
-/* ===== V23.7 RELIABILITY + REAL OPERATIONS ===== */
+/* ===== V23.8 RELIABILITY + REAL OPERATIONS ===== */
 function ensureV233(){state.v233=state.v233||{absences:{},repairs:{},routeRuntime:{},tomorrow:{date:null,issues:[]},liveProcessed:{},backupMeta:{lastDay:null,lastWeek:null},employeeHistory:{}};return state.v233}
 function v233Clone(x){return JSON.parse(JSON.stringify(x))}
 function v233DateKey(){return String(state.gameDate||state.date||'')}
@@ -9523,11 +9755,11 @@ function v233ConsumeRouteFuel(busId,miles){let pct=Math.min(22,Math.max(3,Number
 function v233ProcessRouteDeparture(phase){ensureV233();v233RefreshAbsences();v233MaintainSpareAssignments();(state.routes||[]).forEach(r=>{let driver=v233RouteDriverName(r),d=v233DriverByName(driver);if(d&&(d.calledOff||d.absent))return;let busId=v233RouteBusId(r);if(!busId)return;let key=`${v233DateKey()}-${phase}-${r.id}`;if(state.v233.routeRuntime[key])return;state.v233.routeRuntime[key]={route:r.id,bus:busId,driver,phase,status:'Departed',depart:v231Minute?.()||0};let b=v233BusById(busId);if(b){b.liveStatus='Route';b.status='Route'}})}
 function v233ProcessRouteReturn(phase){ensureV233();(state.routes||[]).forEach(r=>{let key=`${v233DateKey()}-${phase}-${r.id}`,run=state.v233.routeRuntime[key];if(!run||run.status==='Returned')return;let miles=v233RouteMiles(r)/2;v233AddMileage(run.bus,miles,`${phase} route ${r.id}`);v233ConsumeRouteFuel(run.bus,miles);run.status='Returned';run.return=v231Minute?.()||0;run.miles=miles;let b=v233BusById(run.bus);if(b){b.liveStatus='Parked';b.status='Ready'}})}
 function v233FuelReturningBuses(){ensureV233();let spend=0;(state.routes||[]).forEach(r=>{let busId=v233RouteBusId(r),driver=v233RouteDriverName(r);if(busId&&v233BusFuel(busId)<55)spend+=v233FuelBus(busId,driver||'Driver','Post-route fueling')});return spend}
-function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V23.7 live event',key,e)}}}
-function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v232ResolveRoutineEvents?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
+function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V23.8 live event',key,e)}}}
+function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v2371AutoCoverAll?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
 function v233TomorrowDate(){return v233ShiftDate(v233DateKey(),1)}
 function v233BuildTomorrowBoard(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233MaintainSpareAssignments();let issues=[],tom=v233TomorrowDate();(state.routes||[]).forEach(r=>{let drv=v233RouteDriverName(r),d=v233DriverByName(drv);if(!drv||!d)issues.push({level:'danger',title:`Route ${r.id} — driver coverage needed`,detail:'No active assigned driver.'});else{let a=state.v233.absences[drv];if(a&&a.through>=tom)issues.push({level:'warn',title:`Route ${r.id} — ${drv} absent`,detail:`Absence continues through ${a.through}.`})}let regular=r.bus||r.busId||r.assignedBus,rep=state.v233.repairs[String(regular)];if(rep&&!['Released','Closed'].includes(rep.status)){issues.push({level:r.tempBus?'warn':'danger',title:`Route ${r.id} — Bus ${regular} in shop`,detail:r.tempBus?`Bus ${r.tempBus} remains assigned as temporary spare.`:'No temporary spare assigned yet.'})}});Object.values(state.v233.repairs).forEach(rep=>{if(!['Released','Closed'].includes(rep.status))issues.push({level:'warn',title:`Bus ${rep.bus} — ${rep.status}`,detail:`${rep.issue}; estimated ${rep.days} day repair.`})});let trips=(state.trips||[]).filter(t=>String(t.date||'')===tom&&!/cancel/i.test(String(t.status||'')));if(trips.length)issues.push({level:'good',title:`${trips.length} trip${trips.length===1?'':'s'} scheduled`,detail:'Confirm bus and driver coverage.'});state.v233.tomorrow={date:tom,issues,generated:v233DateKey()};return state.v233.tomorrow}
-function v233OpenTomorrowBoard(){let T=v233BuildTomorrowBoard();let body=T.issues.length?T.issues.map(i=>`<div class="v233-card v233-${i.level}"><b>${i.title}</b><div class="small">${i.detail}</div></div>`).join(''):`<div class="v233-card v233-good"><b>Tomorrow is ready.</b><div class="small">No unresolved transportation coverage issues were found.</div></div>`;openModal(`📋 Tomorrow Planning Board — ${T.date}`,`<div class="v233-board"><div>${body}</div><div class="v233-card"><h4>Director Actions</h4><div class="actions"><button class="btn primary" onclick="v233MaintainSpareAssignments();v233OpenTomorrowBoard()">Assign Available Spares</button><button class="btn" onclick="v232OpenPhone()">Open Director Phone</button><button class="btn" onclick="v2303OpenUnifiedShop()">Open Shop</button></div></div></div>`)}
+function v233OpenTomorrowBoard(){let T=v233BuildTomorrowBoard();let body=T.issues.length?T.issues.map(i=>`<div class="v233-card v233-${i.level}"><b>${i.title}</b><div class="small">${i.detail}</div></div>`).join(''):`<div class="v233-card v233-good"><b>Tomorrow is ready.</b><div class="small">No unresolved transportation coverage issues were found.</div></div>`;openModal(`📋 Tomorrow Planning Board — ${T.date}`,`<div class="v233-board"><div>${body}</div><div class="v233-card"><h4>Director Actions</h4><div class="actions"><button class="btn primary" onclick="v233MaintainSpareAssignments();v233OpenTomorrowBoard()">Assign Available Spares</button><button class="btn" onclick="v232OpenPhone()">Open Director Phone</button><button class="btn" onclick="v238OpenGarageBoard()">Open Shop</button></div></div></div>`)}
 function v233EmployeeHistory(){ensureV233();(state.drivers||[]).forEach(d=>{let H=state.v233.employeeHistory[d.name]||{name:d.name,firstSeen:v233DateKey(),events:[]};H.years=Number(d.years||d.yearsEmployed||0);H.age=Number(d.age||0);H.currentBus=v233BusForDriver?.(d.name)?.id||null;H.currentRoute=v233RouteForDriver?.(d.name)?.id||null;state.v233.employeeHistory[d.name]=H})}
 function v233RecordEmployeeEvent(name,text){ensureV233();let H=state.v233.employeeHistory[name]||{name,firstSeen:v233DateKey(),events:[]};H.events=H.events||[];H.events.unshift({date:v233DateKey(),text});H.events=H.events.slice(0,100);state.v233.employeeHistory[name]=H}
 function v233BackupKey(type){return `transportV233Backup_${type}`}
@@ -9538,7 +9770,7 @@ function v233OpenBackupCenter(){let A=v233BackupCandidates();openModal('🧰 Rot
 function v233LoadBackup(type){let x=v233BackupCandidates().find(a=>a.type===type);if(!x)return alert('Backup unavailable.');try{window.__transportBooting=true;state=v233Clone(x.state);ensureV233();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();window.__transportBooting=false;localStorage.setItem('transportDirectorSave',JSON.stringify(state));localStorage.setItem('transportDirectorSaveTime',String(Date.now()));render?.();closeModal?.();notify?.(`${type} backup restored.`,'decision')}catch(e){window.__transportBooting=false;alert('Backup could not be restored: '+(e?.message||e))}}
 function v233PrepareNextDay(){ensureV233();v233RotatingBackups();v233EmployeeHistory();v233BuildTomorrowBoard()}
 
-/* ===== V23.7 LIVING GARAGE ===== */
+/* ===== V23.8 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -9673,7 +9905,7 @@ function v232GarageHTML(){
       <div class="v232-buildingbar">
         <div class="v232-room" onclick="v230DirectorOffice()">🏢 Director Office${(state.v227?.requests||[]).some(x=>x.status==='Open')?'<br><b>🚪 Visitor Waiting</b>':''}</div>
         <div class="v232-room" onclick="v230DriverRoom()">🧑‍✈️ Driver Room<br>${activeDrivers.length} active</div>
-        <div class="v232-room" onclick="v2303OpenUnifiedShop()">🔧 Shop<br>${buses.filter(b=>v232BusStatus(b)==='SHOP').length} buses</div>
+        <div class="v232-room" onclick="v238OpenGarageBoard()">🔧 Shop<br>${buses.filter(b=>v232BusStatus(b)==='SHOP').length} buses</div>
         <div class="v232-room" onclick="v230FuelWash()">⛽ Fuel / Wash</div>
       </div>
       <div class="v232-lot">${buses.map(b=>{
@@ -9689,7 +9921,7 @@ function v232GarageHTML(){
     <div class="v232-side">
       <div class="v232-panel"><h4>🕒 ${v231Clock?.(v232Minute())||''}</h4><div class="small">${v230Phase?.()||'Transportation Operations'}</div><div class="actions"><button class="btn primary" onclick="v234RunDayInstant()">▶ Run Transportation Day</button><button class="btn" onclick="v231Open()">Live Day Controls</button></div></div>
       <div class="v232-panel"><h4>🔧 Shop Bays</h4>${bayHtml}</div>
-      <div class="v232-panel"><h4>🏘️ Growth Routing</h4><div class="small">${(state.v237?.growthRouting||[]).filter(g=>g.overCapacity).length} over-capacity development${(state.v237?.growthRouting||[]).filter(g=>g.overCapacity).length===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v237OpenGrowthRouting()">Open Developments</button></div></div><div class="v232-panel"><h4>📋 Tomorrow</h4><div class="small">${state.v233?.tomorrow?.date||v233TomorrowDate?.()||''} • ${(state.v233?.tomorrow?.issues||[]).length} planning item${(state.v233?.tomorrow?.issues||[]).length===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v233OpenTomorrowBoard()">Open Planning Board</button></div></div><div class="v232-panel"><h4>☎️ Director Phone</h4><div><b>${openPhone}</b> open item${openPhone===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v232OpenPhone()">Open Phone</button></div></div>
+      <div class="v232-panel"><h4>🔧 Autonomous Garage</h4><div class="small">${Object.values(state.v238?.jobs||{}).filter(j=>j.status!=='Complete').length} active repair${Object.values(state.v238?.jobs||{}).filter(j=>j.status!=='Complete').length===1?'':'s'} • parts reorder automatically</div><div class="actions"><button class="btn" onclick="v238OpenGarageBoard()">Garage Status</button></div></div><div class="v232-panel"><h4>👥 Substitute Coverage</h4><div class="small">Handled by ${v2371CoverageManager?.()||'Dispatch'} • ${(state.v2371?.coverageLog||[]).filter(x=>x.date===state.gameDate).length} assignment${(state.v2371?.coverageLog||[]).filter(x=>x.date===state.gameDate).length===1?'':'s'} today</div></div><div class="v232-panel"><h4>🏘️ Growth Routing</h4><div class="small">${(state.v237?.growthRouting||[]).filter(g=>g.overCapacity).length} over-capacity development${(state.v237?.growthRouting||[]).filter(g=>g.overCapacity).length===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v237OpenGrowthRouting()">Open Developments</button></div></div><div class="v232-panel"><h4>📋 Tomorrow</h4><div class="small">${state.v233?.tomorrow?.date||v233TomorrowDate?.()||''} • ${(state.v233?.tomorrow?.issues||[]).length} planning item${(state.v233?.tomorrow?.issues||[]).length===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v233OpenTomorrowBoard()">Open Planning Board</button></div></div><div class="v232-panel"><h4>☎️ Director Phone</h4><div><b>${openPhone}</b> open item${openPhone===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v232OpenPhone()">Open Phone</button></div></div>
       <div class="v232-panel"><h4>📻 Dispatch Feed</h4><div class="v232-feed">${(state.v231?.events||[]).slice(0,12).map(x=>`<div>${v231Clock?.(x.minute)||''} • ${x.text}</div>`).join('')}</div></div>
       <div class="v232-panel"><div class="actions"><button class="btn primary" onclick="v235RecoveryCenter()">🛟 Save Recovery</button><button class="btn" onclick="v233OpenBackupCenter()">🧰 Backups</button><button class="btn" onclick="v233OpenTomorrowBoard()">📋 Tomorrow</button><button class="btn" onclick="v232OpenSummary()">End-of-Day Briefing</button><button class="btn" onclick="v2303OpenDoorRequests()">Office Door</button></div></div>
     </div>
@@ -9697,7 +9929,7 @@ function v232GarageHTML(){
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V23.7',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V23.8',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -9967,7 +10199,7 @@ function v235RestoreSave(key){
 }
 
 
-/* V23.7 FINAL SAVE/LOAD BINDING */
+/* V23.8 FINAL SAVE/LOAD BINDING */
 window.saveGame=v2351Save;
 window.loadGame=v2351Load;
 window.autosaveGame=function(){
@@ -9975,10 +10207,10 @@ window.autosaveGame=function(){
   clearTimeout(window.__v2351AutoTimer);
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
-/* V23.7: old IndexedDB auto-restore disabled */
+/* V23.8: old IndexedDB auto-restore disabled */
 
 
-/* V23.7 FINAL SAVE / LOAD AUTHORITY */
+/* V23.8 FINAL SAVE / LOAD AUTHORITY */
 window.saveGame=v236ManualSave;
 window.loadGame=v236ManualLoad;
 window.autosaveGame=function(){
