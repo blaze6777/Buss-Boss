@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V23.0.2 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V23.2 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V23.0.2 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V23.2 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -604,7 +604,7 @@ button,.btn,select,input{touch-action:manipulation}
     <div class="panel">
       <div class="section-head">
         <div><h2>Transportation Center & Bus Lot</h2><div class="small">Buses disappear from their parking spaces when dispatched.</div></div>
-        <div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="renderBuses()">Refresh Garage</button><button class="btn" onclick="goView('shop')">Repair Shop</button><button class="btn" onclick="openFuelCardV10()">Fuel Card</button></div>
+        <div class="actions"><button class="btn primary" onclick="v231Start()">▶ Run Live Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="renderBuses()">Refresh Garage</button><button class="btn" onclick="goView('shop')">Repair Shop</button><button class="btn" onclick="openFuelCardV10()">Fuel Card</button></div>
       </div>
 
       <div class="parking-lot">
@@ -938,7 +938,7 @@ button,.btn,select,input{touch-action:manipulation}
   <section id="desk" class="view"><div class="actions" style="margin-bottom:12px"><button class="btn" onclick="exportSaveFile()">Export Save File</button><button class="btn" onclick="importSaveFile()">Import Save File</button><button class="btn" onclick="openRecognitionBanquet()">Recognition Banquet</button><button class="btn" onclick="openSummerOperations()">Summer Operations</button></div>
     <div class="grid2">
       <div class="panel">
-        <div class="section-head"><div><h2>Director’s Office</h2><div class="small">Run the department from your desk.</div></div><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div>
+        <div class="section-head"><div><h2>Director’s Office</h2><div class="small">Run the department from your desk.</div></div><button class="btn primary" onclick="v231Start()">▶ Run Live Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button></div>
         <div class="facility-grid">
           <button class="facility" onclick="deskApp('Routing')">🗺️<b> Routing</b><div class="small">Stops, loads, maps</div></button>
           <button class="facility" onclick="deskApp('Students')">🎒<b> Students</b><div class="small">Riders & households</div></button>
@@ -1966,6 +1966,12 @@ function autoFuelLowBusesV10(){
 
    let tx={date:state.gameDate,bus:b.id,driver,amount:cost,detail};
    card.transactions.unshift(tx);charges.push(tx);
+   if(state.v226){
+     state.v226.fuelLog=state.v226.fuelLog||[];
+     state.v226.fuelLog.unshift({date:state.gameDate||'',bus:b.id,driver,amount:cost,detail,fuelCard:true,
+       gallons:units,units:type==='Electric'?'kWh':'gal',mpg:null,time:'After Route',
+       cardTxId:`${state.gameDate}|${b.id}|${driver}|${cost}`});
+   }
 
    b.history=b.history||[];
    b.history.push({
@@ -3551,7 +3557,7 @@ function renderOperations(){
  $('seasonHelp').textContent=state.season==='Summer'?'Inspections, route planning, hiring, training, bidding and opening-day preparation.':'Resolve coverage, review weather and trips, then run the entire transportation day with one action.';
  $('opsHeadline').textContent='Daily Operations';
  let coveredNow=state.routes.filter(r=>routeCoverage(r).ok).length;
- $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="runTransportationDay()">Run Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
+ $('opsSummary').innerHTML=`<div class="kv"><span>Routes Ready</span><b>${coveredNow}/${state.routes.length}</b></div><div class="kv"><span>Today</span><b>${formatGameDate()}</b></div><div class="kv"><span>Weather</span><b>${state.weather.condition}, ${state.weather.temp}°F</b></div><div class="kv"><span>Roads</span><b>${state.weather.roads}</b></div><div class="kv"><span>Approved Trips</span><b>${state.trips.filter(t=>t.status==='Approved').length}</b></div><div class="kv"><span>Open work orders</span><b>${state.workOrders.filter(w=>w.status!=='Completed').length}</b></div><div class="actions"><button class="btn primary" onclick="v231Start()">▶ Run Live Transportation Day</button><button class="btn" onclick="v218NextDay()">📅 Next Day</button><button class="btn" onclick="document.querySelector('[data-view=&quot;today&quot;]').click()">Command Center</button></div>`;
  let cats=state.budgetCategories;$('budgetDetailMini').innerHTML=Object.entries(cats).slice(0,6).map(([k,v])=>`<div class="alert"><b>${k}</b><div>${money(v)}</div></div>`).join('');
  $('newsFeed').innerHTML=(state.news.slice(0,4).map(n=>`<div class="news">${n.text}</div>`).join('')||'<div class="small">No district news yet.</div>');$('reputationBadge').textContent=state.reputation>=90?'Excellent':state.reputation>=75?'Good':'Needs Attention';
  let open=state.workOrders.filter(w=>w.status!=='Completed');$('workOrderMini').innerHTML=open.slice(0,5).map(w=>`<div class="wo"><span><b>Bus ${w.bus}</b> — ${w.issue}<div class="small">${w.status} • ${money(w.cost)}</div></span><button class="btn" onclick="completeWorkOrder(${w.id})">Complete</button></div>`).join('')||'<div class="small">No open work orders.</div>';
@@ -3649,7 +3655,7 @@ function runTransportationDay(){
  let routeMiles=state.routes.reduce((sum,r)=>sum+routeDailyMiles(r),0);addDailyRouteMileage();processTripsForCurrentDate();let charges=autoFuelLowBusesV10()||[];
  state.simMinutes=1080;state.dispatchStep=7;state.buses.forEach(b=>b.liveStatus=b.route?'Returned / Parked':'Parked');log(`${today} transportation day completed. Regular routes operated ${routeMiles} total fleet miles.`);buildDailyReportV11(snap,charges);autosaveGame();
  state.day++;state.schoolDay=(state.schoolDay||0)+1;if(state.schoolDay>=state.schoolDaysPerYear+(state.v11.makeupDays||0)){state.v11.makeupDays=0;yearEnd();return}
- advanceToNextSchoolDay();state.simMinutes=315;state.dispatchStep=0;state.buses.forEach(b=>b.liveStatus='Parked / Pre-Trip');maybeMaintenanceEvent();reconcileTemporaryCoverage();
+ advanceToNextSchoolDay();state.simMinutes=315;state.dispatchStep=0;state.buses.forEach(b=>b.liveStatus='Parked / Pre-Trip');maybeMaintenanceEvent();v2303SyncMaintenanceToShop?.();reconcileTemporaryCoverage();
  if(Math.random()<.35)generateTrip();if(Math.random()<.25)generateApplicant();if(Math.random()<.3)createDriverCalloff();
  let f=[{condition:'Clear',temp:68,roads:'Dry'},{condition:'Partly Cloudy',temp:62,roads:'Dry'},{condition:'Light Rain',temp:57,roads:'Wet'},{condition:'Dense Fog',temp:54,roads:'Reduced visibility'},{condition:'Snow',temp:27,roads:'Snow covered'},{condition:'Extreme Cold',temp:3,roads:'Dry / icy spots possible'}];if(Math.random()<.38)state.weather={...f[Math.floor(Math.random()*f.length)]};autosaveGame();render();openDailyReportV11(0);
 }
@@ -7283,7 +7289,7 @@ function renderGarageCommandV22(){
       <div><div class="small">FUNDED VACANCIES</div><div class="v22-money">${v22AuthorizedPositions().filter(p=>p.status==='Vacant').length}</div><div class="small">Authorized positions</div></div>
     </div>
     <div class="v22-alertgrid">${(alerts.length?alerts.slice(0,4):[{sev:'good',title:'Morning operation ready',detail:'No major issues currently require Director attention.'}]).map(x=>`<div class="v22-alert ${x.sev}"><b>${x.title}</b><div class="small">${x.detail}</div></div>`).join('')}</div>
-    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v223RepairOperatingFund()">💰 Repair Operating Fund</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn primary" onclick="v230OpenCampus()">🏫 Transportation Campus</button><button class="btn primary" onclick="v225OpenMorning()">🌅 Transportation Morning</button><button class="btn" onclick="v226GarageBoard()">🅿️ Garage Board</button><button class="btn" onclick="v226KeyBoard()">🔑 Key Board</button><button class="btn" onclick="v226OpenSubCalls()">📞 Substitute Calls</button><button class="btn" onclick="v226OpenDVIR()">📝 DVIR</button><button class="btn" onclick="v226OpenParts()">📦 Parts</button><button class="btn" onclick="v226OpenFuelLog()">⛽ Fuel Log</button><button class="btn" onclick="v227OpenMorale()">😊 Driver Morale</button><button class="btn" onclick="v227OpenRequests()">🚪 Driver Conversations</button><button class="btn" onclick="v228OpenSeniority()">📜 Seniority</button><button class="btn" onclick="v228OpenBusRequests()">🚌 Bus Requests</button><button class="btn" onclick="v228OpenCompliance()">🪪 CDL / Training</button><button class="btn" onclick="v228OpenShopBoard()">🔧 Mike’s Shop</button><button class="btn" onclick="v228GarageTimeView()">🕒 Living Garage</button><button class="btn" onclick="v228OpenFormer()">🏅 Former Employees</button><button class="btn" onclick="v228OpenRetiredFleet()">🏛️ Retired Fleet</button><button class="btn" onclick="v228OpenYearbooks()">📚 Yearbooks</button><button class="btn" onclick="v225LivingDrivers()">👤 Living Drivers</button><button class="btn" onclick="v225LivingFleet()">🚌 Living Fleet</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
+    <div class="actions" style="margin-top:10px"><button class="btn" onclick="v221OpenFinancialForecast()">📈 Budget Forecast</button><button class="btn" onclick="v223RepairOperatingFund()">💰 Repair Operating Fund</button><button class="btn" onclick="v203OpenApplicantBoard()">💼 Job Postings</button><button class="btn" onclick="v221OpenWorkOrders()">🔧 Work Orders</button><button class="btn" onclick="v221OpenFleetPriorities()">🚌 Replacement Priorities</button><button class="btn" onclick="v221OpenProcurements()">📦 Procurement</button><button class="btn" onclick="v221OpenEnrollmentForecast()">🏘️ Enrollment Forecast</button><button class="btn" onclick="v221OpenBoardAgenda()">🏛️ Board Agenda</button><button class="btn" onclick="v221OpenGoals()">🎯 Goals</button><button class="btn primary" onclick="v232OpenLivingGarage()">🚌 Living Garage</button><button class="btn" onclick="v230OpenCampus()">🏫 Transportation Campus</button><button class="btn primary" onclick="v231Start()">▶ Live Transportation Day</button><button class="btn primary" onclick="v225OpenMorning()">🌅 Transportation Morning</button><button class="btn" onclick="v226GarageBoard()">🅿️ Garage Board</button><button class="btn" onclick="v226KeyBoard()">🔑 Key Board</button><button class="btn" onclick="v226OpenSubCalls()">📞 Substitute Calls</button><button class="btn" onclick="v226OpenDVIR()">📝 DVIR</button><button class="btn" onclick="v226OpenParts()">📦 Parts</button><button class="btn" onclick="v226OpenFuelLog()">⛽ Fuel Log</button><button class="btn" onclick="v227OpenMorale()">😊 Driver Morale</button><button class="btn" onclick="v227OpenRequests()">🚪 Driver Conversations</button><button class="btn" onclick="v228OpenSeniority()">📜 Seniority</button><button class="btn" onclick="v228OpenBusRequests()">🚌 Bus Requests</button><button class="btn" onclick="v228OpenCompliance()">🪪 CDL / Training</button><button class="btn" onclick="v2303OpenUnifiedShop()">🔧 Mike’s Shop</button><button class="btn" onclick="v228GarageTimeView()">🕒 Living Garage</button><button class="btn" onclick="v228OpenFormer()">🏅 Former Employees</button><button class="btn" onclick="v228OpenRetiredFleet()">🏛️ Retired Fleet</button><button class="btn" onclick="v228OpenYearbooks()">📚 Yearbooks</button><button class="btn" onclick="v225LivingDrivers()">👤 Living Drivers</button><button class="btn" onclick="v225LivingFleet()">🚌 Living Fleet</button><button class="btn" onclick="v222OpenPositionControl()">👥 Position Control</button><button class="btn" onclick="v222OpenWorkforceChain()">🔗 Workforce Chain</button><button class="btn" onclick="v222OpenRouteBid()">🗳️ Route Bid</button><button class="btn" onclick="v222OpenRetirements()">🎖️ Retirements</button><button class="btn" onclick="v222OpenPayroll()">💵 Payroll</button><button class="btn" onclick="v221OpenSummerPlanning()">☀️ Summer Planning</button><button class="btn" onclick="v221AnnualReport()">📘 Annual Report</button></div>`
 }
 
 
@@ -7601,7 +7607,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V23.0.2 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V23.2 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7720,7 +7726,7 @@ loadGame=function(){
     state=JSON.parse(newest.raw);
     if(!state||!Array.isArray(state.buses))throw new Error('Invalid save');
     let restored=v224RestorePurchasedFleet();
-    ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();
+    ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();
     if(restored.length)autosaveGame();
     log(`${newest.name} loaded.`);
     render?.();
@@ -7740,7 +7746,7 @@ loadSlot=function(n){
   try{
     state=JSON.parse(raw);if(!Array.isArray(state.buses))throw new Error();
     let restored=v224RestorePurchasedFleet();
-    ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();
+    ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();
     autosaveGame();render?.();alert(`Loaded Slot ${n}. ${state.buses.length} buses restored${restored.length?`, including ${restored.length} recovered purchased bus(es)`:''}.`)
   }catch(e){alert('That save slot is invalid.')}
 }
@@ -7749,7 +7755,7 @@ loadAutosave=function(){
   try{
     state=JSON.parse(raw);if(!Array.isArray(state.buses))throw new Error();
     let restored=v224RestorePurchasedFleet();
-    ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();
+    ensureAssignmentFields?.();ensureV4Data?.();ensureUXData?.();ensureFinanceV22?.();ensureV222?.();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();
     closeModal?.();autosaveGame();render?.();notify?.(`Autosave loaded — ${state.buses.length} buses restored${restored.length?`, ${restored.length} recovered`:''}.`,'decision')
   }catch(e){alert('The autosave could not be loaded.')}
 }
@@ -7777,7 +7783,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V23.0.2 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V23.2 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -7865,7 +7871,7 @@ function v226SyncGarage(){
   })
 }
 function v226GarageBoard(){
-  ensureV226();v226SyncGarage();
+  ensureV226();v2303SyncMaintenanceToShop?.();v226SyncGarage();
   let buses=(state.buses||[]).slice().sort((a,b)=>Number(a.id)-Number(b.id));
   let cards=buses.map(b=>{
     let g=state.v226.garageSpaces[String(b.id)],cls=g.status==='SHOP'?'shop':g.status==='FUELING'?'fuel':(!g.driver&&g.route?'alert':'');
@@ -8022,9 +8028,11 @@ function v226FuelRecord(b,driver,gallons){
   state.v226.fuelLog.unshift({date:state.gameDate||'',bus:b.id,driver:driver||'Unknown',gallons:Number(gallons.toFixed?gallons.toFixed(1):gallons),mpg:Number(mpg.toFixed(1)),time:'4:'+String(20+Math.floor(Math.random()*35)).padStart(2,'0')+' PM'})
 }
 function v226OpenFuelLog(){
-  ensureV226();
-  openModal('⛽ Fueling Records',
-    (state.v226.fuelLog.length?state.v226.fuelLog.slice(0,25).map(x=>`<div class="v226-dvir"><b>Bus ${x.bus} — ${x.gallons} gal</b><div class="small">${x.date} • ${x.time} • ${x.driver} • ${x.mpg} MPG</div></div>`).join(''):'<div class="small">No fueling records yet.</div>'))
+  ensureV226();v2303SyncFuelCardLog?.();
+  let total=Number(state.v10?.fuelCard?.totalSpend||0);
+  openModal('⛽ District Fuel Card & Fueling Records',
+    `<div class="alert"><b>District Fleet Card Spend: ${typeof money==='function'?money(total):'$'+total.toFixed(2)}</b><div class="small">Drivers use the fleet card when they fuel/charge a low-fuel assigned bus after routes.</div></div>`+
+    (state.v226.fuelLog.length?state.v226.fuelLog.slice(0,40).map(x=>`<div class="v226-dvir"><b>Bus ${x.bus} — ${x.fuelCard?'💳 Fleet Card':'Fuel Record'}</b><div class="small">${x.date} • ${x.time||''} • ${x.driver}<br>${x.detail||((x.gallons||0)+' '+(x.units||'gal'))}${x.amount!=null?` • ${typeof money==='function'?money(Number(x.amount||0)):'$'+Number(x.amount||0).toFixed(2)}`:''}</div></div>`).join(''):'<div class="small">No fueling records yet.</div>'))
 }
 function v226WashBus(id){
   ensureV226();let L=state.v225?.busLives?.[String(id)];if(!L)return;
@@ -8099,7 +8107,7 @@ v225MorningSequence=function(){
       E.push({time:'5:50',text:sub?`Dana reached ${sub.name}, who accepted Route ${p.currentRoute}.`:`Dana exhausted the substitute list for Route ${p.currentRoute}. Director attention required.`,type:sub?'routine':'attention'})
     }else v226TakeKeys(d,b)
   });
-  v226SyncGarage();v227MoraleEvents?.();v228Daily?.();v230DailyReputation?.();autosaveGame?.()
+  v2303SyncMaintenanceToShop?.();v2303SyncFuelCardLog?.();v226SyncGarage();v227MoraleEvents?.();v228Daily?.();v230DailyReputation?.();autosaveGame?.()
 }
 
 /* Fuel records, wash dirt, defects and temporary returns at day transition. */
@@ -8462,7 +8470,7 @@ function v230OpenCampus(){
              Object.values(state.v228?.compliance||{}).filter(x=>x.status!=='Current').length;
   let rep=state.v230.reputation;
   openModal('🏫 Warsaw Transportation Campus',
-    `<div class="alert"><b>${state.time||'5:30'} — ${v230Phase()}</b><div class="small">Click a building or bus area instead of hunting through management menus.</div></div>
+    `<div class="alert"><b>${state.time||'5:30'} — ${v230Phase()}</b><div class="small">Click a building or bus area instead of hunting through management menus. Press <span class="v2303-keyhint">R</span> to start/open the live transportation day.</div></div>
      <div class="v230-statusbar">
        <div class="v230-stat"><b>${(state.routes||[]).filter(r=>r.active!==false).length}</b><br><span class="small">Routes</span></div>
        <div class="v230-stat"><b>${buses.length}</b><br><span class="small">Buses</span></div>
@@ -8471,9 +8479,9 @@ function v230OpenCampus(){
        <div class="v230-stat"><b>${Math.round((rep.parents+rep.administration+rep.employees+rep.board)/4)}</b><br><span class="small">Reputation</span></div>
      </div>
      <div class="v230-campus">
-       <div class="v230-building v230-admin" onclick="v230DirectorOffice()"><b>🏢 ADMIN / DIRECTOR</b><div class="small">Your office • budget • board • decisions</div></div>
+       <div class="v230-building v230-admin" onclick="v230DirectorOffice()"><b>🏢 ADMIN / DIRECTOR</b><div class="small">Your office • budget • board • decisions</div></div>${v2303DoorHTML?.()||""}
        <div class="v230-building v230-driver" onclick="v230DriverRoom()"><b>☕ DRIVER ROOM</b><div class="small">Staff • morale • seniority • keys</div></div>
-       <div class="v230-building v230-shop" onclick="v228OpenShopBoard()"><b>🔧 MAINTENANCE SHOP</b><div class="small">Mike & Cole • bays • PM • parts • DVIR</div></div>
+       <div class="v230-building v230-shop" onclick="v2303OpenUnifiedShop()"><b>🔧 MAINTENANCE SHOP</b><div class="small">Mike & Cole • bays • PM • parts • DVIR</div></div>
        <div class="v230-building v230-fuel" onclick="v230FuelWash()"><b>⛽ FUEL / WASH</b><div class="small">Fueling records • cleanliness</div></div>
        <div class="v230-lot"><b>🅿️ BUS PARKING</b><div class="v230-spaces">${busSpaces}</div></div>
        <div class="v230-people">${v230Hour()<6.1?'🚶 🚶 🚗':v230Hour()>=13.5&&v230Hour()<15?'🚗 🚶 🚶':''}</div>
@@ -8485,7 +8493,8 @@ function v230DirectorOffice(){
   ensureV230();let open=(state.v227?.requests||[]).filter(x=>x.status==='Open').length;
   let pos=(state.v22?.authorizedPositions||state.finance22?.authorizedPositions||[]).filter?.(x=>x.status==='Vacant').length||0;
   openModal('🏢 Director Office',
-    `<div class="alert"><b>${open+pos} item${open+pos===1?'':'s'} may need your attention.</b></div>
+    `<div class="alert"><b>${open+pos} item${open+pos===1?'':'s'} may need your attention.</b><div class="small">Press <span class="v2303-keyhint">R</span> to start/open the live transportation day. Space pauses; 1/2/4/8 changes speed.</div></div>
+     ${open?`<div class="v2303-card"><b>🚪 Someone is at your door</b><div class="small">${(state.v227?.requests||[]).filter(x=>x.status==='Open').map(x=>x.driver).join(', ')}</div><div class="actions"><button class="btn primary" onclick="v2303OpenDoorRequests()">See Who’s Waiting</button></div></div>`:''}
      <div class="actions">
        <button class="btn" onclick="v227OpenRequests()">🚪 Employee Conversations (${open})</button>
        <button class="btn" onclick="v221OpenBoardAgenda?.()">🏛️ Board Agenda</button>
@@ -8528,6 +8537,393 @@ function v230DailyReputation(){
   r.parents=Math.max(20,Math.min(100,r.parents+(grounded?-.3:.12)));
   r.administration=Math.max(20,Math.min(100,r.administration+(grounded>1?-.4:.1)));
   r.board=Math.max(20,Math.min(100,r.board+(Number(state.operatingBudget||0)>=0?.08:-.35)))
+}
+
+
+/* ===== V23.2 GARAGE OPERATIONS REPAIR ===== */
+function ensureV2303(){
+  ensureV230?.();ensureV2303?.();ensureV226?.();ensureV227?.();ensureV228?.();
+  state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
+  return state.v2303
+}
+function v2303OpenDoorRequests(){
+  ensureV2303();
+  let open=(state.v227?.requests||[]).filter(x=>x.status==='Open');
+  openModal('🚪 Outside Your Office',
+    open.length?open.map(x=>`<div class="v2303-card"><b>${x.driver} is waiting to see you</b><div class="small">${x.text}</div><div class="actions"><button class="btn primary" onclick="v2303MeetAtDoor('${x.id}')">Meet With ${x.driver.split(' ')[0]}</button><button class="btn" onclick="v227ResolveRequest('${x.id}','Deferred')">Ask Them to Come Back Later</button></div></div>`).join(''):
+    '<div class="small">No employees are waiting outside your office right now.</div>')
+}
+function v2303MeetAtDoor(id){
+  let x=state.v227?.requests?.find(r=>String(r.id)===String(id));if(!x)return;
+  let name=x.driver,topic=x.type||'work concern';
+  v227ResolveRequest(id,'Discussed');
+  openModal(`🚪 Meeting With ${name}`,
+    `<div class="alert"><b>${name} came into your office.</b><div class="small">You discussed the ${String(topic).toLowerCase()} concern. The conversation is now part of their employee history.</div></div>
+     <div class="actions"><button class="btn primary" onclick="v230DirectorOffice()">Return to Director Office</button></div>`)
+}
+function v2303DoorHTML(){
+  let open=(state.v227?.requests||[]).filter(x=>x.status==='Open');
+  if(!open.length)return '';
+  let x=open[0];
+  return `<div class="v2303-door" onclick="v2303OpenDoorRequests()"><b>🚪 ${x.driver}</b><div class="small">Waiting outside your office${open.length>1?` • +${open.length-1} more`:''}</div></div>`
+}
+function v2303SyncFuelCardLog(){
+  ensureV2303();
+  let txs=state.v10?.fuelCard?.transactions||[];
+  state.v226.fuelLog=state.v226.fuelLog||[];
+  txs.forEach(tx=>{
+    if(state.v226.fuelLog.some(x=>x.cardTxId===`${tx.date}|${tx.bus}|${tx.driver}|${tx.amount}`))return;
+    let detail=String(tx.detail||''),m=detail.match(/([\d.]+)\s*(gal|kWh)/i);
+    state.v226.fuelLog.unshift({
+      date:tx.date||state.gameDate||'',bus:tx.bus,driver:tx.driver||'Unknown',
+      gallons:m?Number(m[1]):0,units:m?m[2]:'gal',mpg:null,time:'After Route',
+      amount:Number(tx.amount||0),detail:tx.detail||'',fuelCard:true,
+      cardTxId:`${tx.date}|${tx.bus}|${tx.driver}|${tx.amount}`
+    })
+  })
+}
+function v2303MaintenanceSources(busId){
+  let id=String(busId),items=[];
+  (state.v226?.defects||[]).filter(x=>String(x.bus)===id&&x.status!=='Closed').forEach(x=>items.push({issue:x.issue,status:x.status,source:'DVIR / Defect'}));
+  (state.workOrders||[]).filter(x=>String(x.bus)===id&&!/closed|complete/i.test(String(x.status||''))).forEach(x=>items.push({issue:x.issue||'Maintenance work',status:x.status||'Scheduled',source:'Work Order'}));
+  (state.v221?.workOrders||[]).filter(x=>String(x.bus)===id&&!/closed|complete/i.test(String(x.status||''))).forEach(x=>items.push({issue:x.issue||'Maintenance work',status:x.status||'Scheduled',source:'Fleet Work Order'}));
+  return items
+}
+function v2303SyncMaintenanceToShop(){
+  ensureV2303();
+  (state.buses||[]).forEach(b=>{
+    let items=v2303MaintenanceSources(b.id);
+    let flagged=/maintenance|shop|out of service/i.test(String(b.status||'')+' '+String(b.liveStatus||''));
+    if(items.length||flagged){
+      b.status='Maintenance';b.liveStatus='Shop';
+      if(!items.length){
+        let exists=(state.v226.defects||[]).some(x=>String(x.bus)===String(b.id)&&x.status!=='Closed');
+        if(!exists)state.v226.defects.unshift({
+          id:`SYNC-${b.id}-${Date.now()}`,date:state.gameDate||'',bus:b.id,driver:'Shop',
+          issue:'Maintenance required',ground:true,part:null,status:'Reported',
+          shopFinding:'Bus was flagged for maintenance and routed to the shop.',synced:true
+        });
+      }
+    }
+  });
+  state.v2303.lastMaintenanceSync=String(state.gameDate||state.schoolDay||'');
+  v226SyncGarage?.();
+}
+function v2303ShopBuses(){
+  v2303SyncMaintenanceToShop();
+  return (state.buses||[]).filter(b=>{
+    let items=v2303MaintenanceSources(b.id);
+    return items.length||/maintenance|shop|out of service/i.test(String(b.status||'')+' '+String(b.liveStatus||''));
+  })
+}
+function v2303OpenUnifiedShop(){
+  ensureV2303();v2303SyncMaintenanceToShop();v228BuildPM?.();
+  let buses=v2303ShopBuses();
+  openModal('🔧 Mike’s Shop Board',
+    `<div class="alert"><b>Every bus flagged for maintenance is now routed to the shop.</b><div class="small">DVIR defects, legacy work orders, PM work, and buses manually marked Maintenance are synchronized here.</div></div>`+
+    (buses.length?buses.map((b,i)=>{
+      let items=v2303MaintenanceSources(b.id);
+      return `<div class="v2303-card v2303-shopbus"><b>Bay ${i+1} • Bus ${b.id}</b><div class="small">${items.length?items.map(x=>`${x.issue} — ${x.status} (${x.source})`).join('<br>'):'Maintenance required — awaiting diagnosis'}</div></div>`
+    }).join(''):'<div class="small">No buses currently need shop attention.</div>')+
+    `<div class="v225-card"><b>Preventive Maintenance Schedule</b>${(state.v228?.pmSchedule||[]).slice(0,12).map(x=>`<div class="kv"><span>Bus ${x.bus} • due ${Number(x.dueMiles).toLocaleString()} mi</span><b>${x.status}</b></div>`).join('')}</div>`)
+}
+function v2303RunDayFromKeyboard(e){
+  ensureV2303();
+  if(!state.v2303.keyboardRunEnabled)return;
+  let tag=String(e.target?.tagName||'').toLowerCase();
+  if(['input','textarea','select'].includes(tag)||e.target?.isContentEditable)return;
+  if(e.repeat)return;
+  if(String(e.key||'').toLowerCase()==='r'){
+    e.preventDefault();
+    runTransportationDay();
+  }
+}
+/* V23.2: legacy R handler replaced by live-day keyboard controls. */
+
+
+/* ===== V23.2 LIVE TRANSPORTATION DAY ===== */
+function ensureV231(){
+  ensureV2303?.();
+  state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
+  return state.v231
+}
+function v231Clock(min){
+  min=Math.max(0,Math.floor(Number(min||0)));let h=Math.floor(min/60)%24,m=min%60,ap=h>=12?'PM':'AM',hh=h%12||12;
+  return `${hh}:${String(m).padStart(2,'0')} ${ap}`
+}
+function v231SetGameTime(){
+  let V=state.v231,h=Math.floor(V.minute/60)%24,m=Math.floor(V.minute%60);
+  state.time=`${h}:${String(m).padStart(2,'0')}`
+}
+function v231AddEvent(text,level='routine'){
+  ensureV231();state.v231.events.unshift({minute:state.v231.minute,text,level});
+  state.v231.events=state.v231.events.slice(0,80)
+}
+function v231DailyPlan(){
+  ensureV231();let V=state.v231,key=String(state.gameDate||state.schoolDay||'');
+  if(V.lastDay===key&&V.events.length)return;
+  V.lastDay=key;V.events=[];V.minute=330;V.completed=false;V.paused=true;V.running=false;
+  v231AddEvent('Transportation campus opening. Dispatch and shop staff arriving.');
+}
+function v231ProcessMinute(){
+  let V=state.v231,m=Math.floor(V.minute);
+  let at=(x,fn)=>{if(m===x)fn()};
+  at(340,()=>v231AddEvent('Dana begins the morning driver roster check.'));
+  at(350,()=>{v225MorningSequence?.();v231AddEvent('Drivers arriving, taking keys, and beginning pre-trip inspections.')});
+  at(360,()=>{v2303SyncMaintenanceToShop?.();v231AddEvent('Mike checks overnight DVIRs and shop priorities.'); if((state.buses||[]).filter(b=>v2303MaintenanceSources?.(b.id)?.length).length>2)v232Phone?.('Shop workload elevated','More than two buses need maintenance attention. Mike has prioritized route buses first.','normal')});
+  at(370,()=>v231AddEvent('First route buses begin pulling out.'));
+  at(390,()=>v231AddEvent('Most morning routes are now operating across the district.'));
+  at(430,()=>v231AddEvent('Elementary/morning school arrivals underway.'));
+  at(500,()=>v231AddEvent('Morning routes returning to Transportation.'));
+  at(540,()=>{v2303SyncFuelCardLog?.();v231AddEvent('Returned buses fueling/washing as needed. Shop work continues.')});
+  at(660,()=>v231AddEvent('Midday: maintenance, training, meetings, and trip activity.'));
+  at(810,()=>v231AddEvent('Afternoon drivers begin returning to the campus.'));
+  at(850,()=>v231AddEvent('Afternoon pre-trips and route preparation underway.'));
+  at(890,()=>v231AddEvent('Afternoon buses begin pulling out.'));
+  at(930,()=>v231AddEvent('School dismissal transportation is operating.'));
+  at(1020,()=>v231AddEvent('Afternoon routes returning to the garage.'));
+  at(1050,()=>{v2303SyncFuelCardLog?.();v231AddEvent('Drivers fuel, wash, park buses, and return keys.')});
+  at(1080,()=>v231AddEvent('Most route drivers have left. Late trips and shop work remain.'));
+  if(m>=1140&&!V.completed)v231FinishDay()
+}
+function v231Tick(){
+  let V=ensureV231();if(!V.running||V.paused||V.completed)return;
+  let step=Math.max(1,Number(V.speed||1));
+  for(let i=0;i<step;i++){V.minute++;v231SetGameTime();v231ProcessMinute();v232TickHook?.();if(V.completed)break}
+  v231RefreshIfOpen();v232Refresh?.()
+}
+function v231Start(){
+  let V=ensureV231();v231DailyPlan();V.running=true;V.paused=false;v231AddEvent('Live Transportation Day started.');
+  if(!window.__v231Timer)window.__v231Timer=setInterval(v231Tick,350);
+  v231Open()
+}
+function v231Pause(){let V=ensureV231();V.paused=!V.paused;v231RefreshIfOpen()}
+function v231Speed(n){let V=ensureV231();V.speed=Number(n);V.running=true;V.paused=false;v231RefreshIfOpen()}
+function v231FinishDay(){
+  let V=ensureV231();if(V.completed)return;V.completed=true;V.running=false;V.paused=true;
+  v231AddEvent('Transportation day complete. Daily records are being posted.');
+  try{runTransportationDay()}catch(e){console.error(e)}
+  v2303SyncMaintenanceToShop?.();v2303SyncFuelCardLog?.();v232EndDaySummary?.();autosaveGame?.();
+  v231RefreshIfOpen()
+}
+function v231Skip(){let V=ensureV231();V.minute=1140;v231SetGameTime();v231FinishDay()}
+function v231Feed(){
+  return state.v231.events.map(x=>`<div style="${x.level==='attention'?'color:#ffb7b7;font-weight:800':''}">${v231Clock(x.minute)} • ${x.text}</div>`).join('')
+}
+function v231Open(){
+  ensureV231();v231DailyPlan();let V=state.v231,pct=Math.max(0,Math.min(100,(V.minute-330)/(1140-330)*100));
+  openModal('▶️ Live Transportation Day',
+    `<div id="v231LiveRoot" class="v231-live">
+      <div class="v231-clock">${v231Clock(V.minute)}</div>
+      <div><b>${v230Phase?.()||'Transportation Operations'}</b> • ${V.completed?'DAY COMPLETE':V.paused?'PAUSED':`${V.speed}×`}</div>
+      <div class="v231-progress"><div style="width:${pct}%"></div></div>
+      <div class="v231-controls">
+        <button class="btn" onclick="v231Pause()">${V.paused?'▶ Resume':'⏸ Pause'}</button>
+        ${[1,2,4,8].map(n=>`<button class="btn ${V.speed===n&&!V.paused?'active':''}" onclick="v231Speed(${n})">${n}×</button>`).join('')}
+        <button class="btn primary" onclick="v232OpenLivingGarage()">🚌 Living Garage</button><button class="btn" onclick="v230OpenCampus()">🏫 Campus</button>
+        <button class="btn" onclick="v231Skip()">⏭ Finish Day</button>
+      </div>
+      <div class="small">Keyboard: <span class="v2303-keyhint">R</span> live day • <span class="v2303-keyhint">G</span> Living Garage • <span class="v2303-keyhint">Space</span> pause/resume • <span class="v2303-keyhint">1/2/4/8</span> speed</div>
+      <div class="v231-feed">${v231Feed()}</div>
+    </div>`)
+}
+function v231RefreshIfOpen(){
+  let root=document.getElementById?.('v231LiveRoot');if(!root)return;
+  let V=state.v231,pct=Math.max(0,Math.min(100,(V.minute-330)/(1140-330)*100));
+  root.innerHTML=`<div class="v231-clock">${v231Clock(V.minute)}</div>
+  <div><b>${v230Phase?.()||'Transportation Operations'}</b> • ${V.completed?'DAY COMPLETE':V.paused?'PAUSED':`${V.speed}×`}</div>
+  <div class="v231-progress"><div style="width:${pct}%"></div></div>
+  <div class="v231-controls"><button class="btn" onclick="v231Pause()">${V.paused?'▶ Resume':'⏸ Pause'}</button>${[1,2,4,8].map(n=>`<button class="btn ${V.speed===n&&!V.paused?'active':''}" onclick="v231Speed(${n})">${n}×</button>`).join('')}<button class="btn primary" onclick="v232OpenLivingGarage()">🚌 Living Garage</button><button class="btn" onclick="v230OpenCampus()">🏫 Campus</button><button class="btn" onclick="v231Skip()">⏭ Finish Day</button></div>
+  <div class="small">Keyboard: <span class="v2303-keyhint">R</span> live day • <span class="v2303-keyhint">Space</span> pause/resume • <span class="v2303-keyhint">1/2/4/8</span> speed</div>
+  <div class="v231-feed">${v231Feed()}</div>`
+}
+function v231Keyboard(e){
+  let tag=String(e.target?.tagName||'').toLowerCase();if(['input','textarea','select'].includes(tag)||e.target?.isContentEditable||e.repeat)return;
+  let k=String(e.key||'').toLowerCase();
+  if(k==='r'){e.preventDefault();v231Start();return}
+  if(k===' '){e.preventDefault();v231Pause();return}
+  if(k==='g'){e.preventDefault();v232OpenLivingGarage();return}
+  if(['1','2','4','8'].includes(k)){e.preventDefault();v231Speed(Number(k));return}
+}
+if(typeof window!=='undefined'&&!window.__v231KeyBound){
+  window.__v231KeyBound=true;
+  window.addEventListener('keydown',v231Keyboard)
+}
+
+
+/* ===== V23.2 LIVING GARAGE ===== */
+function ensureV232(){
+  ensureV231?.();ensureV2303?.();
+  state.v232=state.v232||{
+    driverStates:{},busStates:{},phone:[],dispatcher:{name:'Dana Brooks',skill:82},
+    shopBays:[null,null],daySummary:null,lastMinute:null,lastDay:null
+  };
+  return state.v232
+}
+function v232RouteForDriver(name){
+  let d=(state.drivers||[]).find(x=>x.name===name);
+  if(!d)return null;
+  return (state.routes||[]).find(r=>String(r.driver||'')===String(name)) || (state.routes||[]).find(r=>String(r.id)===String(d.route||''))
+}
+function v232BusForDriver(name){
+  let r=v232RouteForDriver(name);
+  if(r){
+    let bid=r.bus||r.busId||r.assignedBus;
+    let b=(state.buses||[]).find(x=>String(x.id)===String(bid));
+    if(b)return b
+  }
+  let p=state.v225?.drivers?.[(state.drivers||[]).find(x=>x.name===name)?.employeeId];
+  let bid=p?.bus||p?.currentBus;
+  return (state.buses||[]).find(x=>String(x.id)===String(bid))
+}
+function v232Minute(){
+  return Math.floor(state.v231?.minute||330)
+}
+function v232DriverStatus(name){
+  let m=v232Minute(), d=(state.drivers||[]).find(x=>x.name===name), r=v232RouteForDriver(name), b=v232BusForDriver(name);
+  if(!d)return 'Off';
+  if(d.calledOff||d.absent)return 'Called Off';
+  if(/sub/i.test(String(d.role||d.type||''))&&!r)return 'Available Substitute';
+  if(m<345)return 'On the Way';
+  if(m<355)return 'Driver Room';
+  if(m<370)return b?`Pre-Trip Bus ${b.id}`:'Waiting for Bus';
+  if(m<500)return r?`On Route ${r.id}`:'On Assignment';
+  if(m<540)return 'Returning / Post-Trip';
+  if(m<600)return (b&&Number(state.v225?.buses?.[String(b.id)]?.fuel||100)<55)?`Fueling Bus ${b.id}`:'Driver Room';
+  if(m<800)return 'Off Duty';
+  if(m<835)return 'Arriving for PM';
+  if(m<860)return 'Driver Room';
+  if(m<890)return b?`PM Pre-Trip Bus ${b.id}`:'Waiting for Bus';
+  if(m<1020)return r?`On PM Route ${r.id}`:'On Assignment';
+  if(m<1060)return 'Returning / Post-Trip';
+  if(m<1090)return (b&&Number(state.v225?.buses?.[String(b.id)]?.fuel||100)<55)?`Fueling Bus ${b.id}`:'Returning Keys';
+  return 'Gone Home'
+}
+function v232BusStatus(b){
+  let m=v232Minute(), issues=v2303MaintenanceSources?.(b.id)||[];
+  if(issues.length||/maintenance|shop|out of service/i.test(String(b.status||'')+' '+String(b.liveStatus||'')))return 'SHOP';
+  let r=(state.routes||[]).find(x=>String(x.bus||x.busId||x.assignedBus||'')===String(b.id));
+  if(!r)return 'PARKED';
+  if((m>=370&&m<500)||(m>=890&&m<1020))return 'OUT';
+  if((m>=500&&m<540)||(m>=1020&&m<1060))return 'RETURNING';
+  let life=state.v225?.buses?.[String(b.id)];
+  if((m>=540&&m<600||m>=1060&&m<1090)&&Number(life?.fuel||100)<55)return 'FUEL';
+  return 'PARKED'
+}
+function v232SyncStates(){
+  ensureV232();v2303SyncMaintenanceToShop?.();v2303SyncFuelCardLog?.();
+  (state.drivers||[]).forEach(d=>state.v232.driverStates[d.name]=v232DriverStatus(d.name));
+  (state.buses||[]).forEach(b=>state.v232.busStates[String(b.id)]=v232BusStatus(b));
+  v232AssignShopBays()
+}
+function v232AssignShopBays(){
+  let needs=(state.buses||[]).filter(b=>v232BusStatus(b)==='SHOP');
+  state.v232.shopBays=state.v232.shopBays||[null,null];
+  state.v232.shopBays=[needs[0]?.id||null,needs[1]?.id||null]
+}
+function v232ResolveRoutineEvents(){
+  let m=v232Minute(), disp=state.v232.dispatcher||{skill:82};
+  if(m===352){
+    let calls=(state.drivers||[]).filter(d=>d.calledOff||d.absent);
+    calls.forEach(d=>{
+      let route=v232RouteForDriver(d.name);
+      let subs=(state.drivers||[]).filter(x=>/sub/i.test(String(x.role||x.type||''))&&!x.calledOff&&!x.absent);
+      if(route&&subs.length&&Math.random()<Math.min(.95,(disp.skill||80)/100+.08)){
+        let sub=subs[0]; route.tempDriver=sub.name;
+        v231AddEvent?.(`${disp.name} covered Route ${route.id} with substitute ${sub.name}.`);
+      }else if(route){
+        v232Phone(`Coverage needed for Route ${route.id}`,`${d.name} called off and Dispatch could not secure a substitute.`,'attention')
+      }
+    })
+  }
+}
+function v232Phone(title,text,level='normal'){
+  ensureV232();let id='PH-'+Date.now()+'-'+Math.random().toString(36).slice(2,6);
+  state.v232.phone.unshift({id,title,text,level,status:'Open',minute:v232Minute()});
+  state.v232.phone=state.v232.phone.slice(0,40)
+}
+function v232OpenPhone(){
+  ensureV232();let open=state.v232.phone.filter(x=>x.status==='Open');
+  openModal('☎️ Director Phone & Inbox',
+    open.length?open.map(x=>`<div class="v232-panel v232-phone"><b>${x.title}</b><div class="small">${v231Clock?.(x.minute)||''} • ${x.text}</div><div class="actions"><button class="btn primary" onclick="v232PhoneDone('${x.id}')">Handle</button></div></div>`).join(''):
+    '<div class="small">No calls or messages need your attention.</div>')
+}
+function v232PhoneDone(id){let x=state.v232.phone.find(a=>a.id===id);if(x)x.status='Handled';v232OpenPhone()}
+function v232EndDaySummary(){
+  ensureV232();
+  let routes=(state.routes||[]).length, buses=(state.buses||[]).length;
+  let shop=(state.buses||[]).filter(b=>v232BusStatus(b)==='SHOP').length;
+  let calls=(state.drivers||[]).filter(d=>d.calledOff||d.absent).length;
+  let fuel=(state.v226?.fuelLog||[]).filter(x=>String(x.date||'')===String(state.gameDate||'')).reduce((s,x)=>s+Number(x.amount||0),0);
+  state.v232.daySummary={routes,buses,shop,calls,fuel};
+}
+function v232OpenSummary(){
+  let s=state.v232?.daySummary;
+  openModal('🌙 End-of-Day Transportation Briefing',s?
+    `<div class="v232-summary">
+      <div class="v232-stat"><b>${s.routes}</b><div class="small">Routes Scheduled</div></div>
+      <div class="v232-stat"><b>${s.calls}</b><div class="small">Driver Call-Offs</div></div>
+      <div class="v232-stat"><b>${s.shop}</b><div class="small">Buses in Shop</div></div>
+      <div class="v232-stat"><b>${s.buses}</b><div class="small">Fleet Size</div></div>
+      <div class="v232-stat"><b>${typeof money==='function'?money(s.fuel):'$'+s.fuel.toFixed(2)}</b><div class="small">Fuel Card Spend</div></div>
+      <div class="v232-stat"><b>${(state.v227?.morale||[]).length?Math.round((state.v227.morale||[]).reduce((a,x)=>a+Number(x.morale||0),0)/(state.v227.morale||[]).length):'—'}</b><div class="small">Avg Driver Morale</div></div>
+    </div>`:'<div class="small">No completed transportation day summary yet.</div>')
+}
+function v232GarageHTML(){
+  ensureV232();v232SyncStates();
+  let buses=(state.buses||[]);
+  let openPhone=state.v232.phone.filter(x=>x.status==='Open').length;
+  let activeDrivers=(state.drivers||[]).filter(d=>!/gone home|off duty|called off/i.test(v232DriverStatus(d.name)));
+  let bayHtml=state.v232.shopBays.map((id,i)=>{
+    let b=buses.find(x=>String(x.id)===String(id));
+    if(!b)return `<div class="v232-bay"><b>Bay ${i+1}</b><div class="v232-empty">Open</div></div>`;
+    let issues=v2303MaintenanceSources?.(b.id)||[];
+    return `<div class="v232-bay"><b>Bay ${i+1} • Bus ${b.id}</b><div class="small">${issues[0]?.issue||'Maintenance required'}<br>${i===0?'Mike Evans':'Cole Martin'} working</div></div>`
+  }).join('');
+  return `<div class="v232-garage">
+    <div class="v232-yard">
+      <div class="v232-buildingbar">
+        <div class="v232-room" onclick="v230DirectorOffice()">🏢 Director Office${(state.v227?.requests||[]).some(x=>x.status==='Open')?'<br><b>🚪 Visitor Waiting</b>':''}</div>
+        <div class="v232-room" onclick="v230DriverRoom()">🧑‍✈️ Driver Room<br>${activeDrivers.length} active</div>
+        <div class="v232-room" onclick="v2303OpenUnifiedShop()">🔧 Shop<br>${buses.filter(b=>v232BusStatus(b)==='SHOP').length} buses</div>
+        <div class="v232-room" onclick="v230FuelWash()">⛽ Fuel / Wash</div>
+      </div>
+      <div class="v232-lot">${buses.map(b=>{
+        let st=v232BusStatus(b), cls=st==='OUT'?'out':st==='SHOP'?'shop':'';
+        let r=(state.routes||[]).find(x=>String(x.bus||x.busId||x.assignedBus||'')===String(b.id));
+        return `<div class="v232-space ${cls}" onclick="v225BusProfile('${b.id}')">
+          ${st==='OUT'?`<div class="v232-empty">Space ${b.id}<br>Bus out on Route ${r?.id||''}</div>`:
+          `<div class="v232-buscard"><div class="v232-busicon">🚌</div><b>Bus ${b.id}</b><div>${st}</div><div class="small">${r?`Route ${r.id}`:'Spare / Unassigned'}</div></div>`}
+        </div>`
+      }).join('')}</div>
+      <div style="padding:8px">${activeDrivers.slice(0,14).map(d=>`<span class="v232-person" onclick="v225DriverProfile('${d.employeeId||''}')">👤 ${d.name.split(' ')[0]} • ${v232DriverStatus(d.name)}</span>`).join('')}</div>
+    </div>
+    <div class="v232-side">
+      <div class="v232-panel"><h4>🕒 ${v231Clock?.(v232Minute())||''}</h4><div class="small">${v230Phase?.()||'Transportation Operations'}</div><div class="actions"><button class="btn primary" onclick="v231Open()">Live Day Controls</button></div></div>
+      <div class="v232-panel"><h4>🔧 Shop Bays</h4>${bayHtml}</div>
+      <div class="v232-panel"><h4>☎️ Director Phone</h4><div><b>${openPhone}</b> open item${openPhone===1?'':'s'}</div><div class="actions"><button class="btn" onclick="v232OpenPhone()">Open Phone</button></div></div>
+      <div class="v232-panel"><h4>📻 Dispatch Feed</h4><div class="v232-feed">${(state.v231?.events||[]).slice(0,12).map(x=>`<div>${v231Clock?.(x.minute)||''} • ${x.text}</div>`).join('')}</div></div>
+      <div class="v232-panel"><div class="actions"><button class="btn" onclick="v232OpenSummary()">End-of-Day Briefing</button><button class="btn" onclick="v2303OpenDoorRequests()">Office Door</button></div></div>
+    </div>
+  </div>`
+}
+function v232OpenLivingGarage(){
+  ensureV232();v232SyncStates();
+  openModal('🚌 Living Garage — V23.2',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+}
+function v232Refresh(){
+  let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
+}
+function v232TickHook(){
+  ensureV232();
+  let m=v232Minute();
+  if(state.v232.lastMinute===m)return;
+  state.v232.lastMinute=m;
+  v232ResolveRoutineEvents();
+  if(m===545)v231AddEvent?.('Fuel island active for buses returning low on fuel.');
+  if(m===600)v231AddEvent?.('Shop bays settled into midday maintenance work.');
+  if(m===1045)v231AddEvent?.('Returning buses begin cycling through fuel/wash and parking.');
+  v232SyncStates();v232Refresh()
 }
 
 /* ===== V21.5 BALANCED-START MIGRATION ===== */
