@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V24.5 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V24.5.1 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V24.5 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V24.5.1 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -6927,7 +6927,7 @@ function generateApplicant(){
   v2110MigrateApplicantsToExactPostings();
   let open=(state.hr203?.postings||[]).filter(p=>p.status==='Open' && Number(p.filled||0)<Number(p.openings||1));
   if(!open.length){
-    // V24.5: no hiring popup unless the Director has actually posted a job.
+    // V24.5.1: no hiring popup unless the Director has actually posted a job.
     return false
   }
   if(open.length===1)return v203SimulateApplicant(open[0].postingId);
@@ -7042,7 +7042,7 @@ function v22GarageAlerts(){
   if(uncovered)a.push({c:'bad',t:`${uncovered} uncovered route${uncovered===1?'':'s'}`,d:'Assign a regular or substitute driver before pull-out.'});
   if(shop)a.push({c:'warn',t:`${shop} bus${shop===1?'':'es'} unavailable`,d:'Check the shop and spare fleet.'});
   if(over)a.push({c:'warn',t:`${over} route${over===1?'':'s'} over capacity`,d:'Move stops, assign a larger bus, or create relief.'});
-  /* V24.5: funded vacancies stay quiet until the director opens Hiring. */
+  /* V24.5.1: funded vacancies stay quiet until the director opens Hiring. */
   if(!a.length)a.push({c:'good',t:'Morning operation ready',d:'No major issues currently require Director attention.'});
   return a
 }
@@ -7129,7 +7129,7 @@ function v221NeedsAttention(){
   if(uncovered)arr.push({sev:'bad',title:`${uncovered} route${uncovered===1?'':'s'} uncovered`,detail:'Assign a substitute, double-route a qualified driver, or fill the vacancy.',action:`document.querySelector('[data-view="dispatch"]')?.click()`});
   if(over)arr.push({sev:'warn',title:`${over} route${over===1?'':'s'} over capacity`,detail:'Move stops, use a larger bus, or build relief service.',action:`document.querySelector('[data-view="routes"]')?.click()`});
   if(shop)arr.push({sev:'warn',title:`${shop} bus${shop===1?'':'es'} unavailable`,detail:'Review open work orders and spare coverage.',action:`v221OpenWorkOrders()`});
-  /* V24.5: no automatic vacancy nag. */
+  /* V24.5.1: no automatic vacancy nag. */
   if(proj.over>0)arr.push({sev:'bad',title:`Projected ${money(proj.over)} over operating budget`,detail:'Current spending pace will exhaust the annual appropriation.',action:`v221OpenFinancialForecast()`});
   if(inspections)arr.push({sev:'warn',title:`${inspections} inspection item${inspections===1?'':'s'} due`,detail:'Move them into the shop plan before service is affected.',action:`v221OpenWorkOrders()`});
   return arr
@@ -7616,7 +7616,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V24.5 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V24.5.1 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7844,7 +7844,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V24.5 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V24.5.1 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8587,7 +8587,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V24.5 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V24.5.1 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8636,7 +8636,7 @@ function v2303MaintenanceSources(busId){
 }
 function v2303SyncMaintenanceToShop(){
   ensureV2303?.();
-  // V24.5: the shop reacts to actual defects, work orders and due service.
+  // V24.5.1: the shop reacts to actual defects, work orders and due service.
   // Merely having an old "Maintenance" status never creates a fake defect.
   try{v239ScanFleet?.()}catch(e){}
   state.v2303.lastMaintenanceSync=String(state.gameDate||state.schoolDay||'');
@@ -8671,10 +8671,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V24.5: legacy R handler replaced by live-day keyboard controls. */
+/* V24.5.1: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V24.5 LIVE TRANSPORTATION DAY ===== */
+/* ===== V24.5.1 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8785,7 +8785,7 @@ function v231Keyboard(e){
 }
 if(typeof window!=='undefined'&&!window.__v231KeyBound){
   window.__v231KeyBound=true;
-  /* V24.5 old keyboard listener disabled */
+  /* V24.5.1 old keyboard listener disabled */
 }
 
 
@@ -8799,7 +8799,7 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 
 
 
-/* ===== V24.5 MAINTENANCE ONLY WHEN ACTUALLY NEEDED ===== */
+/* ===== V24.5.1 MAINTENANCE ONLY WHEN ACTUALLY NEEDED ===== */
 function ensureV2381(){
   state.v2381=state.v2381||{cleanedLegacyMaintenance:false};
   return state.v2381
@@ -8928,7 +8928,7 @@ function v2381GarageSweep(){
   }
 }
 
-/* ===== V24.5 AUTONOMOUS BUS GARAGE ===== */
+/* ===== V24.5.1 AUTONOMOUS BUS GARAGE ===== */
 function ensureV238(){
   state.v238=state.v238||{
     jobs:{},
@@ -9097,7 +9097,7 @@ function v238QuietHiring(){
   return false
 }
 
-/* ===== V24.5 AUTOMATIC SUBSTITUTE COVERAGE ===== */
+/* ===== V24.5.1 AUTOMATIC SUBSTITUTE COVERAGE ===== */
 function ensureV2371(){
   state.v2371=state.v2371||{coverageLog:[],lastCoverageDay:null};
   return state.v2371
@@ -9156,7 +9156,7 @@ function v2371SilentCoverageCheck(){
   return result
 }
 
-/* ===== V24.5 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
+/* ===== V24.5.1 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
 function ensureV237(){
   state.v237=state.v237||{
     driverConversations:[],
@@ -9185,7 +9185,7 @@ function v237QueueDriverConversation(driver,kind,text){
   state.v237.driverConversations=state.v237.driverConversations.slice(0,200);
   try{v232Phone?.(`Driver stopped by: ${driver.name}`,text,'attention')}catch(e){}
   try{notify?.(`${driver.name} is waiting to talk with you.`,'decision')}catch(e){}
-  // V24.5: a conversation alert is actionable immediately instead of becoming a hidden notice.
+  // V24.5.1: a conversation alert is actionable immediately instead of becoming a hidden notice.
   try{v239PopupWaitingConversation?.()}catch(e){}
   return item
 }
@@ -9307,7 +9307,7 @@ function v237OpenGrowthRouting(){
   openModal('🏘️ New Developments & Route Growth',body)
 }
 
-/* ===== V24.5 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
+/* ===== V24.5.1 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
 const V236_DB='SchoolTransportationTycoon';
 const V236_STORE='saves';
 function ensureV236(){
@@ -9372,7 +9372,7 @@ async function v236ManualSave(){
     alert(`GAME SAVED\n\n${v236SaveSummary(snap)}`);
     return true
   }catch(e){
-    console.error('V24.5 manual save failed',e);
+    console.error('V24.5.1 manual save failed',e);
     alert('SAVE FAILED: '+(e?.message||e));
     return false
   }
@@ -9383,7 +9383,7 @@ async function v236Autosave(){
     let snap=v236Snapshot();
     await v236Put('autosave',snap);
     return true
-  }catch(e){console.warn('V24.5 autosave failed',e);return false}
+  }catch(e){console.warn('V24.5.1 autosave failed',e);return false}
 }
 async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
   if(!v236Validate(s)){if(showNotice)alert(`${source} is not a valid district save.`);return false}
@@ -9398,7 +9398,7 @@ async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
     return true
   }catch(e){
     window.__transportBooting=false;window.__v236Loading=false;
-    console.error('V24.5 restore failed',e);
+    console.error('V24.5.1 restore failed',e);
     if(showNotice)alert('LOAD FAILED: '+(e?.message||e));
     return false
   }
@@ -9476,7 +9476,7 @@ function v236AutoCoverCalloffs(){
   return {manager,uncovered}
 }
 
-/* ===== V24.5 INDEXEDDB PRIMARY SAVE ===== */
+/* ===== V24.5.1 INDEXEDDB PRIMARY SAVE ===== */
 const V2351_DB='SchoolTransportationTycoon';
 const V2351_STORE='saves';
 function v2351Db(){
@@ -9593,7 +9593,7 @@ window.autosaveGame=function(){
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
 
-/* ===== V24.5 SAVE REPAIR + DELEGATED OPERATIONS ===== */
+/* ===== V24.5.1 SAVE REPAIR + DELEGATED OPERATIONS ===== */
 function ensureV235(){
   state.v235=state.v235||{
     saveFormat:1,dispatcherLog:[],driverTouchpoints:[],interactionMilestones:{},quietVacancyPrompts:true
@@ -9646,7 +9646,7 @@ function v235SaveCurrent(showNotice=false){
     if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
     return true
   }catch(e){
-    console.error('V24.5 save failed',e);
+    console.error('V24.5.1 save failed',e);
     if(String(e?.name||'').includes('Quota')||String(e?.message||'').toLowerCase().includes('quota')){
       ['transportSave1','transportSave2','transportSave3'].forEach(k=>{
         try{
@@ -9662,7 +9662,7 @@ function v235SaveCurrent(showNotice=false){
         if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
         return true
       }catch(e2){
-        alert('Save storage is still full. V24.5 removed redundant old backups, but this browser still does not have enough local storage for this district.');
+        alert('Save storage is still full. V24.5.1 removed redundant old backups, but this browser still does not have enough local storage for this district.');
         return false
       }
     }
@@ -9743,7 +9743,7 @@ function v235DailyPeople(){
   if(Math.random()<.018)v235CreateDriverInteraction(false)
 }
 
-/* ===== V24.5 RELIABLE SAVES + INSTANT DAYS ===== */
+/* ===== V24.5.1 RELIABLE SAVES + INSTANT DAYS ===== */
 function ensureV234(){state.v234=state.v234||{lastManualSave:null,lastAutosave:null,lastDayResult:null};return state.v234}
 function v234ValidState(s){return !!(s&&Array.isArray(s.buses)&&Array.isArray(s.routes)&&(Array.isArray(s.staff)||Array.isArray(s.drivers)))}
 function v234ReadRaw(key){let raw=localStorage.getItem(key);if(!raw)return null;try{let s=JSON.parse(raw);return v234ValidState(s)?s:null}catch(e){return null}}
@@ -9767,7 +9767,7 @@ function v234LoadPrimary(){
 function v234RecoveryRows(){let rows=[['Manual Save','transportDirectorSave','transportDirectorSaveTime'],['Previous Manual','transportV234PreviousManual','transportV234PreviousManualTime'],['Autosave','transportAutosave','transportAutosaveTime'],['Slot 1','transportSave1','transportSave1Time'],['Slot 2','transportSave2','transportSave2Time'],['Slot 3','transportSave3','transportSave3Time']];return rows.map(([name,key,time])=>{let s=v234ReadRaw(key);return s?{name,key,state:s,ts:Number(localStorage.getItem(time)||0),day:Number(s.schoolDay||s.day||0),date:s.gameDate||'',staff:(s.staff||s.drivers||[]).length,buses:(s.buses||[]).length}:null}).filter(Boolean)}
 function v235RecoveryCenter(){let rows=v234RecoveryRows();openModal('🛟 Save Recovery Center',rows.length?rows.map(r=>`<div class="v233-backup"><b>${r.name}</b><div class="small">${r.date} • Day ${r.day} • ${r.staff} staff • ${r.buses} buses${r.ts?`<br>${new Date(r.ts).toLocaleString()}`:''}</div><button class="btn" onclick="v234RestoreKey('${r.key}')">Restore This Save</button></div>`).join(''):'<div class="alert">No valid saves found.</div>')}
 function v234RestoreKey(key){let s=v234ReadRaw(key);if(!s)return alert('Snapshot invalid.');window.__transportBooting=true;state=JSON.parse(JSON.stringify(s));window.__transportBooting=false;v234ManualSave();closeModal?.();render?.()}
-/* V24.5: legacy V23.4 save bindings disabled */
+/* V24.5.1: legacy V23.4 save bindings disabled */
 
 function v234RunDayInstant(){
  try{
@@ -9779,11 +9779,11 @@ function v234RunDayInstant(){
   if(d2!==d||state.gameDate!==date){ensureV234();state.v234.lastDayResult={from:date,to:state.gameDate,day:d2};v234Autosave();notify?.(`Transportation day complete. Now ${state.gameDate||''} • Day ${d2}.`,'decision')}
  }catch(e){console.error(e);alert('Transportation day could not be completed: '+(e?.message||e))}finally{window.__v234InstantDay=false}
 }
-/* V24.5 final save bindings */
-/* V24.5: legacy V23.5 save bindings disabled */
+/* V24.5.1 final save bindings */
+/* V24.5.1: legacy V23.5 save bindings disabled */
 
 
-/* ===== V24.5 RUN DAY / KEYBOARD REPAIR ===== */
+/* ===== V24.5.1 RUN DAY / KEYBOARD REPAIR ===== */
 function ensureV2331(){state.v2331=state.v2331||{lastStart:null};return state.v2331}
 function v2331CurrentDayKey(){return String(state.gameDate||state.schoolDay||'')}
 function v2331RunDay(){
@@ -9830,7 +9830,7 @@ function v2331BindKeys(){
 function v231Minute(){return Number(state.v231?.minute||330)}
 
 if(typeof window!=='undefined')setTimeout(()=>v2331BindKeys(),0);
-/* ===== V24.5 RELIABILITY + REAL OPERATIONS ===== */
+/* ===== V24.5.1 RELIABILITY + REAL OPERATIONS ===== */
 function ensureV233(){state.v233=state.v233||{absences:{},repairs:{},routeRuntime:{},tomorrow:{date:null,issues:[]},liveProcessed:{},backupMeta:{lastDay:null,lastWeek:null},employeeHistory:{}};return state.v233}
 function v233Clone(x){return JSON.parse(JSON.stringify(x))}
 function v233DateKey(){return String(state.gameDate||state.date||'')}
@@ -9857,7 +9857,7 @@ function v233ConsumeRouteFuel(busId,miles){let pct=Math.min(22,Math.max(3,Number
 function v233ProcessRouteDeparture(phase){ensureV233();v233RefreshAbsences();v233MaintainSpareAssignments();(state.routes||[]).forEach(r=>{let driver=v233RouteDriverName(r),d=v233DriverByName(driver);if(d&&(d.calledOff||d.absent))return;let busId=v233RouteBusId(r);if(!busId)return;let key=`${v233DateKey()}-${phase}-${r.id}`;if(state.v233.routeRuntime[key])return;state.v233.routeRuntime[key]={route:r.id,bus:busId,driver,phase,status:'Departed',depart:v231Minute?.()||0};let b=v233BusById(busId);if(b){b.liveStatus='Route';b.status='Route'}})}
 function v233ProcessRouteReturn(phase){ensureV233();(state.routes||[]).forEach(r=>{let key=`${v233DateKey()}-${phase}-${r.id}`,run=state.v233.routeRuntime[key];if(!run||run.status==='Returned')return;let miles=v233RouteMiles(r)/2;v233AddMileage(run.bus,miles,`${phase} route ${r.id}`);v233ConsumeRouteFuel(run.bus,miles);run.status='Returned';run.return=v231Minute?.()||0;run.miles=miles;let b=v233BusById(run.bus);if(b){b.liveStatus='Parked';b.status='Ready'}})}
 function v233FuelReturningBuses(){ensureV233();let spend=0;(state.routes||[]).forEach(r=>{let busId=v233RouteBusId(r),driver=v233RouteDriverName(r);if(busId&&v233BusFuel(busId)<55)spend+=v233FuelBus(busId,driver||'Driver','Post-route fueling')});return spend}
-function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V24.5 live event',key,e)}}}
+function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V24.5.1 live event',key,e)}}}
 function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v2371AutoCoverAll?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
 function v233TomorrowDate(){return v233ShiftDate(v233DateKey(),1)}
 function v233BuildTomorrowBoard(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233MaintainSpareAssignments();let issues=[],tom=v233TomorrowDate();(state.routes||[]).forEach(r=>{let drv=v233RouteDriverName(r),d=v233DriverByName(drv);if(!drv||!d)issues.push({level:'danger',title:`Route ${r.id} — driver coverage needed`,detail:'No active assigned driver.'});else{let a=state.v233.absences[drv];if(a&&a.through>=tom)issues.push({level:'warn',title:`Route ${r.id} — ${drv} absent`,detail:`Absence continues through ${a.through}.`})}let regular=r.bus||r.busId||r.assignedBus,rep=state.v233.repairs[String(regular)];if(rep&&!['Released','Closed'].includes(rep.status)){issues.push({level:r.tempBus?'warn':'danger',title:`Route ${r.id} — Bus ${regular} in shop`,detail:r.tempBus?`Bus ${r.tempBus} remains assigned as temporary spare.`:'No temporary spare assigned yet.'})}});Object.values(state.v233.repairs).forEach(rep=>{if(!['Released','Closed'].includes(rep.status))issues.push({level:'warn',title:`Bus ${rep.bus} — ${rep.status}`,detail:`${rep.issue}; estimated ${rep.days} day repair.`})});let trips=(state.trips||[]).filter(t=>String(t.date||'')===tom&&!/cancel/i.test(String(t.status||'')));if(trips.length)issues.push({level:'good',title:`${trips.length} trip${trips.length===1?'':'s'} scheduled`,detail:'Confirm bus and driver coverage.'});state.v233.tomorrow={date:tom,issues,generated:v233DateKey()};return state.v233.tomorrow}
@@ -9872,7 +9872,7 @@ function v233OpenBackupCenter(){let A=v233BackupCandidates();openModal('🧰 Rot
 function v233LoadBackup(type){let x=v233BackupCandidates().find(a=>a.type===type);if(!x)return alert('Backup unavailable.');try{window.__transportBooting=true;state=v233Clone(x.state);ensureV233();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();window.__transportBooting=false;localStorage.setItem('transportDirectorSave',JSON.stringify(state));localStorage.setItem('transportDirectorSaveTime',String(Date.now()));render?.();closeModal?.();notify?.(`${type} backup restored.`,'decision')}catch(e){window.__transportBooting=false;alert('Backup could not be restored: '+(e?.message||e))}}
 function v233PrepareNextDay(){ensureV233();v233RotatingBackups();v233EmployeeHistory();v233BuildTomorrowBoard()}
 
-/* ===== V24.5 LIVING GARAGE ===== */
+/* ===== V24.5.1 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -10031,7 +10031,7 @@ function v232GarageHTML(){
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V24.5',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V24.5.1',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -10301,7 +10301,7 @@ function v235RestoreSave(key){
 }
 
 
-/* V24.5 FINAL SAVE/LOAD BINDING */
+/* V24.5.1 FINAL SAVE/LOAD BINDING */
 window.saveGame=v2351Save;
 window.loadGame=v2351Load;
 window.autosaveGame=function(){
@@ -10309,10 +10309,10 @@ window.autosaveGame=function(){
   clearTimeout(window.__v2351AutoTimer);
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
-/* V24.5: old IndexedDB auto-restore disabled */
+/* V24.5.1: old IndexedDB auto-restore disabled */
 
 
-/* V24.5 FINAL SAVE / LOAD AUTHORITY */
+/* V24.5.1 FINAL SAVE / LOAD AUTHORITY */
 window.saveGame=v236ManualSave;
 window.loadGame=v236ManualLoad;
 window.autosaveGame=function(){
@@ -10323,7 +10323,7 @@ window.autosaveGame=function(){
 window.addEventListener('load',()=>setTimeout(()=>v236StartupRestore?.(),250));
 
 
-/* ===== V24.5 FINAL QUIET-HIRING GUARD ===== */
+/* ===== V24.5.1 FINAL QUIET-HIRING GUARD ===== */
 const v2382GenerateApplicantOriginal=generateApplicant;
 generateApplicant=function(){
   try{
@@ -10335,7 +10335,7 @@ generateApplicant=function(){
 };
 
 
-/* ===== V24.5 STAFF CONVERSATION ACCESS ===== */
+/* ===== V24.5.1 STAFF CONVERSATION ACCESS ===== */
 function ensureV2383(){
   state.v2383=state.v2383||{talked:{},conversationLog:[]};
   return state.v2383
@@ -10444,7 +10444,7 @@ function v2383ConversationButton(){
 }
 
 
-/* ===== V24.5 MAIN GARAGE CONVERSATIONS ===== */
+/* ===== V24.5.1 MAIN GARAGE CONVERSATIONS ===== */
 function v2384MainConversationBanner(){
   let names=v2383WaitingNames?.()||[];
   if(!names.length)return '';
@@ -10468,7 +10468,7 @@ function v2384DirectorConversationCard(){
 
 
 
-/* V24.5 conversation popup bridge */
+/* V24.5.1 conversation popup bridge */
 function v239PopupWaitingConversation(){
   try{
     let x=(state.v227?.requests||[]).find(r=>r.status==='Open'&&r.driver&&
@@ -10481,7 +10481,7 @@ function v239PopupWaitingConversation(){
   }catch(e){return false}
 }
 
-/* ===== V24.5 FULLY AUTOMATIC SERVICE DEPARTMENT ===== */
+/* ===== V24.5.1 FULLY AUTOMATIC SERVICE DEPARTMENT ===== */
 function ensureV239(){
   state.v239=state.v239||{lastSweep:null,serviceHistory:[]};
   return state.v239
@@ -10686,7 +10686,7 @@ function v239GarageSweep(){
 try{setTimeout(()=>{v239ScanFleet?.();v239PopupWaitingConversation?.();render?.()},250)}catch(e){}
 
 
-/* ===== V24.5 TRIPS + SUMMER PLANNING OVERHAUL ===== */
+/* ===== V24.5.1 TRIPS + SUMMER PLANNING OVERHAUL ===== */
 function ensureV240(){
   state.v240=state.v240||{
     tripSignups:{},tripHistory:[],summer:{week:0,requestsGenerated:false,trainingScheduled:false},
@@ -11003,7 +11003,7 @@ function summerPlanning(){
 }
 
 
-/* ===== V24.5 PEOPLE + DIRECTOR OPERATIONS ===== */
+/* ===== V24.5.1 PEOPLE + DIRECTOR OPERATIONS ===== */
 function ensureV241(){
   state.v241=state.v241||{
     inbox:[],lastInboxDay:null,rideAlongs:[],evaluations:[],driverBusHistory:[],
@@ -11222,7 +11222,7 @@ function v241DailyPeopleSystems(){
 
 try{ensureV241?.();v241GenerateMorningInbox?.()}catch(e){}
 
-/* ===== V24.5 FULL DEPARTMENT STAFFING ===== */
+/* ===== V24.5.1 FULL DEPARTMENT STAFFING ===== */
 function ensureV242(){
  state.v242=state.v242||{postings:[],applications:[],careerHistory:[],lastBrief:null};
  return state.v242
@@ -11352,7 +11352,7 @@ function v242Daily(){
 
 try{ensureV242?.()}catch(e){}
 
-/* ===== V24.5 WORKFORCE + LEADERSHIP ===== */
+/* ===== V24.5.1 WORKFORCE + LEADERSHIP ===== */
 function ensureV243(){
  state.v243=state.v243||{
    schedules:{},probation:{},reviews:[],attendance:{},interim:[],crossTraining:{},
@@ -11616,7 +11616,7 @@ function v243Daily(){
 
 try{ensureV243?.()}catch(e){}
 
-/* ===== V24.5 DIRECTOR DESK + INCIDENTS + EMPLOYEE LIFE + BUS DEALER ===== */
+/* ===== V24.5.1 DIRECTOR DESK + INCIDENTS + EMPLOYEE LIFE + BUS DEALER ===== */
 function ensureV244(){
  state.v244=state.v244||{
   incidents:[],incidentHistory:[],employeeLife:[],dealerOrders:[],dealerInventory:[],
@@ -11759,7 +11759,7 @@ function v244DirectorComputer(){
 }
 function v244DirectorDesk(){
  ensureV244();openModal('🪑 Transportation Director Office',`<div class="alert priority-green"><b>Your office is the management hub.</b><div class="small">The computer opens department systems. Phone/dispatch notes and employee conversations come to you only when needed.</div></div>
- <div class="project-card"><b>🖥️ Director Computer</b><div class="small">Inbox • Dispatch • Routes • Fleet • Employees • Staffing • Trips • Budget • Dealer • History</div><button class="btn primary" onclick="v244DirectorComputer()">Use Computer</button></div>
+ <div class="project-card"><b>🖥️ Director Computer</b><div class="small">Inbox • Dispatch • Routes • Fleet • Employees • Staffing • Trips • Budget • Dealer • History</div><button class="btn primary" onclick="v244DirectorComputer()">Use Computer</button><button class="btn" onclick="v2451Shop()">Open Repair Shop</button></div>
  <div class="project-card"><b>☎️ Desk Phone</b><div class="small">${state.v244.desk.calls.length?`${state.v244.desk.calls.length} recent call/dispatch note${state.v244.desk.calls.length===1?'':'s'}.`:'No calls waiting.'}</div><button class="btn" onclick="v244IncidentCenter()">Review Calls / Incidents</button></div>
  <div class="project-card"><b>🚪 Office Door</b><div class="small">Employees waiting to talk remain connected to the Director Conversations system.</div><button class="btn" onclick="v2383OpenWaitingStaff()">Check Office Door</button></div>`)
 }
@@ -11770,7 +11770,7 @@ function v244Daily(){
 
 try{ensureV244?.();v244DealerRefresh?.()}catch(e){}
 
-/* ===== V24.5 DIRECTOR COMMAND + PROTECTED SAVES ===== */
+/* ===== V24.5.1 DIRECTOR COMMAND + PROTECTED SAVES ===== */
 function ensureV245(){
  state.v245=state.v245||{saveMeta:{lastVerified:null,lastExport:null,checksum:null},policies:{
   callOff:'Dispatch covers routine call-offs automatically',
@@ -11906,7 +11906,7 @@ v244DirectorComputer=function(){
  <div class="project-card"><b>Department Health</b><div class="small">${v245Status(m.operations)} Operations ${m.operations}% &nbsp; ${v245Status(m.safety)} Safety ${m.safety}% &nbsp; ${v245Status(m.staffing)} Staffing ${m.staffing}% &nbsp; ${v245Status(m.fleet)} Fleet ${m.fleet}%</div></div>
  <div class="actions">
  <button class="btn primary" onclick="v245DirectorDashboard()">📊 Dashboard</button><button class="btn primary" onclick="v241OpenInbox()">📥 Inbox</button><button class="btn" onclick="v243LeadershipMeeting(true)">🗓️ Leadership Meeting</button>
- <button class="btn" onclick="v244IncidentCenter()">📻 Dispatch</button><button class="btn" onclick="v237OpenGrowthRouting()">🗺️ Routes</button><button class="btn" onclick="renderFleet()">🚌 Fleet</button>
+ <button class="btn" onclick="v244IncidentCenter()">📻 Dispatch</button><button class="btn" onclick="v237OpenGrowthRouting()">🗺️ Routes</button><button class="btn" onclick="renderFleet()">🚌 Fleet</button><button class="btn primary" onclick="v2451Shop()">🔧 Repair Shop</button>
  <button class="btn" onclick="v243OpenWorkforce()">👥 Employees</button><button class="btn" onclick="v242Staffing()">👔 Staffing</button><button class="btn" onclick="renderTrips()">🏟️ Trips</button>
  <button class="btn" onclick="v245Payroll()">💵 Payroll</button><button class="btn" onclick="v245Compliance()">🪪 Compliance</button><button class="btn" onclick="v245Policies()">📘 Policies</button>
  <button class="btn" onclick="v244Dealer()">🏪 Bus Dealer</button><button class="btn" onclick="v245Vendors()">🔧 Vendors</button><button class="btn" onclick="v245BudgetPresentation()">🏛️ Budget Presentation</button>
@@ -11916,6 +11916,26 @@ v244DirectorComputer=function(){
 function v245Daily(){ensureV245();v245MaybeAudit()}
 
 try{ensureV245?.()}catch(e){}
+
+/* V24.5.1 maintenance recovery */
+function ensureV2451(){state.v2451=state.v2451||{recovered:[]};return state.v2451}
+function v2451NeedsService(b){return /Maintenance|Shop|Inspection Due|Out of Service|Repair/i.test(String(b.status||''))||b.needsMaintenance===true||b.maintenanceDue===true||b.pmDue===true||!!b.maintenanceReason||!!b.issue||!!b.defect}
+function v2451Jobs(){let a=[];try{a=a.concat(Object.values(state.v238?.jobs||{}))}catch(e){};try{a=a.concat(state.v239?.jobs||[])}catch(e){};let s=new Set();return a.filter(j=>{let k=String(j.id||`${j.bus}-${j.created}`);if(s.has(k))return false;s.add(k);return !/Complete|Closed|Released/i.test(String(j.status||''))})}
+function v2451JobFor(id){return v2451Jobs().find(j=>String(j.bus??j.busId)===String(id))}
+function v2451Sync(){
+ ensureV2451();state.v238=state.v238||{};state.v238.jobs=state.v238.jobs||{};let n=0;
+ (state.buses||[]).forEach(b=>{if(v2451NeedsService(b)&&!v2451JobFor(b.id)){let reason=b.maintenanceReason||b.issue||b.defect||(String(b.status).includes('Inspection')?'Inspection / service due':'Maintenance diagnosis'),sev=Number(b.condition||85)<50?'Major':Number(b.condition||85)<70?'Moderate':'Routine',days=sev==='Major'?3:sev==='Moderate'?2:1,id=`REC-${b.id}-${Date.now()}-${n}`;state.v238.jobs[id]={id,bus:b.id,busId:b.id,status:'Queued',reason,severity:sev,daysRemaining:days,created:(typeof v241Key==='function'?v241Key():state.gameDate),source:'recovery'};b.status='Maintenance';state.v2451.recovered.push({bus:b.id,id,reason});n++}});
+ return n
+ try{v2451Daily()}catch(e){}
+}
+function v2451Advance(){
+ v2451Sync();v2451Jobs().forEach(j=>{j.status='In Repair';j.daysRemaining=Math.max(0,Number(j.daysRemaining??1)-1);if(j.daysRemaining<=0){j.status='Complete';let b=(state.buses||[]).find(x=>String(x.id)===String(j.bus??j.busId));if(b){b.status='Spare';b.condition=Math.min(100,Math.max(80,Number(b.condition||75)+12));b.needsMaintenance=false;b.maintenanceDue=false;b.pmDue=false;delete b.maintenanceReason;delete b.issue;delete b.defect;b.history=b.history||[];b.history.push({year:state.year,event:`Shop completed: ${j.reason||'maintenance'}`})}}});try{autosaveGame?.()}catch(e){}
+}
+function v2451RepairNow(id){let j=v2451Jobs().find(x=>String(x.id)===String(id));if(j){j.daysRemaining=1;v2451Advance()}v2451Shop()}
+function v2451Shop(){v2451Sync();let jobs=v2451Jobs();openModal('🔧 Maintenance Repair Shop',`<div class="alert ${jobs.length?'priority-yellow':'priority-green'}"><b>${jobs.length?jobs.length+' active repair job'+(jobs.length===1?'':'s'):'Shop queue is clear'}</b><div class="small">Any bus marked Maintenance that was missing from the repair shop is now automatically recovered into this queue. Run Day advances repairs automatically.</div></div>${jobs.map(j=>{let b=(state.buses||[]).find(x=>String(x.id)===String(j.bus??j.busId));return`<div class="project-card"><span class="trip-status pending">${j.status}</span><b>Bus ${j.bus??j.busId}${b?.model?' — '+b.model:''}</b><div class="small">${j.reason||'Maintenance'} • ${j.daysRemaining??1} day(s) remaining</div><button class="btn" onclick="v2451RepairNow('${j.id}')">Complete Current Repair Step</button></div>`}).join('')}<div class="actions"><button class="btn primary" onclick="let n=v2451Sync();alert(n?'Recovered '+n+' missing repair job(s).':'All maintenance buses are already in the shop queue.');v2451Shop()">🔄 Sync Maintenance Queue</button><button class="btn" onclick="v2451Advance();v2451Shop()">🔧 Advance Shop One Day</button></div>`)}
+function v2451Daily(){v2451Sync();v2451Advance()}
+
+try{ensureV2451();v2451Sync()}catch(e){}
 render();
 </script>
 </body>
