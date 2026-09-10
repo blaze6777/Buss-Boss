@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V23.8.4 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V24.5 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V23.8.4 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V24.5 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -773,7 +773,7 @@ button,.btn,select,input{touch-action:manipulation}
 <section id="shop" class="view">
   <div class="section-head">
     <div><h2>🔧 Preventive Maintenance & Fleet Shop</h2><div class="small">Mileage-based PM, tires, inspections, parts inventory, mechanic workload and shop capacity now drive fleet readiness.</div></div>
-    <div class="actions"><button class="btn primary" onclick="opsRunShopDayV15()">Run Shop Work</button><button class="btn" onclick="openPartsInventoryV15()">Parts Room</button><button class="btn" onclick="runStateInspection()">State Inspection</button></div>
+    <div class="actions"><button class="btn primary" onclick="v238OpenGarageBoard()">Automatic Service Status</button></div>
   </div>
   <div class="today-grid" id="shopKpis"></div>
   <div class="grid2">
@@ -2832,7 +2832,7 @@ function selectBus(id,scroll=true){
  if(!b)return;
  if($('selectedTitle'))$('selectedTitle').textContent='Bus '+b.id;
  if($('selectedDetails'))$('selectedDetails').innerHTML=selectedFleetCard(b);
- if($('selectedActions'))$('selectedActions').innerHTML=`<button class="btn" onclick="fuelBus(${b.id})">Fuel</button><button class="btn" onclick="maintainBus(${b.id})">Maintenance</button><button class="btn" onclick="openBusFile(${b.id})">Bus File</button><button class="btn" onclick="goView('shop')">Repair Shop</button>`;
+ if($('selectedActions'))$('selectedActions').innerHTML=`<button class="btn" onclick="fuelBus(${b.id})">Fuel</button><button class="btn" onclick="openBusFile(${b.id})">Bus File</button><button class="btn" onclick="v238OpenGarageBoard()">Service Status</button>`;
  if(scroll&&$('selectedTitle'))$('selectedTitle').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
@@ -2855,21 +2855,7 @@ function fuelBus(id){
  log(`Bus ${id} fueled/charged to 100%. Fleet card charged ${money(cost)}.`);
  autosaveGame();render();
 }
-function maintainBus(id){
- ensureUXData();syncBudgets();
- let b=state.buses.find(x=>Number(x.id)===Number(id));if(!b)return;
- let cost=650;
- if(state.operatingBudget<cost)return alert('Not enough operating funds.');
- state.operatingBudget-=cost;syncBudgets();
- b.condition=Math.min(100,Number(b.condition||80)+12);
- b.status=b.route?'Ready':'Spare';
- b.nextPM=Math.ceil((Number(b.miles||0)+5000)/5000)*5000;
- b.inspection=b.inspection||'Current';
- b.repairSpend=Number(b.repairSpend||0)+cost;
- b.history=b.history||[];b.history.push({year:state.year,date:state.gameDate,event:'Garage preventive maintenance completed',cost});
- log(`Bus ${id} serviced in the garage. Cost ${money(cost)}.`);
- autosaveGame();render();
-}
+function maintainBus(id){try{v239ScanFleet?.();v238OpenGarageBoard?.()}catch(e){}}
 function facility(name){openModal(name, name==='Maintenance Shop'?'You can service buses, track preventive maintenance, inspections, tires, batteries, brakes, and shop capacity here.':name==='Driver Lounge'?'Drivers clock in here. Call-offs, substitutes, morale, seniority, and trip sign-ups appear in this room.':name==='Director Office'?'Your office contains budget, staffing, school board, route, weather, incident, and annual planning tools.':'This facility is part of your transportation center and will affect daily operations.')}
 function editStops(){openModal('Edit Route '+selectedRoute,'Stop editor concept: add, remove, reorder, or transfer stops between routes. Every change recalculates student load, mileage and run time.')}
 function reassignRoute(){let r=state.routes.find(x=>x.id===selectedRoute);let spare=state.buses.find(b=>b.status==='Spare');if(spare){let old=state.buses.find(b=>b.id===r.bus);if(old){old.route=null;old.status='Spare'}spare.route=r.id;spare.status='Ready';spare.driver=r.driver;r.bus=spare.id;log(`Route ${r.id} reassigned to Bus ${spare.id}.`);render()}else alert('No spare bus available.')}
@@ -3708,11 +3694,21 @@ function completeWorkOrder(id){
  log(`Bus ${w.bus} work order completed: ${w.issue}.`);
  closeModal();autosaveGame();render();
 }
-function maybeMaintenanceEvent(){if(Math.random()>.16)return;let candidates=state.buses.filter(b=>b.status!=='Maintenance');if(!candidates.length)return;let b=candidates.sort((a,b)=>a.condition-b.condition)[0];let issues=[['Battery replacement',480],['Brake repair',1250],['DEF sensor',790],['Tire replacement',980],['Door mechanism',640]];let it=issues[Math.floor(Math.random()*issues.length)];state.workOrders.push({id:Date.now()+Math.random(),bus:b.id,issue:it[0],cost:it[1],status:'Scheduled',days:1});if(Math.random()<.35){b.status='Maintenance';b.breakdowns++}log(`Shop note: Bus ${b.id} needs ${it[0].toLowerCase()}.`)}
-
-function driverCareerReadinessV11(s){
- let yrs=Number(s.years||0),safe=Number(s.safetyScore||95),att=Number(s.attendance||98);
- if(yrs>=10&&safe>=92&&att>=94)return'Executive-track ready';if(yrs>=7&&safe>=90)return'Supervisor-track ready';if(yrs>=4&&safe>=88)return'Coordinator / Trainer ready';if(yrs>=2)return'Office-entry ready';return'Building experience';
+function maybeMaintenanceEvent(){
+  if(Math.random()>.10)return;
+  let candidates=(state.buses||[]).filter(b=>!v239BusHasActiveJob?.(b.id));
+  if(!candidates.length)return;
+  let b=candidates.sort((a,b)=>Number(a.condition||85)-Number(b.condition||85))[0];
+  let issues=[
+    ['Battery replacement',480],['Brake repair',1250],['DEF sensor',790],
+    ['Tire replacement',980],['Door mechanism',640],['Coolant leak',1100],
+    ['Alternator repair',1350],['Air system leak',1650]
+  ];
+  let it=issues[Math.floor(Math.random()*issues.length)];
+  state.workOrders=state.workOrders||[];
+  state.workOrders.push({id:Date.now()+Math.random(),bus:b.id,issue:it[0],cost:it[1],status:'Open',opened:state.gameDate||''});
+  log?.(`Shop note: Bus ${b.id} needs ${it[0].toLowerCase()}. Service department took it automatically.`);
+  try{v239ScanFleet?.()}catch(e){}
 }
 function openDriverPreferencesV11(name){
  let s=state.staff.find(x=>x.name===name);if(!s)return;ensureV4Data();let p=s.preferences||{},routes=state.routes||[];
@@ -3813,8 +3809,9 @@ function startNewSchoolYearV115(){try{v222ProcessNewYear?.()}catch(e){console.er
  openModal('🏫 New School Year Started',`<div class="alert priority-green"><b>Welcome to the ${state.year} school year.</b><div class="small">Summer assignments, annual budget, fleet, staff history, archived trips, and district growth were preserved.</div></div><div class="kv"><span>Routes</span><b>${state.routes.length}</b></div><div class="kv"><span>Operating Budget</span><b>${money(state.operatingBudget||0)}</b></div><div class="kv"><span>Opening-Day Coverage</span><b>${state.routes.filter(r=>routeCoverage(r).ok).length}/${state.routes.length}</b></div>`);
 }
 function confirmStartNewSchoolYearV115(){
- let c=summerReadinessV115();
- openModal('🏫 Start New School Year',`<div class="alert ${c.ready?'priority-green':'priority-yellow'}"><b>${c.ready?'Summer planning is ready':'Some assignments still need attention'}</b><div class="small">${c.ready?'All routes have permanent driver and bus assignments.':'You can still start, but uncovered routes will need daily coverage.'}</div></div><div class="kv"><span>Routes needing driver</span><b>${c.missingDrivers.length}</b></div><div class="kv"><span>Routes needing bus</span><b>${c.missingBuses.length}</b></div><div class="kv"><span>Operating budget</span><b>${money(state.operatingBudget||0)}</b></div><div class="actions"><button class="btn primary" onclick="startNewSchoolYearV115()">Start ${state.year} School Year</button><button class="btn" onclick="closeModal()">Keep Planning</button></div>`);
+ let c=summerReadinessV115(),F=v240SummerFleetReady?.()||{pct:100},T=v240SummerTrainingReady?.()||{due:[]};
+ let unresolved=ensureV240?.().busRequests?.filter(x=>x.status==='Open').length||0;
+ openModal('🏫 Start New School Year',`<div class="alert ${(c.ready&&F.pct>=90)?'priority-green':'priority-yellow'}"><b>${c.ready&&F.pct>=90?'Opening Day is nearly ready':'Summer planning still has open items'}</b><div class="small">Fleet ${F.pct}% ready • ${c.uncovered.length} uncovered route(s) • ${T.due.length} training item(s) • ${unresolved} open bus request(s).</div></div><div class="actions"><button class="btn primary" onclick="startNewSchoolYearV115()">Start ${state.year} School Year</button><button class="btn" onclick="v240OpenSummerPlanning()">Return to Summer Planning</button></div>`);
 }
 function summerPlanning(){ensureCalendarData();state.season='Summer';state.simMinutes=480;state.summerDaysRemaining=42;state.routes.forEach(r=>{r.temporaryBus=null;r.temporaryDriver=null});state.news.unshift({text:'Summer planning opens: inspections, hiring, training and route assignments are underway.',tone:'good'});log('Summer transportation planning started. 42 days until Opening Day.');render()}
 function openingDay(){ensureCalendarData();state.season='School';state.simMinutes=315;state.day=0;state.schoolDay=0;state.news.unshift({text:'Opening day transportation operations begin.',tone:'good'});log(`Opening Day begins at 5:15 AM for School Year ${state.year}.`);render()}
@@ -3921,7 +3918,7 @@ function yearEnd(){try{v222ProcessNewYear?.()}catch(e){console.error(e)};
    ${depHTML}
    <div class="alert priority-green"><b>New School-Year Budget</b><br>${money(newBudgetV113.totalAvailable)} is available for ${state.year}: ${money(newBudgetV113.allocation)} new appropriation${newBudgetV113.carryover?` plus ${money(newBudgetV113.carryover)} carryover`:''}.</div>
    <div class="alert"><b>Trips Reset</b><br>${archivedTripsV113} prior-year trip request${archivedTripsV113===1?' was':'s were'} archived. The active Trips page is clear for the new year.</div>
-   <div class="alert"><b>Summer Planning ${state.year}</b><br>Review vacancies, applicants, training, route assignments, fleet needs, and the new annual budget before Opening Day.</div>
+   <div class="actions"><button class="btn primary" onclick="v240OpenSummerPlanning()">Open Summer Planning</button><button class="btn" onclick="v240OpenSummerBusRequests()">Driver Bus Requests</button><button class="btn" onclick="v241OpenNewDriverProgression()">New Driver Development</button><button class="btn" onclick="v241OpenRetirementBoard()">Retirement Planning</button></div><div class="alert"><b>Summer Planning ${state.year}</b><br>Review vacancies, applicants, training, route assignments, fleet needs, and the new annual budget before Opening Day.</div>
    <div class="actions"><button class="btn primary" onclick="closeModal();goView('assignments')">Go to Summer Assignments</button><button class="btn" onclick="openSchoolYearBudgetV113()">View Annual Budget</button><button class="btn" onclick="openTripArchiveV113()">View Trip Archive</button></div>
  `);
 }
@@ -5226,7 +5223,7 @@ function runTransportationDay(){
  if(state.operatingBudget!=null)state.operatingBudget=Math.max(0,state.operatingBudget-dailyTotal);else state.budget=Math.max(0,state.budget-dailyTotal);
  state.ops15.performance={onTime:served?Math.round((served-late)/served*100):0,lateRoutes:late,roadCalls,missedStops:0,avgDelay:served?Number((totalDelay/served).toFixed(1)):0,parentComplaints:Math.max(0,late-2)};
  state.dailyStats.onTime=state.ops15.performance.onTime;
- state.simMinutes=1050;try{v2381RunGarageDay?.()}catch(e){console.error('Autonomous garage',e)};if(state.ops15)state.ops15.shopBacklog=[];
+ state.simMinutes=1050;try{v239RunGarageDay?.()}catch(e){console.error('Autonomous garage',e)};if(state.ops15)state.ops15.shopBacklog=[];
  state.ops15.lastDayReport={date:formatGameDate(),...state.ops15.performance,miles:totalMiles,fuelCost:state.ops15.dailyEconomics.fuel,laborCost:state.ops15.dailyEconomics.labor};
  opsRadioV15('DISPATCH',`Transportation day complete: ${served} routes served, ${totalMiles.toFixed(0)} route miles, ${state.ops15.performance.onTime}% on time.`);
  try{autoFuelLowBusesV106?.()}catch(e){}
@@ -5250,7 +5247,7 @@ function runTransportationDay(){
    try{v235DailyPeople?.()}catch(e){}
    try{v237DailyDriverConversation?.()}catch(e){}
    try{v237SyncGrowthRouting?.()}catch(e){}
-   try{v2381GarageSweep?.()}catch(e){}
+   try{v239GarageSweep?.()}catch(e){}
  }catch(e){
    console.error('V21.7 next-day advance failed',e);
    try{advanceCalendarDay()}catch(e2){}
@@ -6930,7 +6927,7 @@ function generateApplicant(){
   v2110MigrateApplicantsToExactPostings();
   let open=(state.hr203?.postings||[]).filter(p=>p.status==='Open' && Number(p.filled||0)<Number(p.openings||1));
   if(!open.length){
-    // V23.8.4: no hiring popup unless the Director has actually posted a job.
+    // V24.5: no hiring popup unless the Director has actually posted a job.
     return false
   }
   if(open.length===1)return v203SimulateApplicant(open[0].postingId);
@@ -7045,7 +7042,7 @@ function v22GarageAlerts(){
   if(uncovered)a.push({c:'bad',t:`${uncovered} uncovered route${uncovered===1?'':'s'}`,d:'Assign a regular or substitute driver before pull-out.'});
   if(shop)a.push({c:'warn',t:`${shop} bus${shop===1?'':'es'} unavailable`,d:'Check the shop and spare fleet.'});
   if(over)a.push({c:'warn',t:`${over} route${over===1?'':'s'} over capacity`,d:'Move stops, assign a larger bus, or create relief.'});
-  /* V23.8.4: funded vacancies stay quiet until the director opens Hiring. */
+  /* V24.5: funded vacancies stay quiet until the director opens Hiring. */
   if(!a.length)a.push({c:'good',t:'Morning operation ready',d:'No major issues currently require Director attention.'});
   return a
 }
@@ -7132,7 +7129,7 @@ function v221NeedsAttention(){
   if(uncovered)arr.push({sev:'bad',title:`${uncovered} route${uncovered===1?'':'s'} uncovered`,detail:'Assign a substitute, double-route a qualified driver, or fill the vacancy.',action:`document.querySelector('[data-view="dispatch"]')?.click()`});
   if(over)arr.push({sev:'warn',title:`${over} route${over===1?'':'s'} over capacity`,detail:'Move stops, use a larger bus, or build relief service.',action:`document.querySelector('[data-view="routes"]')?.click()`});
   if(shop)arr.push({sev:'warn',title:`${shop} bus${shop===1?'':'es'} unavailable`,detail:'Review open work orders and spare coverage.',action:`v221OpenWorkOrders()`});
-  /* V23.8.4: no automatic vacancy nag. */
+  /* V24.5: no automatic vacancy nag. */
   if(proj.over>0)arr.push({sev:'bad',title:`Projected ${money(proj.over)} over operating budget`,detail:'Current spending pace will exhaust the annual appropriation.',action:`v221OpenFinancialForecast()`});
   if(inspections)arr.push({sev:'warn',title:`${inspections} inspection item${inspections===1?'':'s'} due`,detail:'Move them into the shop plan before service is affected.',action:`v221OpenWorkOrders()`});
   return arr
@@ -7619,7 +7616,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V23.8.4 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V24.5 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7847,7 +7844,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V23.8.4 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V24.5 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8389,23 +8386,7 @@ function v228OpenShopBoard(){
     <div class="v225-card"><b>Active Repairs</b>${activeDef.length?activeDef.map((x,i)=>`<div class="v226-dvir">Bay ${i+1} • <b>Bus ${x.bus}</b> — ${x.issue}<div class="small">${x.status}${x.part?` • ${x.part}`:''}</div></div>`).join(''):'<div class="small">Shop bays available.</div>'}</div>
     <div class="v225-card"><b>Preventive Maintenance</b>${state.v228.pmSchedule.slice(0,12).map(x=>`<div class="kv"><span>Bus ${x.bus} • due ${Number(x.dueMiles).toLocaleString()} mi</span><b>${x.status}</b></div>`).join('')}</div>`)
 }
-function v228ProcessPM(){
-  ensureV228();
-  state.v228.pmSchedule.forEach(x=>{
-    if(x.status==='Complete')return;
-    let b=(state.buses||[]).find(q=>String(q.id)===String(x.bus));if(!b)return;
-    let miles=Number(b.miles||0);
-    if(miles>=x.dueMiles-500)x.status='Due Soon';
-    if(miles>=x.dueMiles && !/shop|maintenance/i.test(String(b.status||''))){
-      x.status='In Shop';b.status='Maintenance';b.liveStatus='Shop';
-      let L=state.v225.busLives[String(b.id)];if(L)L.memories.push(`${state.gameDate||''}: Scheduled preventive maintenance at ${miles.toLocaleString()} miles.`);
-    }else if(x.status==='In Shop'&&Math.random()<.55){
-      x.status='Complete';b.status='Ready';b.liveStatus='Parked / Pre-Trip';
-      let L=state.v225.busLives[String(b.id)];if(L){L.condition=Math.min(100,Number(L.condition||80)+4);L.lifetimeMaintenance+=650}
-      state.v228.pmSchedule.push({id:`PM-${b.id}-${x.dueMiles+6000}`,bus:b.id,dueMiles:x.dueMiles+6000,status:'Scheduled',bay:null})
-    }
-  })
-}
+function v228ProcessPM(){try{v239ScanFleet?.()}catch(e){}}
 function v228MoraleConsequences(){
   ensureV228();
   (state.staff||[]).forEach(d=>{
@@ -8565,7 +8546,7 @@ function v230DirectorOffice(){
        ${open?`<button class="btn primary" onclick="v2383OpenWaitingStaff()">💬 Employee Conversations (${open})</button>`:''}
        <button class="btn" onclick="v221OpenBoardAgenda?.()">🏛️ Board Agenda</button>
        <button class="btn" onclick="v221OpenBudgetForecast?.()">💰 Budget Forecast</button>
-       <button class="btn" onclick="v228OpenYearbooks()">📚 Department History</button>
+       <button class="btn primary" onclick="v241OpenInbox()">📥 Morning Inbox</button><button class="btn" onclick="v241OpenPeopleOperations()">👥 People & Operations</button><button class="btn" onclick="v242Staffing()">👔 Staffing & Organization</button><button class="btn" onclick="v243OpenWorkforce()">👥 Workforce & Leadership</button><button class="btn primary" onclick="v244DirectorDesk()">🪑 Director Desk / Computer</button><button class="btn" onclick="v228OpenYearbooks()">📚 Department History</button>
        <button class="btn" onclick="v230OpenReputation()">⭐ Reputation</button>
      </div>`)
 }
@@ -8606,7 +8587,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V23.8.4 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V24.5 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8654,24 +8635,12 @@ function v2303MaintenanceSources(busId){
   return items
 }
 function v2303SyncMaintenanceToShop(){
-  ensureV2303();
-  (state.buses||[]).forEach(b=>{
-    let items=v2303MaintenanceSources(b.id);
-    let flagged=/maintenance|shop|out of service/i.test(String(b.status||'')+' '+String(b.liveStatus||''));
-    if(items.length||flagged){
-      b.status='Maintenance';b.liveStatus='Shop';
-      if(!items.length){
-        let exists=(state.v226.defects||[]).some(x=>String(x.bus)===String(b.id)&&x.status!=='Closed');
-        if(!exists)state.v226.defects.unshift({
-          id:`SYNC-${b.id}-${Date.now()}`,date:state.gameDate||'',bus:b.id,driver:'Shop',
-          issue:'Maintenance required',ground:true,part:null,status:'Reported',
-          shopFinding:'Bus was flagged for maintenance and routed to the shop.',synced:true
-        });
-      }
-    }
-  });
+  ensureV2303?.();
+  // V24.5: the shop reacts to actual defects, work orders and due service.
+  // Merely having an old "Maintenance" status never creates a fake defect.
+  try{v239ScanFleet?.()}catch(e){}
   state.v2303.lastMaintenanceSync=String(state.gameDate||state.schoolDay||'');
-  v226SyncGarage?.();
+  v226SyncGarage?.()
 }
 function v2303ShopBuses(){
   v2303SyncMaintenanceToShop();
@@ -8702,10 +8671,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V23.8.4: legacy R handler replaced by live-day keyboard controls. */
+/* V24.5: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V23.8.4 LIVE TRANSPORTATION DAY ===== */
+/* ===== V24.5 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8816,7 +8785,7 @@ function v231Keyboard(e){
 }
 if(typeof window!=='undefined'&&!window.__v231KeyBound){
   window.__v231KeyBound=true;
-  /* V23.8.4 old keyboard listener disabled */
+  /* V24.5 old keyboard listener disabled */
 }
 
 
@@ -8830,7 +8799,7 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 
 
 
-/* ===== V23.8.4 MAINTENANCE ONLY WHEN ACTUALLY NEEDED ===== */
+/* ===== V24.5 MAINTENANCE ONLY WHEN ACTUALLY NEEDED ===== */
 function ensureV2381(){
   state.v2381=state.v2381||{cleanedLegacyMaintenance:false};
   return state.v2381
@@ -8959,7 +8928,7 @@ function v2381GarageSweep(){
   }
 }
 
-/* ===== V23.8.4 AUTONOMOUS BUS GARAGE ===== */
+/* ===== V24.5 AUTONOMOUS BUS GARAGE ===== */
 function ensureV238(){
   state.v238=state.v238||{
     jobs:{},
@@ -9116,7 +9085,7 @@ function v238OpenGarageBoard(){
   let parts=Object.entries(state.ops15?.parts||{}).map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v} on hand</b></div>`).join('');
   let orders=(state.ops15?.partOrders||[]).map(o=>`<div class="small">${o.part} × ${o.qty} • arriving in ${o.eta} day(s)</div>`).join('')||'<div class="small">No parts currently on order.</div>';
   openModal('🔧 Autonomous Bus Garage',
-    `<div class="alert priority-green"><b>The garage handles routine bus issues automatically.</b><div class="small">Mike and Cole handle repairs, PMs, inspections, and parts automatically — but only when a bus actually has a defect or reaches a maintenance threshold. You do not need to create or complete work orders.</div></div>
+    `<div class="alert priority-green"><b>The garage handles routine bus issues automatically.</b><div class="small">Mike and Cole handle every repair, oil/filter service, PM, inspection, and parts order automatically. Minor work may take one day; larger repairs can keep a bus in the shop for several days. You never need to click a bus to send it to maintenance.</div></div>
     <h3>Active Shop Work</h3>${jobs.length?jobs.map(j=>`<div class="v2303-card"><b>Bus ${j.bus}</b> — ${j.issue}<div class="small">${j.status} • repair day ${Math.min(j.progress+1,j.days)}/${j.days}${j.part?` • ${j.part}`:''}</div></div>`).join(''):'<div class="alert">✅ All buses are ready.</div>'}
     <h3>Parts Room</h3>${parts}<h4>Automatic Orders</h4>${orders}
     <h3>Recently Completed</h3>${completed.length?completed.map(j=>`<div class="small">Bus ${j.bus} — ${j.issue} • ${j.completed||''}</div>`).join(''):'<div class="small">No recent repairs.</div>'}`)
@@ -9128,7 +9097,7 @@ function v238QuietHiring(){
   return false
 }
 
-/* ===== V23.8.4 AUTOMATIC SUBSTITUTE COVERAGE ===== */
+/* ===== V24.5 AUTOMATIC SUBSTITUTE COVERAGE ===== */
 function ensureV2371(){
   state.v2371=state.v2371||{coverageLog:[],lastCoverageDay:null};
   return state.v2371
@@ -9187,7 +9156,7 @@ function v2371SilentCoverageCheck(){
   return result
 }
 
-/* ===== V23.8.4 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
+/* ===== V24.5 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
 function ensureV237(){
   state.v237=state.v237||{
     driverConversations:[],
@@ -9216,6 +9185,8 @@ function v237QueueDriverConversation(driver,kind,text){
   state.v237.driverConversations=state.v237.driverConversations.slice(0,200);
   try{v232Phone?.(`Driver stopped by: ${driver.name}`,text,'attention')}catch(e){}
   try{notify?.(`${driver.name} is waiting to talk with you.`,'decision')}catch(e){}
+  // V24.5: a conversation alert is actionable immediately instead of becoming a hidden notice.
+  try{v239PopupWaitingConversation?.()}catch(e){}
   return item
 }
 function v237GenerateDriverConversation(force=false){
@@ -9336,7 +9307,7 @@ function v237OpenGrowthRouting(){
   openModal('🏘️ New Developments & Route Growth',body)
 }
 
-/* ===== V23.8.4 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
+/* ===== V24.5 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
 const V236_DB='SchoolTransportationTycoon';
 const V236_STORE='saves';
 function ensureV236(){
@@ -9401,7 +9372,7 @@ async function v236ManualSave(){
     alert(`GAME SAVED\n\n${v236SaveSummary(snap)}`);
     return true
   }catch(e){
-    console.error('V23.8.4 manual save failed',e);
+    console.error('V24.5 manual save failed',e);
     alert('SAVE FAILED: '+(e?.message||e));
     return false
   }
@@ -9412,7 +9383,7 @@ async function v236Autosave(){
     let snap=v236Snapshot();
     await v236Put('autosave',snap);
     return true
-  }catch(e){console.warn('V23.8.4 autosave failed',e);return false}
+  }catch(e){console.warn('V24.5 autosave failed',e);return false}
 }
 async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
   if(!v236Validate(s)){if(showNotice)alert(`${source} is not a valid district save.`);return false}
@@ -9427,7 +9398,7 @@ async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
     return true
   }catch(e){
     window.__transportBooting=false;window.__v236Loading=false;
-    console.error('V23.8.4 restore failed',e);
+    console.error('V24.5 restore failed',e);
     if(showNotice)alert('LOAD FAILED: '+(e?.message||e));
     return false
   }
@@ -9505,7 +9476,7 @@ function v236AutoCoverCalloffs(){
   return {manager,uncovered}
 }
 
-/* ===== V23.8.4 INDEXEDDB PRIMARY SAVE ===== */
+/* ===== V24.5 INDEXEDDB PRIMARY SAVE ===== */
 const V2351_DB='SchoolTransportationTycoon';
 const V2351_STORE='saves';
 function v2351Db(){
@@ -9622,7 +9593,7 @@ window.autosaveGame=function(){
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
 
-/* ===== V23.8.4 SAVE REPAIR + DELEGATED OPERATIONS ===== */
+/* ===== V24.5 SAVE REPAIR + DELEGATED OPERATIONS ===== */
 function ensureV235(){
   state.v235=state.v235||{
     saveFormat:1,dispatcherLog:[],driverTouchpoints:[],interactionMilestones:{},quietVacancyPrompts:true
@@ -9675,7 +9646,7 @@ function v235SaveCurrent(showNotice=false){
     if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
     return true
   }catch(e){
-    console.error('V23.8.4 save failed',e);
+    console.error('V24.5 save failed',e);
     if(String(e?.name||'').includes('Quota')||String(e?.message||'').toLowerCase().includes('quota')){
       ['transportSave1','transportSave2','transportSave3'].forEach(k=>{
         try{
@@ -9691,7 +9662,7 @@ function v235SaveCurrent(showNotice=false){
         if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
         return true
       }catch(e2){
-        alert('Save storage is still full. V23.8.4 removed redundant old backups, but this browser still does not have enough local storage for this district.');
+        alert('Save storage is still full. V24.5 removed redundant old backups, but this browser still does not have enough local storage for this district.');
         return false
       }
     }
@@ -9772,7 +9743,7 @@ function v235DailyPeople(){
   if(Math.random()<.018)v235CreateDriverInteraction(false)
 }
 
-/* ===== V23.8.4 RELIABLE SAVES + INSTANT DAYS ===== */
+/* ===== V24.5 RELIABLE SAVES + INSTANT DAYS ===== */
 function ensureV234(){state.v234=state.v234||{lastManualSave:null,lastAutosave:null,lastDayResult:null};return state.v234}
 function v234ValidState(s){return !!(s&&Array.isArray(s.buses)&&Array.isArray(s.routes)&&(Array.isArray(s.staff)||Array.isArray(s.drivers)))}
 function v234ReadRaw(key){let raw=localStorage.getItem(key);if(!raw)return null;try{let s=JSON.parse(raw);return v234ValidState(s)?s:null}catch(e){return null}}
@@ -9796,7 +9767,7 @@ function v234LoadPrimary(){
 function v234RecoveryRows(){let rows=[['Manual Save','transportDirectorSave','transportDirectorSaveTime'],['Previous Manual','transportV234PreviousManual','transportV234PreviousManualTime'],['Autosave','transportAutosave','transportAutosaveTime'],['Slot 1','transportSave1','transportSave1Time'],['Slot 2','transportSave2','transportSave2Time'],['Slot 3','transportSave3','transportSave3Time']];return rows.map(([name,key,time])=>{let s=v234ReadRaw(key);return s?{name,key,state:s,ts:Number(localStorage.getItem(time)||0),day:Number(s.schoolDay||s.day||0),date:s.gameDate||'',staff:(s.staff||s.drivers||[]).length,buses:(s.buses||[]).length}:null}).filter(Boolean)}
 function v235RecoveryCenter(){let rows=v234RecoveryRows();openModal('🛟 Save Recovery Center',rows.length?rows.map(r=>`<div class="v233-backup"><b>${r.name}</b><div class="small">${r.date} • Day ${r.day} • ${r.staff} staff • ${r.buses} buses${r.ts?`<br>${new Date(r.ts).toLocaleString()}`:''}</div><button class="btn" onclick="v234RestoreKey('${r.key}')">Restore This Save</button></div>`).join(''):'<div class="alert">No valid saves found.</div>')}
 function v234RestoreKey(key){let s=v234ReadRaw(key);if(!s)return alert('Snapshot invalid.');window.__transportBooting=true;state=JSON.parse(JSON.stringify(s));window.__transportBooting=false;v234ManualSave();closeModal?.();render?.()}
-/* V23.8.4: legacy V23.4 save bindings disabled */
+/* V24.5: legacy V23.4 save bindings disabled */
 
 function v234RunDayInstant(){
  try{
@@ -9808,11 +9779,11 @@ function v234RunDayInstant(){
   if(d2!==d||state.gameDate!==date){ensureV234();state.v234.lastDayResult={from:date,to:state.gameDate,day:d2};v234Autosave();notify?.(`Transportation day complete. Now ${state.gameDate||''} • Day ${d2}.`,'decision')}
  }catch(e){console.error(e);alert('Transportation day could not be completed: '+(e?.message||e))}finally{window.__v234InstantDay=false}
 }
-/* V23.8.4 final save bindings */
-/* V23.8.4: legacy V23.5 save bindings disabled */
+/* V24.5 final save bindings */
+/* V24.5: legacy V23.5 save bindings disabled */
 
 
-/* ===== V23.8.4 RUN DAY / KEYBOARD REPAIR ===== */
+/* ===== V24.5 RUN DAY / KEYBOARD REPAIR ===== */
 function ensureV2331(){state.v2331=state.v2331||{lastStart:null};return state.v2331}
 function v2331CurrentDayKey(){return String(state.gameDate||state.schoolDay||'')}
 function v2331RunDay(){
@@ -9859,7 +9830,7 @@ function v2331BindKeys(){
 function v231Minute(){return Number(state.v231?.minute||330)}
 
 if(typeof window!=='undefined')setTimeout(()=>v2331BindKeys(),0);
-/* ===== V23.8.4 RELIABILITY + REAL OPERATIONS ===== */
+/* ===== V24.5 RELIABILITY + REAL OPERATIONS ===== */
 function ensureV233(){state.v233=state.v233||{absences:{},repairs:{},routeRuntime:{},tomorrow:{date:null,issues:[]},liveProcessed:{},backupMeta:{lastDay:null,lastWeek:null},employeeHistory:{}};return state.v233}
 function v233Clone(x){return JSON.parse(JSON.stringify(x))}
 function v233DateKey(){return String(state.gameDate||state.date||'')}
@@ -9886,7 +9857,7 @@ function v233ConsumeRouteFuel(busId,miles){let pct=Math.min(22,Math.max(3,Number
 function v233ProcessRouteDeparture(phase){ensureV233();v233RefreshAbsences();v233MaintainSpareAssignments();(state.routes||[]).forEach(r=>{let driver=v233RouteDriverName(r),d=v233DriverByName(driver);if(d&&(d.calledOff||d.absent))return;let busId=v233RouteBusId(r);if(!busId)return;let key=`${v233DateKey()}-${phase}-${r.id}`;if(state.v233.routeRuntime[key])return;state.v233.routeRuntime[key]={route:r.id,bus:busId,driver,phase,status:'Departed',depart:v231Minute?.()||0};let b=v233BusById(busId);if(b){b.liveStatus='Route';b.status='Route'}})}
 function v233ProcessRouteReturn(phase){ensureV233();(state.routes||[]).forEach(r=>{let key=`${v233DateKey()}-${phase}-${r.id}`,run=state.v233.routeRuntime[key];if(!run||run.status==='Returned')return;let miles=v233RouteMiles(r)/2;v233AddMileage(run.bus,miles,`${phase} route ${r.id}`);v233ConsumeRouteFuel(run.bus,miles);run.status='Returned';run.return=v231Minute?.()||0;run.miles=miles;let b=v233BusById(run.bus);if(b){b.liveStatus='Parked';b.status='Ready'}})}
 function v233FuelReturningBuses(){ensureV233();let spend=0;(state.routes||[]).forEach(r=>{let busId=v233RouteBusId(r),driver=v233RouteDriverName(r);if(busId&&v233BusFuel(busId)<55)spend+=v233FuelBus(busId,driver||'Driver','Post-route fueling')});return spend}
-function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V23.8.4 live event',key,e)}}}
+function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V24.5 live event',key,e)}}}
 function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v2371AutoCoverAll?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
 function v233TomorrowDate(){return v233ShiftDate(v233DateKey(),1)}
 function v233BuildTomorrowBoard(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233MaintainSpareAssignments();let issues=[],tom=v233TomorrowDate();(state.routes||[]).forEach(r=>{let drv=v233RouteDriverName(r),d=v233DriverByName(drv);if(!drv||!d)issues.push({level:'danger',title:`Route ${r.id} — driver coverage needed`,detail:'No active assigned driver.'});else{let a=state.v233.absences[drv];if(a&&a.through>=tom)issues.push({level:'warn',title:`Route ${r.id} — ${drv} absent`,detail:`Absence continues through ${a.through}.`})}let regular=r.bus||r.busId||r.assignedBus,rep=state.v233.repairs[String(regular)];if(rep&&!['Released','Closed'].includes(rep.status)){issues.push({level:r.tempBus?'warn':'danger',title:`Route ${r.id} — Bus ${regular} in shop`,detail:r.tempBus?`Bus ${r.tempBus} remains assigned as temporary spare.`:'No temporary spare assigned yet.'})}});Object.values(state.v233.repairs).forEach(rep=>{if(!['Released','Closed'].includes(rep.status))issues.push({level:'warn',title:`Bus ${rep.bus} — ${rep.status}`,detail:`${rep.issue}; estimated ${rep.days} day repair.`})});let trips=(state.trips||[]).filter(t=>String(t.date||'')===tom&&!/cancel/i.test(String(t.status||'')));if(trips.length)issues.push({level:'good',title:`${trips.length} trip${trips.length===1?'':'s'} scheduled`,detail:'Confirm bus and driver coverage.'});state.v233.tomorrow={date:tom,issues,generated:v233DateKey()};return state.v233.tomorrow}
@@ -9901,7 +9872,7 @@ function v233OpenBackupCenter(){let A=v233BackupCandidates();openModal('🧰 Rot
 function v233LoadBackup(type){let x=v233BackupCandidates().find(a=>a.type===type);if(!x)return alert('Backup unavailable.');try{window.__transportBooting=true;state=v233Clone(x.state);ensureV233();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();window.__transportBooting=false;localStorage.setItem('transportDirectorSave',JSON.stringify(state));localStorage.setItem('transportDirectorSaveTime',String(Date.now()));render?.();closeModal?.();notify?.(`${type} backup restored.`,'decision')}catch(e){window.__transportBooting=false;alert('Backup could not be restored: '+(e?.message||e))}}
 function v233PrepareNextDay(){ensureV233();v233RotatingBackups();v233EmployeeHistory();v233BuildTomorrowBoard()}
 
-/* ===== V23.8.4 LIVING GARAGE ===== */
+/* ===== V24.5 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -10060,7 +10031,7 @@ function v232GarageHTML(){
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V23.8.4',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V24.5',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -10330,7 +10301,7 @@ function v235RestoreSave(key){
 }
 
 
-/* V23.8.4 FINAL SAVE/LOAD BINDING */
+/* V24.5 FINAL SAVE/LOAD BINDING */
 window.saveGame=v2351Save;
 window.loadGame=v2351Load;
 window.autosaveGame=function(){
@@ -10338,10 +10309,10 @@ window.autosaveGame=function(){
   clearTimeout(window.__v2351AutoTimer);
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
-/* V23.8.4: old IndexedDB auto-restore disabled */
+/* V24.5: old IndexedDB auto-restore disabled */
 
 
-/* V23.8.4 FINAL SAVE / LOAD AUTHORITY */
+/* V24.5 FINAL SAVE / LOAD AUTHORITY */
 window.saveGame=v236ManualSave;
 window.loadGame=v236ManualLoad;
 window.autosaveGame=function(){
@@ -10352,7 +10323,7 @@ window.autosaveGame=function(){
 window.addEventListener('load',()=>setTimeout(()=>v236StartupRestore?.(),250));
 
 
-/* ===== V23.8.4 FINAL QUIET-HIRING GUARD ===== */
+/* ===== V24.5 FINAL QUIET-HIRING GUARD ===== */
 const v2382GenerateApplicantOriginal=generateApplicant;
 generateApplicant=function(){
   try{
@@ -10364,7 +10335,7 @@ generateApplicant=function(){
 };
 
 
-/* ===== V23.8.4 STAFF CONVERSATION ACCESS ===== */
+/* ===== V24.5 STAFF CONVERSATION ACCESS ===== */
 function ensureV2383(){
   state.v2383=state.v2383||{talked:{},conversationLog:[]};
   return state.v2383
@@ -10473,7 +10444,7 @@ function v2383ConversationButton(){
 }
 
 
-/* ===== V23.8.4 MAIN GARAGE CONVERSATIONS ===== */
+/* ===== V24.5 MAIN GARAGE CONVERSATIONS ===== */
 function v2384MainConversationBanner(){
   let names=v2383WaitingNames?.()||[];
   if(!names.length)return '';
@@ -10495,6 +10466,1456 @@ function v2384DirectorConversationCard(){
   }).join('')
 }
 
+
+
+/* V24.5 conversation popup bridge */
+function v239PopupWaitingConversation(){
+  try{
+    let x=(state.v227?.requests||[]).find(r=>r.status==='Open'&&r.driver&&
+      (/driver conversation/i.test(String(r.source||''))||/talk|conversation|check-in|request|feedback/i.test(String(r.type||''))) &&
+      !r.popupShownV239);
+    if(!x)return false;
+    x.popupShownV239=true;
+    setTimeout(()=>v2383TalkToStaff?.(x.driver),60);
+    return true
+  }catch(e){return false}
+}
+
+/* ===== V24.5 FULLY AUTOMATIC SERVICE DEPARTMENT ===== */
+function ensureV239(){
+  state.v239=state.v239||{lastSweep:null,serviceHistory:[]};
+  return state.v239
+}
+function v239OpenWorkOrders(busId){
+  let id=String(busId),out=[];
+  (state.v226?.defects||[]).forEach(x=>{
+    if(String(x.bus)===id&&x.status!=='Closed'&&!/maintenance required/i.test(String(x.issue||'')))
+      out.push({issue:x.issue||'DVIR defect',source:'DVIR'})
+  });
+  (state.workOrders||[]).forEach(x=>{
+    if(String(x.bus)===id&&!/closed|complete/i.test(String(x.status||''))&&!/maintenance required/i.test(String(x.issue||'')))
+      out.push({issue:x.issue||'Repair',source:'Work Order'})
+  });
+  (state.v221?.workOrders||[]).forEach(x=>{
+    if(String(x.bus)===id&&!/closed|complete/i.test(String(x.status||''))&&!/maintenance required/i.test(String(x.issue||'')))
+      out.push({issue:x.issue||'Repair',source:'Fleet Work Order'})
+  });
+  return out
+}
+function v239ScheduledPM(b){
+  try{opsEnsureBusV15?.(b)}catch(e){}
+  let due=false, dueMiles=null;
+  try{
+    let pm=opsPMDueV15?.(b);
+    if(pm?.due){due=true;dueMiles=Number(b.ops15?.nextPM||0)}
+  }catch(e){}
+  (state.v228?.pmSchedule||[]).forEach(x=>{
+    if(String(x.bus)===String(b.id)&&x.status!=='Complete'&&Number(b.miles||0)>=Number(x.dueMiles||Infinity)){
+      due=true;dueMiles=Number(x.dueMiles||dueMiles||0)
+    }
+  });
+  if(Number(b.nextPM||Infinity)<=Number(b.miles||0)){due=true;dueMiles=Number(b.nextPM)}
+  return due?{issue:'Oil & filter change / preventive maintenance',dueMiles}:null
+}
+function v239RequiredServices(b){
+  if(!b)return [];
+  try{opsEnsureBusV15?.(b)}catch(e){}
+  let list=v239OpenWorkOrders(b.id);
+  let pm=v239ScheduledPM(b);if(pm)list.push({issue:pm.issue,source:'Scheduled PM'});
+  if(Number(b.ops15?.tirePct??100)<25)list.push({issue:'Tire replacement',source:'Wear'});
+  if(Number(b.ops15?.brakePct??100)<30)list.push({issue:'Brake service',source:'Wear'});
+  if(Number(b.ops15?.inspectionDueDays??999)<=7)list.push({issue:'State inspection / inspection prep',source:'Inspection'});
+  if(b.ops15?.outOfService===true && !list.length)list.push({issue:'Out-of-service mechanical diagnosis',source:'Road Call'});
+
+  let seen=new Set();
+  return list.filter(x=>{
+    let k=String(x.issue||'').toLowerCase();
+    if(seen.has(k))return false;seen.add(k);return true
+  })
+}
+function v239DaysForServices(services){
+  let text=(services||[]).map(x=>x.issue).join(' ').toLowerCase();
+  let days=1;
+  if(/transmission|engine replacement|rear end|differential/.test(text))days=5;
+  else if(/engine|major|head gasket|fuel system/.test(text))days=4;
+  else if(/electrical|alternator|starter|coolant|air system|brake/.test(text))days=2;
+  if((services||[]).length>=3)days=Math.max(days,3);
+  if((services||[]).length>=5)days=Math.max(days,4);
+  return days
+}
+function v239PartsForServices(services){
+  let text=(services||[]).map(x=>x.issue).join(' ').toLowerCase(),parts=[];
+  if(/oil|filter|preventive|\bpm\b/.test(text))parts.push('Oil Filters');
+  if(/tire/.test(text))parts.push('Tires');
+  if(/brake/.test(text))parts.push('Brake Sets');
+  return [...new Set(parts)]
+}
+function v239BusHasActiveJob(busId){
+  let j=state.v238?.jobs?.[String(busId)];
+  return !!(j&&j.status!=='Complete')
+}
+function v239EnsureParts(parts){
+  v238EnsureOpsParts?.();
+  parts.forEach(part=>{
+    if(Number(state.ops15?.parts?.[part]||0)<=0){
+      let exists=(state.ops15?.partOrders||[]).some(o=>o.part===part);
+      if(!exists){
+        let qty=part==='Oil Filters'?16:part==='Tires'?8:6;
+        state.ops15.partOrders.push({part,qty,eta:2+Math.floor(Math.random()*2),ordered:state.gameDate||''});
+        log?.(`Garage automatically ordered ${qty} ${part}.`)
+      }
+    }
+  })
+}
+function v239ScanFleet(){
+  ensureV239?.();ensureV238?.();v238EnsureOpsParts?.();
+  (state.buses||[]).forEach(b=>{
+    let services=v239RequiredServices(b),key=String(b.id),j=state.v238.jobs[key];
+    if(!services.length){
+      if(j&&j.status!=='Complete'){delete state.v238.jobs[key]}
+      if(!/inspection due/i.test(String(b.status||''))){
+        b.status=b.route?'Ready':(b.status==='Spare'?'Spare':'Ready');
+        b.liveStatus='Parked / Pre-Trip';
+        if(b.ops15)b.ops15.outOfService=false
+      }
+      return
+    }
+
+    let issues=services.map(x=>x.issue),parts=v239PartsForServices(services);
+    if(!j||j.status==='Complete'){
+      j=state.v238.jobs[key]={
+        bus:b.id,issue:issues.join(' + '),issues,parts,
+        days:v239DaysForServices(services),progress:0,status:'Queued',
+        opened:state.gameDate||'',lastWorked:null
+      }
+    }else{
+      // If another genuine issue appears while the bus is already in the shop, add it to the same shop visit.
+      j.issues=j.issues||[j.issue];
+      issues.forEach(x=>{if(!j.issues.includes(x))j.issues.push(x)});
+      j.issue=j.issues.join(' + ');
+      j.parts=[...new Set([...(j.parts||[]),...parts])];
+      j.days=Math.max(Number(j.days||1),v239DaysForServices(j.issues.map(issue=>({issue}))))
+    }
+    v239EnsureParts(j.parts||[]);
+    b.status='Maintenance';b.liveStatus='Shop';
+    if(b.ops15)b.ops15.outOfService=true
+  })
+}
+function v239PartsAvailable(j){
+  return (j.parts||[]).every(part=>Number(state.ops15?.parts?.[part]||0)>0)
+}
+function v239FinishJob(j){
+  let b=(state.buses||[]).find(x=>String(x.id)===String(j.bus));if(!b)return;
+  (j.parts||[]).forEach(part=>{
+    if(Number(state.ops15?.parts?.[part]||0)>0)state.ops15.parts[part]--
+  });
+  let text=String((j.issues||[j.issue]).join(' ')).toLowerCase();
+  let cost=650;
+  if(/tire/.test(text))cost+=1800;
+  if(/brake/.test(text))cost+=1200;
+  if(/alternator|starter|electrical/.test(text))cost+=900;
+  if(/coolant|air system|def sensor|door mechanism/.test(text))cost+=650;
+  if(/engine|transmission|rear end|differential/.test(text))cost+=3500;
+  if(state.operatingBudget!=null)state.operatingBudget=Number(state.operatingBudget||0)-cost;
+  else if(state.budget!=null)state.budget=Number(state.budget||0)-cost;
+
+  if(b.ops15){
+    if(/tire/.test(text))b.ops15.tirePct=100;
+    if(/brake/.test(text))b.ops15.brakePct=100;
+    if(/oil|filter|preventive|\bpm\b/.test(text)){
+      b.ops15.lastPM=Number(b.miles||0);
+      b.ops15.pmInterval=Number(b.ops15.pmInterval||6000);
+      b.ops15.nextPM=Number(b.miles||0)+b.ops15.pmInterval
+    }
+    if(/inspection/.test(text))b.ops15.inspectionDueDays=365;
+    b.ops15.outOfService=false
+  }
+  if(/oil|filter|preventive|\bpm\b/.test(text))b.nextPM=Number(b.miles||0)+6000;
+  if(/inspection/.test(text))b.inspection='Current';
+
+  // Close all legacy records covered by this shop visit.
+  v238CloseLegacyMaintenance?.(b.id);
+  (state.v228?.pmSchedule||[]).forEach(x=>{
+    if(String(x.bus)===String(b.id)&&x.status!=='Complete'&&Number(b.miles||0)>=Number(x.dueMiles||Infinity)){
+      x.status='Complete';x.completed=state.gameDate||''
+    }
+  });
+  // Make sure there is a future PM reminder after an oil/filter service.
+  if(/oil|filter|preventive|\bpm\b/.test(text)&&state.v228?.pmSchedule){
+    let next=Number(b.miles||0)+6000;
+    if(!state.v228.pmSchedule.some(x=>String(x.bus)===String(b.id)&&x.status!=='Complete'&&Number(x.dueMiles)===next))
+      state.v228.pmSchedule.push({id:`PM-${b.id}-${next}`,bus:b.id,dueMiles:next,status:'Scheduled',bay:null})
+  }
+
+  b.condition=Math.min(100,Number(b.condition||85)+Math.max(4,(j.issues||[]).length*2));
+  b.status=b.route?'Ready':'Spare';b.liveStatus='Parked / Pre-Trip';
+  j.status='Complete';j.completed=state.gameDate||'';
+  state.v238.shopLog.unshift({date:state.gameDate||'',bus:b.id,issue:j.issue,result:'Completed',days:j.days,cost});
+  state.v238.shopLog=state.v238.shopLog.slice(0,250);
+  state.v239.serviceHistory.unshift({date:state.gameDate||'',bus:b.id,services:[...(j.issues||[j.issue])],days:j.days,cost});
+  state.v239.serviceHistory=state.v239.serviceHistory.slice(0,400);
+  log?.(`Service department completed Bus ${b.id}: ${(j.issues||[j.issue]).join(', ')}.`)
+}
+function v239RunGarageDay(){
+  ensureV239?.();ensureV238?.();
+  v238ProcessParts?.();
+  v239ScanFleet();
+  let cap=v238MechanicCapacity?.()||2;
+  let active=Object.values(state.v238.jobs||{}).filter(j=>j.status!=='Complete');
+  active.sort((a,b)=>String(a.opened||'').localeCompare(String(b.opened||'')));
+  let worked=0;
+  for(let j of active){
+    if(worked>=cap)break;
+    v239EnsureParts(j.parts||[]);
+    if(!v239PartsAvailable(j)){j.status='Waiting for Parts';continue}
+    j.status='In Shop';j.progress=Number(j.progress||0)+1;j.lastWorked=state.gameDate||'';worked++;
+    if(j.progress>=Number(j.days||1))v239FinishJob(j)
+  }
+  state.v238.lastShopDay=state.gameDate||String(state.schoolDay||'');
+  state.v239.lastSweep=state.v238.lastShopDay;
+  return {worked,remaining:Object.values(state.v238.jobs||{}).filter(j=>j.status!=='Complete').length}
+}
+function v239GarageSweep(){
+  ensureV239?.();ensureV238?.();
+  v238ProcessParts?.();
+  v239ScanFleet();
+  if(state.v238.lastShopDay!==state.gameDate)v239RunGarageDay()
+}
+
+
+try{setTimeout(()=>{v239ScanFleet?.();v239PopupWaitingConversation?.();render?.()},250)}catch(e){}
+
+
+/* ===== V24.5 TRIPS + SUMMER PLANNING OVERHAUL ===== */
+function ensureV240(){
+  state.v240=state.v240||{
+    tripSignups:{},tripHistory:[],summer:{week:0,requestsGenerated:false,trainingScheduled:false},
+    busRequests:[],openingLineups:[]
+  };
+  return state.v240
+}
+function v240Num(x,d=0){let n=Number(x);return Number.isFinite(n)?n:d}
+function v240TimeMinutes(s){
+  let m=String(s||'').match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);if(!m)return 0;
+  let h=Number(m[1]),min=Number(m[2]),ap=String(m[3]||'').toUpperCase();
+  if(ap==='PM'&&h<12)h+=12;if(ap==='AM'&&h===12)h=0;return h*60+min
+}
+function v240TripPeople(t){
+  let students=v240Num(t.students,t.passengers||0),adults=v240Num(t.adults,Math.max(2,Math.ceil(students/20)));
+  return {students,adults,total:students+adults}
+}
+function v240BusCapacity(b){
+  return Math.max(0,v240Num(b.capacity,b.seats||b.passengers||66)-
+    (v240Num(b.wheelchairPositions,0)*2))
+}
+function v240TripAccessible(t){return v240Num(t.wheelchairs,0)>0||t.accessible===true}
+function v240TripDuringRouteWindow(t){
+  let dep=v240TimeMinutes(t.depart),ret=v240TimeMinutes(t.return);
+  return dep>=510 && ret<=840; // 8:30 AM through 2:00 PM
+}
+function v240TripBusCandidates(t){
+  let accessible=v240TripAccessible(t);
+  return (state.buses||[]).filter(b=>{
+    if(/maintenance|inspection due|shop/i.test(String(b.status||'')+' '+String(b.liveStatus||'')))return false;
+    if(accessible&&!b.wheelchairLift)return false;
+    return v240BusCapacity(b)>0
+  }).sort((a,b)=>{
+    let as=(a.designation==='Trip Bus'?0:a.designation==='Spare'?1:2);
+    let bs=(b.designation==='Trip Bus'?0:b.designation==='Spare'?1:2);
+    return as-bs || v240BusCapacity(b)-v240BusCapacity(a)
+  })
+}
+function v240TripDriverCandidates(t){
+  let signups=(ensureV240().tripSignups[String(t.id)]||[]);
+  let date=t.isoDate||t.date;
+  let used=new Set((state.trips||[]).filter(x=>x.id!==t.id&&['Approved','Scheduled'].includes(x.status)&&(x.isoDate||x.date)===date)
+    .flatMap(x=>x.drivers||[x.driver]).filter(Boolean));
+  let all=(state.staff||[]).filter(s=>!used.has(s.name)&&s.trip!==false&&!/retired|resigned|terminated/i.test(String(s.status||'')));
+  all.sort((a,b)=>{
+    let av=signups.includes(a.name)?0:1,bv=signups.includes(b.name)?0:1;
+    let as=/substitute/i.test(String(a.status||a.role||''))?0:1,bs=/substitute/i.test(String(b.status||b.role||''))?0:1;
+    return av-bv||as-bs||v240Num(b.years)-v240Num(a.years)
+  });
+  return all
+}
+function v240OwnBusForDriver(name){
+  let r=(state.routes||[]).find(x=>x.driver===name);
+  return r?(state.buses||[]).find(b=>String(b.id)===String(r.bus)):null
+}
+function v240PlanTrip(t,commit=false){
+  let P=v240TripPeople(t),need=P.total,accessible=v240TripAccessible(t),buses=[],drivers=[];
+  let candidates=v240TripBusCandidates(t),driverPool=v240TripDriverCandidates(t),signups=ensureV240().tripSignups[String(t.id)]||[];
+  let usedBus=new Set(),usedDriver=new Set();
+
+  // Daytime volunteers can use their own route bus if the trip returns before PM routes.
+  if(v240TripDuringRouteWindow(t)){
+    for(let name of signups){
+      let d=driverPool.find(x=>x.name===name),own=v240OwnBusForDriver(name);
+      if(!d||!own||usedBus.has(String(own.id)))continue;
+      if(accessible&&!own.wheelchairLift)continue;
+      buses.push(own);drivers.push(d);usedBus.add(String(own.id));usedDriver.add(name);
+      need-=v240BusCapacity(own);
+      if(need<=0)break
+    }
+  }
+  for(let b of candidates){
+    if(need<=0)break;if(usedBus.has(String(b.id)))continue;
+    let d=driverPool.find(x=>!usedDriver.has(x.name));if(!d)break;
+    buses.push(b);drivers.push(d);usedBus.add(String(b.id));usedDriver.add(d.name);need-=v240BusCapacity(b)
+  }
+  let ok=need<=0&&drivers.length===buses.length&&buses.length>0;
+  let plan={ok,buses,drivers,neededSeats:P.total,remainingSeats:Math.max(0,need),people:P,accessible};
+  if(commit&&ok){
+    let cost=Math.round(120+buses.length*95+v240Num(t.tripMiles||destinationTripMiles?.(t.destination),50)*buses.length*1.25);
+    if(state.operatingBudget!=null&&state.operatingBudget<cost)return {...plan,ok:false,reason:`Need ${money(cost)} operating funds`};
+    if(state.operatingBudget!=null)state.operatingBudget-=cost;
+    t.status='Approved';t.buses=buses.map(b=>b.id);t.bus=t.buses[0];t.drivers=drivers.map(d=>d.name);t.driver=t.drivers[0];
+    t.students=P.students;t.adults=P.adults;t.passengers=P.total;t.busCount=buses.length;
+    t.autoApproved=true;t.autoApprovalCost=cost;t.autoApprovalNote=`${buses.length} bus${buses.length===1?'':'es'} assigned`;
+    t.tripMiles=t.tripMiles||destinationTripMiles?.(t.destination)||50;
+    t.assignments=buses.map((b,i)=>({bus:b.id,driver:drivers[i]?.name||'TBD',ownBus:v240OwnBusForDriver(drivers[i]?.name)?.id===b.id}));
+    log?.(`${t.type} planned: ${P.total} riders, ${buses.length} bus${buses.length===1?'':'es'}, ${drivers.map(d=>d.name).join(', ')}.`);
+    autosaveGame?.()
+  }
+  return plan
+}
+function v240AutoPlanPendingTrips(){
+  (state.trips||[]).filter(t=>t.status==='Pending').forEach(t=>{
+    let p=v240PlanTrip(t,true);
+    if(!p.ok)t.autoApprovalNote=p.reason||`Need ${p.remainingSeats} more seats / additional driver coverage`
+  })
+}
+function v240ToggleTripSignup(id,name){
+  ensureV240();let k=String(id),a=state.v240.tripSignups[k]||[];
+  if(a.includes(name))a=a.filter(x=>x!==name);else a.push(name);
+  state.v240.tripSignups[k]=a;autosaveGame?.();v240OpenTrip(id)
+}
+function v240OpenTrip(id){
+  ensureV240();let t=(state.trips||[]).find(x=>String(x.id)===String(id));if(!t)return;
+  let P=v240TripPeople(t),plan=v240PlanTrip(t,false),signups=state.v240.tripSignups[String(t.id)]||[];
+  let drivers=(state.staff||[]).filter(s=>s.trip!==false&&!/retired|resigned|terminated/i.test(String(s.status||'')));
+  openModal(`🚌 Trip Plan — ${t.type}`,`
+    <div class="alert"><b>${t.school}</b><div class="small">${t.date||t.isoDate||''} • ${t.depart}–${t.return} • ${t.destination}</div></div>
+    <div class="detail">
+      <div class="kv"><span>Students</span><b>${P.students}</b></div>
+      <div class="kv"><span>Adults / Chaperones</span><b>${P.adults}</b></div>
+      <div class="kv"><span>Total Riders</span><b>${P.total}</b></div>
+      <div class="kv"><span>Wheelchair Positions Needed</span><b>${v240Num(t.wheelchairs,0)}</b></div>
+      <div class="kv"><span>Recommended Buses</span><b>${plan.ok?plan.buses.length:'Need more capacity'}</b></div>
+    </div>
+    ${t.assignments?.length?`<h3>Assigned Convoy</h3>${t.assignments.map((a,i)=>`<div class="project-card"><b>Bus ${a.bus} — ${a.driver}</b><div class="small">${a.ownBus?'Driver is using their regular route bus':'Trip / spare bus'}${i===0&&t.assignments.length>1?' • Lead bus':''}</div></div>`).join('')}`:''}
+    <h3>Driver Trip Sign-Up</h3>
+    <div class="small">Daytime regular-route drivers may volunteer and use their own bus when the trip returns before PM routes. Substitute and trip drivers can also volunteer.</div>
+    ${drivers.map(d=>`<div class="kv"><span>${d.name} • ${d.years||0} yrs${v240OwnBusForDriver(d.name)?` • Bus ${v240OwnBusForDriver(d.name).id}`:''}</span>
+      <button class="btn ${signups.includes(d.name)?'primary':''}" onclick="v240ToggleTripSignup('${t.id}','${String(d.name).replace(/'/g,"\\'")}')">${signups.includes(d.name)?'Signed Up ✓':'Sign Up'}</button></div>`).join('')}
+    <div class="actions"><button class="btn primary" onclick="v240ApproveTrip('${t.id}')">Auto-Build Trip Plan</button></div>
+  `)
+}
+function v240ApproveTrip(id){
+  let t=(state.trips||[]).find(x=>String(x.id)===String(id));if(!t)return;
+  let p=v240PlanTrip(t,true);
+  if(!p.ok)return openModal('Trip Still Needs Coverage',`<div class="alert priority-yellow"><b>${p.reason||'Not enough bus/driver capacity yet.'}</b><div class="small">${p.remainingSeats||0} seats remain uncovered.</div></div>`);
+  closeModal?.();render?.()
+}
+function renderTrips(){
+  if(!$('tripGrid'))return;ensureUXData?.();ensureV240();v240AutoPlanPendingTrips();
+  $('tripGrid').innerHTML=`<div class="alert priority-green" style="grid-column:1/-1"><b>🚌 Trip Operations</b><div class="small">Passenger counts determine how many buses are required. Drivers can volunteer, daytime drivers can use their own bus when it returns before PM routes, and multi-bus trips operate as convoys.</div><div class="actions"><button class="btn" onclick="generateTrip()">Generate Trip Request</button><button class="btn" onclick="openTripArchiveV113()">Prior-Year Archive</button></div></div>`+
+  (state.trips||[]).map(t=>{
+    let P=v240TripPeople(t),n=t.busCount||t.buses?.length||0;
+    return `<div class="card"><span class="trip-status ${String(t.status||'Pending').toLowerCase()}">${t.status||'Pending'}</span><b>${t.school}</b><div>${t.type}</div>
+    <div class="small">${t.date||t.isoDate||''} • ${t.depart}–${t.return}<br>📍 ${t.destination}<br>👧 ${P.students} students + ${P.adults} adults = <b>${P.total} riders</b>${v240TripAccessible(t)?` • ♿ ${v240Num(t.wheelchairs)} wheelchair`:''}</div>
+    <div class="small" style="margin-top:7px">${n?`🚌 ${n} bus${n===1?'':'es'} • ${(t.assignments||[]).map(a=>`Bus ${a.bus}/${a.driver}`).join(' • ')}`:`${t.autoApprovalNote||'Planning resources...'}`}</div>
+    <div class="actions"><button class="btn primary" onclick="v240OpenTrip('${t.id}')">Open Trip / Driver Sign-Up</button></div></div>`
+  }).join('')
+}
+function generateTrip(){
+  ensureRealCalendar?.();ensureV240();
+  let opts=[
+    ['Edgewood Middle School','Girls Basketball','Fort Wayne',34,5,'9:00 AM','1:30 PM',0],
+    ['Lincoln Elementary','Kindergarten Zoo Trip','Fort Wayne Children’s Zoo',64,8,'8:30 AM','2:00 PM',0],
+    ['Warsaw High School','Band Competition','Indianapolis',116,12,'7:00 AM','8:30 PM',0],
+    ['Harrison Elementary','4th Grade History Trip','State Museum',72,8,'8:15 AM','5:00 PM',0],
+    ['Warsaw High School','Academic Team','South Bend',21,4,'9:00 AM','3:30 PM',0],
+    ['Gateway Education Center','Community Skills Trip','Fort Wayne',14,5,'9:15 AM','1:00 PM',2],
+    ['Warsaw High School','Football Away Game','Mishawaka',86,10,'3:30 PM','11:00 PM',0],
+    ['Lakeview Middle School','8th Grade Career Day','Fort Wayne',132,14,'8:45 AM','2:00 PM',0]
+  ];
+  let o=opts[Math.floor(Math.random()*opts.length)],id=Math.max(0,...(state.trips||[]).map(t=>v240Num(t.id)))+1;
+  let d=parseGameDate?.()||new Date();d.setUTCDate(d.getUTCDate()+4+Math.floor(Math.random()*18));
+  while(d.getUTCDay()===0||d.getUTCDay()===6)d.setUTCDate(d.getUTCDate()+1);
+  let iso=isoDateUTC?.(d)||d.toISOString().slice(0,10),label=new Intl.DateTimeFormat('en-US',{timeZone:'UTC',month:'short',day:'numeric'}).format(d);
+  state.trips=state.trips||[];
+  state.trips.push({id,school:o[0],type:o[1],destination:o[2],date:label,isoDate:iso,depart:o[5],return:o[6],students:o[3],adults:o[4],passengers:o[3]+o[4],wheelchairs:o[7],status:'Pending',tripMiles:destinationTripMiles?.(o[2])||50});
+  log?.(`New trip request: ${o[1]} — ${o[3]} students and ${o[4]} adults.`);
+  v240AutoPlanPendingTrips();autosaveGame?.();render?.()
+}
+// Keep legacy approval calls compatible with the new planner.
+function autoApproveTripV105(id,quiet=false){let t=(state.trips||[]).find(x=>String(x.id)===String(id));if(!t||t.status!=='Pending')return false;let p=v240PlanTrip(t,true);if(!p.ok)t.autoApprovalNote=p.reason||`Need ${p.remainingSeats} more seats / coverage`;return p.ok}
+function autoApprovePendingTripsV105(){v240AutoPlanPendingTrips()}
+function approveTrip(id){v240ApproveTrip(id)}
+
+/* ----- Summer planning ----- */
+function v240DriverCurrentBus(d){
+  let r=(state.routes||[]).find(x=>x.driver===d.name);
+  return r?(state.buses||[]).find(b=>String(b.id)===String(r.bus)):null
+}
+function v240GenerateSummerBusRequests(force=false){
+  ensureV240();if(state.v240.summer.requestsGenerated&&!force)return state.v240.busRequests;
+  state.v240.busRequests=[];
+  let active=(state.staff||[]).filter(s=>!/substitute|retired|resigned|terminated/i.test(String(s.status||'')));
+  active.forEach((d,i)=>{
+    let b=v240DriverCurrentBus(d);if(!b)return;
+    let age=Math.max(0,(Number(String(state.year).match(/\d{4}/)?.[0])||2027)-v240Num(b.year,2020));
+    let wantsNew=age>=7||v240Num(b.condition,90)<72||(i%4===1);
+    let wantsKeep=!wantsNew&&(i%3!==2);
+    let request=wantsNew?'Would like to be considered for a newer bus next year.':
+      wantsKeep?`Would like to keep Bus ${b.id} next year.`:`Is open to whatever bus best fits the route.`;
+    state.v240.busRequests.push({
+      id:`BR-${state.year}-${d.name}`,driver:d.name,currentBus:b.id,seniority:v240Num(d.years),
+      request,type:wantsNew?'Newer':wantsKeep?'Keep':'Flexible',status:'Open'
+    })
+  });
+  state.v240.summer.requestsGenerated=true;return state.v240.busRequests
+}
+function v240FindNewerBus(req){
+  let current=(state.buses||[]).find(b=>String(b.id)===String(req.currentBus));
+  let assigned=new Set((state.routes||[]).map(r=>String(r.bus)).filter(Boolean));
+  let candidates=(state.buses||[]).filter(b=>!assigned.has(String(b.id))&&!/maintenance|inspection due/i.test(String(b.status||'')) &&
+    Number(b.year||0)>Number(current?.year||0) && v240BusCapacity(b)>=v240BusCapacity(current||{}));
+  return candidates.sort((a,b)=>Number(b.year)-Number(a.year)||Number(b.condition||0)-Number(a.condition||0))[0]||null
+}
+function v240ResolveBusRequest(id,choice){
+  let r=ensureV240().busRequests.find(x=>x.id===id);if(!r)return;
+  let route=(state.routes||[]).find(x=>x.driver===r.driver),d=(state.staff||[]).find(x=>x.name===r.driver);
+  if(choice==='Keep'){
+    r.status='Approved — Keep Current'; if(d)d.morale=Math.min(100,v240Num(d.morale,85)+3)
+  }else if(choice==='Newer'){
+    let b=v240FindNewerBus(r);
+    if(!b){r.status='Waitlist — No suitable newer bus available';if(d)d.morale=Math.max(40,v240Num(d.morale,85)-1)}
+    else{
+      let old=route?.bus;if(route)route.bus=b.id;r.newBus=b.id;r.status=`Approved — Bus ${b.id}`;
+      if(d){d.preferredBus=b.id;d.morale=Math.min(100,v240Num(d.morale,85)+5)}
+      log?.(`${r.driver} assigned Bus ${b.id} for next year${old?` (from Bus ${old})`:''}.`)
+    }
+  }else{r.status='Review Later'}
+  autosaveGame?.();v240OpenSummerBusRequests()
+}
+function v240OpenSummerBusRequests(){
+  let R=v240GenerateSummerBusRequests();
+  openModal('🚌 Driver Bus Requests — Summer',`
+    <div class="alert"><b>Drivers have individual preferences.</b><div class="small">Some want to keep a familiar bus, some want a newer one, and some are flexible. Seniority, route needs, safety, and available fleet all matter.</div></div>
+    ${R.map(r=>`<div class="project-card"><b>${r.driver} — ${r.seniority} years</b><div class="small">Current Bus ${r.currentBus} • ${r.request}<br>Status: ${r.status}</div>
+      ${r.status==='Open'?`<div class="actions"><button class="btn primary" onclick="v240ResolveBusRequest('${r.id}','Keep')">Keep Current Bus</button><button class="btn" onclick="v240ResolveBusRequest('${r.id}','Newer')">Consider Newer Bus</button><button class="btn" onclick="v240ResolveBusRequest('${r.id}','Later')">Review Later</button></div>`:''}</div>`).join('')}
+  `)
+}
+function v228OpenBusRequests(){v240OpenSummerBusRequests()}
+function v228GenerateBusRequests(){v240GenerateSummerBusRequests(true);v240OpenSummerBusRequests()}
+
+function v240SummerFleetReady(){
+  let buses=state.buses||[],ready=0;
+  buses.forEach(b=>{if(!v239RequiredServices?.(b)?.length&&!v239BusHasActiveJob?.(b.id))ready++});
+  return {ready,total:buses.length,pct:buses.length?Math.round(ready/buses.length*100):100}
+}
+function v240SummerTrainingReady(){
+  let active=(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||'')));
+  let due=active.filter(s=>{
+    let t=s.training||{};return Object.values(t).some(v=>/due|needs|expired/i.test(String(v)))
+  });
+  return {ready:active.length-due.length,total:active.length,due}
+}
+function v240SummerPrepBuses(){
+  (state.buses||[]).forEach((b,i)=>{
+    b.summerPrep=b.summerPrep||{cleaned:false,ac:false,cameras:false,fluid:false};
+    // service department automatically completes inspections/prep as weeks progress
+    if(state.v240.summer.week>=1)b.summerPrep.cleaned=true;
+    if(state.v240.summer.week>=2){b.summerPrep.ac=true;b.summerPrep.cameras=true}
+    if(state.v240.summer.week>=3)b.summerPrep.fluid=true;
+  })
+}
+function v240ScheduleAnnualTraining(){
+  ensureV240();(state.staff||[]).forEach(s=>{
+    s.training=s.training||{};
+    ['cdl','schoolBus','annualSafety','evacuation','studentMgmt','physical'].forEach(k=>{
+      if(/due|needs|expired|recommended/i.test(String(s.training[k]||'')))s.training[k]='Scheduled / Summer'
+    })
+  });
+  state.v240.summer.trainingScheduled=true;autosaveGame?.();v240OpenSummerPlanning()
+}
+function v240CompleteSummerTraining(){
+  (state.staff||[]).forEach(s=>{
+    if(s.training)Object.keys(s.training).forEach(k=>{if(/scheduled|due|needs|expired|recommended/i.test(String(s.training[k])))s.training[k]='Current'})
+  })
+}
+function v240AdvanceSummerWeek(){
+  ensureV240();state.v240.summer.week=Math.min(6,v240Num(state.v240.summer.week)+1);
+  // Five shop days occur automatically each summer week.
+  for(let i=0;i<5;i++){try{state.v238.lastShopDay=null;v239RunGarageDay?.()}catch(e){}}
+  v240SummerPrepBuses();
+  if(state.v240.summer.week>=2&&state.v240.summer.trainingScheduled)v240CompleteSummerTraining();
+  state.summerDaysRemaining=Math.max(0,v240Num(state.summerDaysRemaining,42)-7);
+  log?.(`Summer planning advanced to week ${state.v240.summer.week}. Garage, training, cleaning and fleet prep continued automatically.`);
+  autosaveGame?.();v240OpenSummerPlanning()
+}
+function v240OpeningLineup(){
+  ensureV240();
+  let rows=(state.routes||[]).map(r=>{
+    let b=(state.buses||[]).find(x=>String(x.id)===String(r.bus));
+    return {route:r.id,driver:r.driver||'OPEN',bus:r.bus||'OPEN',busYear:b?.year||'',school:r.school||r.elem||r.hs||''}
+  });
+  openModal('🏫 Opening Day Lineup',`
+    <div class="alert ${rows.every(x=>x.driver!=='OPEN'&&x.bus!=='OPEN')?'priority-green':'priority-yellow'}"><b>${rows.filter(x=>x.driver!=='OPEN'&&x.bus!=='OPEN').length}/${rows.length} routes ready</b><div class="small">Final driver → route → bus assignments for Opening Day.</div></div>
+    ${rows.map(x=>`<div class="kv"><span>Route ${x.route} • ${x.school||'District route'}</span><b>${x.driver} → ${x.bus==='OPEN'?'NO BUS':`Bus ${x.bus}${x.busYear?` (${x.busYear})`:''}`}</b></div>`).join('')}
+  `)
+}
+function v240OpenSummerPlanning(){
+  ensureV240();v240GenerateSummerBusRequests();v240SummerPrepBuses();
+  let F=v240SummerFleetReady(),T=v240SummerTrainingReady(),A=summerReadinessV115?.()||{ready:false,uncovered:[]};
+  let openReq=state.v240.busRequests.filter(x=>x.status==='Open').length;
+  openModal(`☀️ Summer Planning — Week ${state.v240.summer.week} of 6`,`
+    <div class="alert priority-green"><b>Transportation summer is active.</b><div class="small">The garage handles maintenance, oil changes, inspections, AC, cameras, cleaning and repairs automatically. You focus on staffing, route/bus assignments and major decisions.</div></div>
+    <div class="detail">
+      <div class="kv"><span>Fleet Service Ready</span><b>${F.ready}/${F.total} • ${F.pct}%</b></div>
+      <div class="kv"><span>Driver/Bus Route Assignments</span><b>${A.ready?'READY':`${A.uncovered.length} route(s) open`}</b></div>
+      <div class="kv"><span>Annual Training</span><b>${T.ready}/${T.total} current</b></div>
+      <div class="kv"><span>Driver Bus Requests</span><b>${openReq} waiting</b></div>
+      <div class="kv"><span>Opening Day</span><b>${state.summerDaysRemaining??42} days away</b></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="v240AdvanceSummerWeek()">Advance Summer Week</button>
+      <button class="btn" onclick="v240OpenSummerBusRequests()">Driver Bus Requests</button>
+      <button class="btn" onclick="v240ScheduleAnnualTraining()">Schedule Annual Training</button>
+      <button class="btn" onclick="v238OpenGarageBoard()">Garage Readiness</button>
+      <button class="btn" onclick="goView('assignments');closeModal()">Route / Bus Assignments</button>
+      <button class="btn" onclick="v240OpeningLineup()">Opening Day Lineup</button>
+      <button class="btn" onclick="confirmStartNewSchoolYearV115()">Start New School Year</button>
+    </div>
+  `)
+}
+function summerPlanning(){
+  ensureCalendarData?.();ensureV240();
+  state.season='Summer';state.summerMode=true;state.simMinutes=480;state.summerDaysRemaining=42;
+  state.v240.summer={week:0,requestsGenerated:false,trainingScheduled:false};
+  state.routes.forEach(r=>{r.temporaryBus=null;r.temporaryDriver=null});
+  v240GenerateSummerBusRequests(true);v240SummerPrepBuses();v239ScanFleet?.();
+  state.news?.unshift({text:'Summer planning opens: fleet prep, driver requests, training and route assignments are underway.',tone:'good'});
+  log?.('Summer transportation planning started. Driver bus requests and fleet prep are active.');
+  render?.()
+}
+
+
+/* ===== V24.5 PEOPLE + DIRECTOR OPERATIONS ===== */
+function ensureV241(){
+  state.v241=state.v241||{
+    inbox:[],lastInboxDay:null,rideAlongs:[],evaluations:[],driverBusHistory:[],
+    trainees:[],retirementPlans:[],milestones:[],relationships:{}
+  };
+  return state.v241
+}
+function v241Key(){return String(state.gameDate||state.schoolDay||state.day||'today')}
+function v241Staff(name){return (state.staff||[]).find(x=>x.name===name)}
+function v241Bus(id){return (state.buses||[]).find(x=>String(x.id)===String(id))}
+function v241RouteForDriver(name){return (state.routes||[]).find(x=>x.driver===name)}
+function v241AddInbox(from,subject,text,type='info',action=null){
+  ensureV241();
+  let exists=state.v241.inbox.some(x=>x.date===v241Key()&&x.subject===subject&&x.from===from);
+  if(exists)return;
+  state.v241.inbox.unshift({id:`IN-${Date.now()}-${Math.random()}`,date:v241Key(),from,subject,text,type,action,status:'Unread'});
+  state.v241.inbox=state.v241.inbox.slice(0,100)
+}
+function v241GenerateMorningInbox(force=false){
+  ensureV241();let key=v241Key();
+  if(state.v241.lastInboxDay===key&&!force)return;
+  state.v241.lastInboxDay=key;
+
+  // Garage status: mostly informational because Mike handles routine work.
+  let jobs=Object.values(state.v238?.jobs||{}).filter(j=>j.status!=='Complete');
+  if(jobs.length){
+    let j=jobs[0];
+    v241AddInbox('Mike Evans','Garage morning update',
+      `${jobs.length} bus${jobs.length===1?' is':'es are'} in active shop work. Bus ${j.bus}: ${j.issue}. The garage has it handled${Number(j.days||1)>1?` and expects about ${j.days} service days`:''}.`,'handled')
+  }
+
+  // Routing growth escalation.
+  let over=(state.routes||[]).find(r=>{
+    let riders=(state.students||[]).filter(s=>String(s.route)===String(r.id)&&s.status!=='Inactive').length;
+    let b=v241Bus(r.bus);return b&&riders>v240BusCapacity?.(b)
+  });
+  if(over)v241AddInbox('Marcus Reed','Route capacity decision',`Route ${over.id} is now over its assigned bus capacity. I have routing options ready for you.`,'decision','routing');
+
+  // Conversation escalation.
+  let waiting=v2383WaitingNames?.()||[];
+  if(waiting.length)v241AddInbox('Jenna Price','Employee waiting to see you',`${waiting[0]} asked to speak with you when you have a minute.`,'decision','conversation');
+
+  // Periodic ride-along/evaluation suggestions.
+  let drivers=(state.staff||[]).filter(s=>v241RouteForDriver(s.name)&&!/substitute/i.test(String(s.status||'')));
+  if(drivers.length){
+    let idx=(Number(state.schoolDay||state.day||0)+3)%drivers.length,d=drivers[idx];
+    if(Number(state.schoolDay||0)%18===7)v241AddInbox('Terry Lawson','Ride-along opportunity',`I can ride Route ${v241RouteForDriver(d.name)?.id} with ${d.name} this week and give you a route/driver report.`,'decision','ridealong');
+    if(Number(state.schoolDay||0)%30===12)v241AddInbox('Terry Lawson','Driver evaluation due',`${d.name} is due for a periodic behind-the-wheel evaluation.`,'decision','evaluation')
+  }
+
+  // New driver trainee update.
+  let trainee=state.v241.trainees.find(x=>!['Route Ready','Withdrawn'].includes(x.stage));
+  if(trainee)v241AddInbox('Terry Lawson','New driver training',`${trainee.name} is currently at the ${trainee.stage} stage. ${trainee.next||'Training is progressing.'}`,'handled','training');
+
+  // Retirement planning becomes visible, not sudden.
+  let retire=state.v241.retirementPlans.find(x=>x.status==='Planning');
+  if(retire)v241AddInbox('Jenna Price','Retirement planning',`${retire.name} is planning to retire ${retire.when}. We should prepare recognition, route transition, and a final-day plan.`,'decision','retirement')
+}
+function v241OpenInbox(){
+  ensureV241();v241GenerateMorningInbox();
+  let rows=state.v241.inbox.filter(x=>x.date===v241Key());
+  openModal('📥 Transportation Director Morning Inbox',`
+    <div class="alert priority-green"><b>${rows.filter(x=>x.status==='Unread').length} new item${rows.filter(x=>x.status==='Unread').length===1?'':'s'} this morning</b><div class="small">Routine work is handled by your staff. Items marked Decision need your attention; Handled items are informational.</div></div>
+    ${rows.length?rows.map(x=>`<div class="project-card"><span class="trip-status ${x.type==='decision'?'pending':'approved'}">${x.type==='decision'?'DECISION':'HANDLED'}</span><b>${x.from} — ${x.subject}</b><div class="small">${x.text}</div><div class="actions">${x.action?`<button class="btn primary" onclick="v241InboxAction('${x.id}')">Open</button>`:''}<button class="btn" onclick="v241MarkInbox('${x.id}')">${x.status==='Read'?'Read ✓':'Mark Read'}</button></div></div>`).join(''):'<div class="alert">Quiet morning. Your staff has routine operations handled.</div>'}
+  `)
+}
+function v241MarkInbox(id){let x=ensureV241().inbox.find(i=>i.id===id);if(x)x.status='Read';v241OpenInbox()}
+function v241InboxAction(id){
+  let x=ensureV241().inbox.find(i=>i.id===id);if(!x)return;x.status='Read';closeModal?.();
+  if(x.action==='conversation')return v2383OpenWaitingStaff?.();
+  if(x.action==='ridealong')return v241OpenRideAlongBoard();
+  if(x.action==='evaluation')return v241OpenEvaluationBoard();
+  if(x.action==='training')return v241OpenNewDriverProgression();
+  if(x.action==='retirement')return v241OpenRetirementBoard();
+  if(x.action==='leadership')return v243OpenLeadershipMeeting?.();
+  if(x.action==='incident')return v244IncidentCenter?.();
+  if(x.action==='compliance')return v245Compliance?.();
+  if(x.action==='routing')return v237OpenGrowthRouting?.()
+}
+
+/* ----- Ride Alongs ----- */
+function v241RideAlongDriver(name){
+  ensureV241();let d=v241Staff(name),r=v241RouteForDriver(name);if(!d||!r)return;
+  let b=v241Bus(r.bus),riders=(state.students||[]).filter(s=>String(s.route)===String(r.id)&&s.status!=='Inactive').length;
+  let seed=(Number(r.id)||1)+(Number(state.schoolDay)||1)+(Number(d.years)||0);
+  let report={
+    id:`RA-${Date.now()}`,date:v241Key(),driver:name,route:r.id,bus:r.bus,
+    stopSafety:82+(seed%17),schedule:80+((seed*3)%19),studentMgmt:83+((seed*5)%16),
+    preTrip:86+((seed*7)%13),riders,
+    notes:[riders>v240BusCapacity?.(b)?'Passenger load exceeds current bus capacity.':'Passenger load is appropriate for the assigned bus.',
+      Number(b?.condition||90)<70?'Driver noted concerns about bus condition.':'Driver appears comfortable with the assigned bus.',
+      seed%4===0?'One stop could benefit from a safety review.':'Stops and turnaround locations looked appropriate.']
+  };
+  state.v241.rideAlongs.unshift(report);
+  d.history=d.history||[];d.history.push({year:state.year,event:`Ride-along completed on Route ${r.id}`});
+  openModal(`🚌 Ride-Along — ${name}`,`<div class="alert"><b>Route ${r.id} • Bus ${r.bus}</b><div class="small">${report.riders} riders observed</div></div>
+    <div class="detail"><div class="kv"><span>Stop Safety</span><b>${report.stopSafety}%</b></div><div class="kv"><span>Schedule Realism</span><b>${report.schedule}%</b></div><div class="kv"><span>Student Management</span><b>${report.studentMgmt}%</b></div><div class="kv"><span>Pre-Trip / Procedures</span><b>${report.preTrip}%</b></div></div>
+    ${report.notes.map(n=>`<div class="alert">${n}</div>`).join('')}`)
+}
+function v241OpenRideAlongBoard(){
+  let drivers=(state.staff||[]).filter(s=>v241RouteForDriver(s.name));
+  openModal('🚌 Route Ride-Alongs',`<div class="alert"><b>Ride a route with a driver.</b><div class="small">You receive a report on stops, schedule, student management, bus fit and driving procedures.</div></div>
+    ${drivers.map(d=>{let r=v241RouteForDriver(d.name);return `<div class="kv"><span>${d.name} • Route ${r.id} • Bus ${r.bus}</span><button class="btn" onclick="v241RideAlongDriver('${String(d.name).replace(/'/g,"\\'")}')">Ride Along</button></div>`}).join('')}`)
+}
+
+/* ----- Driver Evaluations ----- */
+function v241EvaluateDriver(name){
+  ensureV241();let d=v241Staff(name),r=v241RouteForDriver(name);if(!d)return;
+  let base=Math.round((Number(d.safetyScore||92)+Number(d.attendance||95)+Number(d.morale||85))/3);
+  let e={id:`EV-${Date.now()}`,date:v241Key(),driver:name,route:r?.id||null,
+    preTrip:Math.min(100,base+2),railroad:Math.min(100,base+1),defensive:Math.min(100,base),
+    studentMgmt:Math.max(65,base-2),professionalism:Math.min(100,base+3)};
+  e.overall=Math.round((e.preTrip+e.railroad+e.defensive+e.studentMgmt+e.professionalism)/5);
+  e.result=e.overall>=90?'Excellent':e.overall>=80?'Meets Expectations':'Coaching Needed';
+  state.v241.evaluations.unshift(e);d.lastEvaluation=v241Key();d.history=d.history||[];d.history.push({year:state.year,event:`Driver evaluation: ${e.result} (${e.overall}%)`});
+  if(e.result==='Excellent')d.morale=Math.min(100,Number(d.morale||85)+2);
+  openModal(`📋 Driver Evaluation — ${name}`,`<div class="alert ${e.overall>=80?'priority-green':'priority-yellow'}"><b>${e.result} — ${e.overall}%</b></div>
+    <div class="detail"><div class="kv"><span>Pre-Trip</span><b>${e.preTrip}%</b></div><div class="kv"><span>Railroad Crossings</span><b>${e.railroad}%</b></div><div class="kv"><span>Defensive Driving</span><b>${e.defensive}%</b></div><div class="kv"><span>Student Management</span><b>${e.studentMgmt}%</b></div><div class="kv"><span>Professionalism</span><b>${e.professionalism}%</b></div></div>`)
+}
+function v241OpenEvaluationBoard(){
+ let drivers=(state.staff||[]).filter(s=>v241RouteForDriver(s.name));
+ openModal('📋 Driver Evaluations',drivers.map(d=>`<div class="kv"><span>${d.name}<div class="small">Last: ${d.lastEvaluation||'No evaluation on file'}</div></span><button class="btn" onclick="v241EvaluateDriver('${String(d.name).replace(/'/g,"\\'")}')">Evaluate</button></div>`).join(''))
+}
+
+/* ----- Bus Relationships ----- */
+function v241RecordBusRelationships(){
+  ensureV241();
+  (state.staff||[]).forEach(d=>{
+    let r=v241RouteForDriver(d.name);if(!r?.bus)return;
+    let k=`${d.name}|${r.bus}`,rel=state.v241.relationships[k]||{driver:d.name,bus:r.bus,years:0,days:0,affinity:50};
+    rel.days++;rel.affinity=Math.min(100,rel.affinity+(rel.days%25===0?1:0));
+    if(rel.days%180===0)rel.years++;
+    state.v241.relationships[k]=rel;
+    d.preferredBus=d.preferredBus||r.bus
+  })
+}
+function v241OpenBusRelationships(){
+  ensureV241();v241RecordBusRelationships();
+  let rows=Object.values(state.v241.relationships).sort((a,b)=>b.affinity-a.affinity);
+  openModal('❤️ Driver–Bus Relationships',rows.length?rows.map(x=>{let b=v241Bus(x.bus);return `<div class="project-card"><b>${x.driver} + Bus ${x.bus}</b><div class="small">${x.days} operating days together • Affinity ${x.affinity}% • ${b?.year||''} ${b?.make||b?.model||''}</div>${x.affinity>=65?`<div class="small">This driver has developed a preference for this bus and may ask to keep it.</div>`:''}</div>`}).join(''):'<div class="alert">Relationships will develop as drivers spend time with assigned buses.</div>')
+}
+
+/* ----- New Driver Progression ----- */
+function v241CreateTrainee(){
+  ensureV241();
+  let names=['Jordan Miller','Casey Thompson','Morgan Davis','Taylor Reed','Alex Parker','Jamie Collins'];
+  let used=new Set([...(state.staff||[]).map(x=>x.name),...state.v241.trainees.map(x=>x.name)]);
+  let name=names.find(x=>!used.has(x))||`New Driver ${state.v241.trainees.length+1}`;
+  state.v241.trainees.push({id:`TR-${Date.now()}`,name,stage:'Interview',progress:0,started:v241Key(),next:'Interview and driving-record review.'});
+  v241OpenNewDriverProgression()
+}
+function v241AdvanceTrainee(id){
+  let t=ensureV241().trainees.find(x=>x.id===id);if(!t)return;
+  let stages=['Interview','Permit / Background','Classroom Training','Behind-the-Wheel','Route Observation','Road Test','Substitute Driver','Route Ready'];
+  let i=stages.indexOf(t.stage);if(i<stages.length-1)t.stage=stages[i+1];
+  t.progress=Math.round(stages.indexOf(t.stage)/(stages.length-1)*100);
+  let nexts={'Permit / Background':'Complete permit, background and physical.','Classroom Training':'Terry handles classroom and safety curriculum.','Behind-the-Wheel':'Practice with trainer on district roads.','Route Observation':'Ride regular routes and learn schools.','Road Test':'Complete final skills/road evaluation.','Substitute Driver':'Gain route familiarity as a substitute.','Route Ready':'Eligible for a permanent route.'};
+  t.next=nexts[t.stage]||'';
+  if(t.stage==='Route Ready'&&!v241Staff(t.name)){
+    state.staff.push({name:t.name,age:28+Math.floor(Math.random()*20),years:0,status:'Substitute',role:'Bus Driver',morale:88,attendance:98,safetyScore:94,route:null,history:[{year:state.year,event:'Completed district new-driver program'}]})
+  }
+  autosaveGame?.();v241OpenNewDriverProgression()
+}
+function v241OpenNewDriverProgression(){
+  ensureV241();
+  openModal('🎓 New Driver Development',`<div class="alert"><b>Drivers develop through the full hiring/training pipeline.</b><div class="small">Interview → permit/background → classroom → behind-the-wheel → route observation → road test → substitute → route ready.</div></div>
+  ${state.v241.trainees.map(t=>`<div class="project-card"><b>${t.name} — ${t.stage}</b><div class="small">${t.progress}% complete • ${t.next||''}</div>${t.stage!=='Route Ready'?`<button class="btn primary" onclick="v241AdvanceTrainee('${t.id}')">Advance Training Stage</button>`:'<span class="trip-status approved">ROUTE READY</span>'}</div>`).join('')||'<div class="small">No drivers currently in the training pipeline.</div>'}
+  <div class="actions"><button class="btn" onclick="v241CreateTrainee()">Add New Driver Candidate</button></div>`)
+}
+
+/* ----- Retirement Stories ----- */
+function v241GenerateRetirementPlans(){
+  ensureV241();
+  (state.staff||[]).forEach(d=>{
+    if(state.v241.retirementPlans.some(x=>x.name===d.name&&x.status==='Planning'))return;
+    let eligible=Number(d.age||0)>=62||Number(d.years||0)>=25;
+    if(eligible&&((Number(d.age||0)+Number(d.years||0)+Number(state.schoolDay||0))%7===0)){
+      let r=v241RouteForDriver(d.name);
+      state.v241.retirementPlans.push({id:`RET-${Date.now()}-${d.name}`,name:d.name,route:r?.id||null,bus:r?.bus||null,when:'at the end of this school year',status:'Planning',recognition:false,finalRide:false});
+      d.retirementPlanning=true
+    }
+  })
+}
+function v241RetirementAction(id,action){
+  let p=ensureV241().retirementPlans.find(x=>x.id===id);if(!p)return;
+  let d=v241Staff(p.name);
+  if(action==='recognition'){p.recognition=true;if(d)d.morale=Math.min(100,Number(d.morale||85)+4)}
+  if(action==='finalRide'){p.finalRide=true}
+  if(action==='talk'){closeModal?.();return v2383TalkToStaff?.(p.name)}
+  autosaveGame?.();v241OpenRetirementBoard()
+}
+function v241OpenRetirementBoard(){
+  ensureV241();v241GenerateRetirementPlans();
+  let P=state.v241.retirementPlans;
+  openModal('🎉 Retirement Planning',`<div class="alert"><b>Retirements are stories, not disappearing employees.</b><div class="small">Veterans can announce plans months ahead, transition their route, have a final route, and receive recognition.</div></div>
+  ${P.length?P.map(p=>{let d=v241Staff(p.name)||{};return `<div class="project-card"><b>${p.name} — ${d.years||0} years of service</b><div class="small">Plans to retire ${p.when}${p.route?` • Route ${p.route}`:''}${p.bus?` • Bus ${p.bus}`:''}</div><div class="actions"><button class="btn" onclick="v241RetirementAction('${p.id}','talk')">Talk About Retirement</button><button class="btn ${p.recognition?'primary':''}" onclick="v241RetirementAction('${p.id}','recognition')">${p.recognition?'Recognition Planned ✓':'Plan Recognition'}</button><button class="btn ${p.finalRide?'primary':''}" onclick="v241RetirementAction('${p.id}','finalRide')">${p.finalRide?'Final Route Planned ✓':'Plan Final Route'}</button></div></div>`}).join(''):'<div class="alert">No announced retirements right now.</div>'}`)
+}
+
+/* ----- People Operations Hub ----- */
+function v241OpenPeopleOperations(){
+  ensureV241();v241GenerateMorningInbox();v241GenerateRetirementPlans();
+  openModal('👥 Director People & Operations',`
+    <div class="alert priority-green"><b>Your department has a memory now.</b><div class="small">Morning communication, route observations, evaluations, bus relationships, new-driver development and retirement planning all persist.</div></div>
+    <div class="actions">
+      <button class="btn primary" onclick="v241OpenInbox()">📥 Morning Inbox</button>
+      <button class="btn" onclick="v241OpenRideAlongBoard()">🚌 Ride-Alongs</button>
+      <button class="btn" onclick="v241OpenEvaluationBoard()">📋 Evaluations</button>
+      <button class="btn" onclick="v241OpenBusRelationships()">❤️ Bus Relationships</button>
+      <button class="btn" onclick="v241OpenNewDriverProgression()">🎓 New Drivers</button>
+      <button class="btn" onclick="v241OpenRetirementBoard()">🎉 Retirements</button><button class="btn primary" onclick="v242Staffing()">👔 Full Department Staffing</button><button class="btn primary" onclick="v243OpenWorkforce()">👥 Workforce & Leadership</button>
+    </div>`)
+}
+function v241DailyPeopleSystems(){
+  ensureV241();v241RecordBusRelationships();v241GenerateRetirementPlans();v241GenerateMorningInbox()
+;try{v242Daily?.()}catch(e){}}
+
+try{ensureV241?.();v241GenerateMorningInbox?.()}catch(e){}
+
+/* ===== V24.5 FULL DEPARTMENT STAFFING ===== */
+function ensureV242(){
+ state.v242=state.v242||{postings:[],applications:[],careerHistory:[],lastBrief:null};
+ return state.v242
+}
+function v242Roles(){return[
+ {title:'Assistant Director',dept:'Leadership',pay:72000,req:'Transportation leadership experience',does:'Covers escalated daily operations and the Director.'},
+ {title:'Operations Manager',dept:'Leadership',pay:68000,req:'Operations/transportation leadership experience',does:'Runs routine daily operations and reduces Director escalations.'},
+ {title:'Operations Supervisor',dept:'Leadership',pay:59000,req:'Supervisory experience preferred',does:'Supervises drivers, pull-out, attendance and daily coverage.'},
+ {title:'Dispatch Supervisor',dept:'Dispatch & Routing',pay:57000,req:'Dispatch/routing experience',does:'Leads radio operations, call-offs and substitute coverage.'},
+ {title:'Dispatcher',dept:'Dispatch & Routing',pay:47000,req:'Communication and dispatch skills',does:'Handles radio traffic and routine route coverage.'},
+ {title:'Route Coordinator',dept:'Dispatch & Routing',pay:55000,req:'Routing/GIS or transportation experience',does:'Plans routes, growth changes and overcrowding solutions.'},
+ {title:'Safety & Training Coordinator',dept:'Safety & Training',pay:59000,req:'School bus safety/training experience',does:'Owns compliance, evaluations and annual training.'},
+ {title:'Driver Trainer',dept:'Safety & Training',pay:52000,req:'Experienced CDL school bus driver',does:'Trains new drivers through classroom and behind-the-wheel stages.'},
+ {title:'Lead Mechanic',dept:'Fleet & Maintenance',pay:64000,req:'Heavy vehicle/diesel experience',does:'Leads diagnostics, repairs and preventive maintenance.'},
+ {title:'Bus Mechanic',dept:'Fleet & Maintenance',pay:55000,req:'Diesel/heavy vehicle repair experience',does:'Repairs and inspects buses.'},
+ {title:'Fleet / Parts Coordinator',dept:'Fleet & Maintenance',pay:49000,req:'Fleet inventory/parts experience',does:'Manages parts, records and fleet paperwork.'},
+ {title:'Transportation Secretary',dept:'Administration',pay:44000,req:'Administrative/customer service experience',does:'Handles records, calls and office coordination.'},
+ {title:'Special Needs Coordinator',dept:'Special Needs',pay:57000,req:'Accessible/student transportation experience',does:'Coordinates special-needs routes, equipment and aides.'},
+ {title:'Trip / Activity Coordinator',dept:'Operations',pay:52000,req:'Transportation scheduling experience',does:'Handles routine trip scheduling and assignments.'},
+ {title:'Bus Aide / Monitor',dept:'Special Needs',pay:30000,req:'Student support experience preferred',does:'Supports students on assigned routes.'},
+ {title:'Bus Driver',dept:'Drivers',pay:46500,req:'CDL B P/S or training eligibility',does:'Operates a permanent route.'},
+ {title:'Substitute Driver',dept:'Drivers',pay:39000,req:'CDL B P/S',does:'Provides route and trip coverage.'}
+]}
+function v242Role(s){
+ let r=String(s?.role||s?.position||s?.title||'').toLowerCase();
+ let known={'Rachel Owens':'Assistant Director','Marcus Reed':'Route Coordinator','Dana Brooks':'Dispatcher','Terry Lawson':'Driver Trainer','Mike Evans':'Lead Mechanic','Cole Martin':'Bus Mechanic','Jenna Price':'Transportation Secretary','Nicole Grant':'Special Needs Coordinator','Lisa Monroe':'Bus Aide / Monitor'};
+ if(known[s?.name])return known[s.name];
+ if(/assistant director/.test(r))return'Assistant Director';if(/operations manager/.test(r))return'Operations Manager';
+ if(/operations supervisor/.test(r))return'Operations Supervisor';if(/dispatch supervisor/.test(r))return'Dispatch Supervisor';
+ if(/dispatcher/.test(r))return'Dispatcher';if(/route coordinator/.test(r))return'Route Coordinator';
+ if(/safety/.test(r)&&/coordinator/.test(r))return'Safety & Training Coordinator';if(/trainer/.test(r))return'Driver Trainer';
+ if(/lead mechanic/.test(r))return'Lead Mechanic';if(/mechanic/.test(r))return'Bus Mechanic';
+ if(/parts|fleet clerk|fleet coordinator/.test(r))return'Fleet / Parts Coordinator';if(/secretary|administrative/.test(r))return'Transportation Secretary';
+ if(/special needs coordinator/.test(r))return'Special Needs Coordinator';if(/trip|activity coordinator/.test(r))return'Trip / Activity Coordinator';
+ if(/aide|monitor/.test(r))return'Bus Aide / Monitor';if(/substitute/.test(String(s?.status||''))||/substitute/.test(r))return'Substitute Driver';
+ if(/driver/.test(r)||v241RouteForDriver?.(s?.name))return'Bus Driver';return s?.role||'Staff'
+}
+function v242Count(title){return(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||''))&&v242Role(s)===title).length}
+function v242InternalEligible(s,target){
+ let cur=v242Role(s),yrs=Number(s.years||0);
+ if(s.name==='Marcus Reed'&&target==='Operations Manager')return true;
+ if(cur==='Substitute Driver'&&target==='Bus Driver')return true;
+ if(cur==='Bus Driver'&&['Driver Trainer','Safety & Training Coordinator','Operations Supervisor'].includes(target)&&yrs>=5)return true;
+ if(cur==='Driver Trainer'&&target==='Safety & Training Coordinator')return true;
+ if(cur==='Dispatcher'&&['Dispatch Supervisor','Operations Supervisor'].includes(target)&&yrs>=3)return true;
+ if(cur==='Route Coordinator'&&['Operations Manager','Operations Supervisor'].includes(target))return true;
+ if(cur==='Bus Mechanic'&&target==='Lead Mechanic'&&yrs>=4)return true;
+ if(cur==='Operations Supervisor'&&target==='Operations Manager')return true;
+ if(cur==='Operations Manager'&&target==='Assistant Director')return true;
+ return false
+}
+function v242Post(title){
+ ensureV242();let def=v242Roles().find(x=>x.title===title);if(!def)return;
+ let old=state.v242.postings.find(p=>p.title===title&&p.status==='Open');if(old)return v242Posting(old.id);
+ let p={id:`P-${Date.now()}-${Math.random()}`,title,dept:def.dept,pay:def.pay,requirements:def.req,status:'Open',openings:1,date:v241Key?.()||state.gameDate};
+ state.v242.postings.push(p);v242Applicants(p.id);autosaveGame?.();v242Posting(p.id)
+}
+function v242Applicants(id){
+ ensureV242();let p=state.v242.postings.find(x=>x.id===id);if(!p||state.v242.applications.some(a=>a.postingId===id))return;
+ let internal=(state.staff||[]).filter(s=>v242InternalEligible(s,p.title)).slice(0,3);
+ internal.forEach((s,i)=>state.v242.applications.push({id:`IA-${Date.now()}-${i}`,postingId:id,name:s.name,internal:true,experience:Number(s.years||0),education:s.education||'District experience',leadership:70+Math.min(25,Number(s.years||0)),status:'Applied'}));
+ let names=['Andrea Mitchell','Brian Keller','Samantha Ortiz','Derek Wallace','Monica Hayes','Chris Bennett','Erin Foster','Nathan Cole','Heather James','Luis Ramirez'];
+ for(let i=0;i<3;i++){let name=names[(i+state.v242.applications.length)%names.length];state.v242.applications.push({id:`EA-${Date.now()}-${i}`,postingId:id,name,internal:false,experience:3+Math.floor(Math.random()*13),education:/manager|director|coordinator|supervisor/i.test(p.title)?(i%2?'Bachelor’s degree':'Associate degree + experience'):'Relevant training/experience',leadership:58+Math.floor(Math.random()*37),status:'Applied'})}
+}
+function v242Interview(id){
+ let a=ensureV242().applications.find(x=>x.id===id);if(!a)return;
+ a.interview=Math.min(100,Math.round(58+a.experience*1.5+a.leadership*.2+(a.internal?5:0)));a.status='Interviewed';autosaveGame?.();v242Posting(a.postingId)
+}
+function v242Hire(id){
+ let a=ensureV242().applications.find(x=>x.id===id),p=state.v242.postings.find(x=>x.id===a?.postingId);if(!a||!p)return;
+ if(a.internal){
+   let s=(state.staff||[]).find(x=>x.name===a.name);if(!s)return;let old=v242Role(s);
+   s.role=p.title;s.position=p.title;s.status=p.title==='Substitute Driver'?'Substitute':'Active';s.pay=p.pay;s.history=s.history||[];s.history.push({year:state.year,event:`Promoted from ${old} to ${p.title}`});
+   state.v242.careerHistory.unshift({date:v241Key(),name:s.name,from:old,to:p.title,type:'Promotion'});
+   v241AddInbox?.('Jenna Price','Position opened by promotion',`${s.name}'s promotion created a ${old} vacancy. It was not automatically posted.`,'handled');
+ }else{
+   state.staff.push({name:a.name,role:p.title,position:p.title,status:p.title==='Substitute Driver'?'Substitute':'Active',age:28+Math.floor(Math.random()*22),years:0,pay:p.pay,morale:88,attendance:96,safetyScore:92,education:a.education,history:[{year:state.year,event:`Hired as ${p.title}`}]});
+   state.v242.careerHistory.unshift({date:v241Key(),name:a.name,from:'External Hire',to:p.title,type:'Hire'})
+ }
+ a.status='Hired';p.status='Filled';autosaveGame?.();closeModal?.();v242Staffing()
+}
+function v242Posting(id){
+ let p=ensureV242().postings.find(x=>x.id===id);if(!p)return;let apps=state.v242.applications.filter(a=>a.postingId===id);
+ openModal(`📣 ${p.title}`,`<div class="alert"><b>${p.dept} • ${money(p.pay)} target pay</b><div class="small">${p.requirements}</div></div>${apps.map(a=>`<div class="project-card"><b>${a.name}${a.internal?' • INTERNAL':''}</b><div class="small">${a.experience} years experience • ${a.education}<br>Leadership ${a.leadership}%${a.interview!=null?` • Interview ${a.interview}%`:''} • ${a.status}</div><div class="actions">${a.status==='Applied'?`<button class="btn" onclick="v242Interview('${a.id}')">Interview</button>`:''}${a.status==='Interviewed'?`<button class="btn primary" onclick="v242Hire('${a.id}')">${a.internal?'Promote':'Hire'}</button>`:''}</div></div>`).join('')}`)
+}
+function v242AllPositions(){
+ ensureV242();openModal('🏢 Post Department Position',`<div class="alert priority-green"><b>Every major transportation position is available.</b><div class="small">Only post positions you want to fill. The game will not nag you about unposted vacancies.</div></div>${v242Roles().map(r=>{let open=state.v242.postings.find(p=>p.title===r.title&&p.status==='Open');return`<div class="project-card"><b>${r.title}</b><div class="small">${r.dept} • ${v242Count(r.title)} employed • ${money(r.pay)} target<br>${r.does}</div><div class="actions">${open?`<button class="btn primary" onclick="v242Posting('${open.id}')">View Applicants</button>`:`<button class="btn" onclick="v242Post('${r.title.replace(/'/g,"\\'")}')">Post Position</button>`}</div></div>`}).join('')}`)
+}
+function v242Delegation(){
+ let handled=[];
+ if(v242Count('Operations Manager')||v242Count('Assistant Director'))handled.push('routine daily operations');
+ if(v242Count('Dispatch Supervisor'))handled.push('call-offs and substitute coverage');
+ if(v242Count('Route Coordinator'))handled.push('routine routing work');
+ if(v242Count('Safety & Training Coordinator'))handled.push('evaluations and compliance');
+ if(v242Count('Trip / Activity Coordinator'))handled.push('routine trip planning');
+ if(v242Count('Fleet / Parts Coordinator'))handled.push('parts and fleet records');
+ return handled
+}
+function v242Org(){
+ let groups={};(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||''))).forEach(s=>{let role=v242Role(s),def=v242Roles().find(r=>r.title===role),dept=def?.dept||'Other';(groups[dept]=groups[dept]||[]).push({name:s.name,role})});
+ openModal('🏢 Transportation Organization',`<div class="alert"><b>Transportation Director — You</b><div class="small">Management and coordinator positions actively reduce routine Director workload.</div></div>${Object.entries(groups).map(([g,p])=>`<div class="project-card"><b>${g}</b>${p.map(x=>`<div class="kv"><span>${x.name}</span><b>${x.role}</b></div>`).join('')}</div>`).join('')}`)
+}
+function v242Careers(){
+ let c=(state.staff||[]).map(s=>({s,opts:v242Roles().filter(r=>v242InternalEligible(s,r.title)).map(r=>r.title)})).filter(x=>x.opts.length);
+ openModal('📈 Career & Succession Planning',`<div class="alert"><b>Internal employees can build careers.</b><div class="small">They appear as internal applicants when you post an eligible next-step position.</div></div>${c.map(x=>`<div class="project-card"><b>${x.s.name} — ${v242Role(x.s)}</b><div class="small">${x.s.years||0} years • Potential next role: ${x.opts.join(', ')}</div></div>`).join('')||'<div class="small">No advancement matches currently.</div>'}`)
+}
+function v242Staffing(){
+ ensureV242();let open=state.v242.postings.filter(p=>p.status==='Open'),del=v242Delegation();
+ openModal('👔 Full Department Staffing',`<div class="alert priority-green"><b>${(state.staff||[]).length} employees • ${open.length} active posting${open.length===1?'':'s'}</b><div class="small">${del.length?`Currently delegated: ${del.join(', ')}.`:'Most functions still rely on the existing team.'}</div></div><div class="actions"><button class="btn primary" onclick="v242AllPositions()">Post Any Position</button><button class="btn" onclick="v242Org()">Organization Chart</button><button class="btn" onclick="v242Careers()">Career / Succession</button></div>${open.map(p=>`<div class="kv"><span>${p.title}</span><button class="btn" onclick="v242Posting('${p.id}')">Applicants</button></div>`).join('')}`)
+}
+function v242Daily(){
+ ensureV242();let d=v242Delegation();
+ if(state.v241?.inbox){
+   state.v241.inbox.filter(x=>x.date===v241Key()&&x.type==='decision').forEach(x=>{
+     if(d.includes('routine routing work')&&/route|capacity/i.test(x.subject)){x.type='handled';x.text+=' The Route Coordinator is handling the first response.'}
+     if(d.includes('evaluations and compliance')&&/evaluation/i.test(x.subject)){x.type='handled';x.text+=' Safety & Training scheduled it.'}
+   })
+ }
+ let day=Number(state.schoolDay||0);
+ if(day>0&&day%5===0&&state.v242.lastBrief!==v241Key()){
+   state.v242.lastBrief=v241Key();
+   let from=v242Count('Operations Manager')?'Operations Manager':v242Count('Assistant Director')?'Assistant Director':'Jenna Price';
+   v241AddInbox?.(from,'Weekly department brief',`${d.length?`Leadership is handling ${d.join(', ')}.`:'Most department functions still report directly to you.'} ${(state.routes||[]).length} routes • ${(state.buses||[]).length} buses • ${(state.staff||[]).length} employees.`,'handled')
+ }
+ try{v243Daily?.()}catch(e){}
+}
+
+try{ensureV242?.()}catch(e){}
+
+/* ===== V24.5 WORKFORCE + LEADERSHIP ===== */
+function ensureV243(){
+ state.v243=state.v243||{
+   schedules:{},probation:{},reviews:[],attendance:{},interim:[],crossTraining:{},
+   supervisorOf:{},recognition:[],leadershipMeetings:[],lastLeadershipMeeting:null,
+   reputation:{score:78,notes:[]},retentionWarnings:[],salaryRanges:{}
+ };
+ return state.v243
+}
+function v243RoleDef(title){return v242Roles?.().find(r=>r.title===title)||null}
+function v243RangeFor(title){
+ ensureV243(); if(state.v243.salaryRanges[title])return state.v243.salaryRanges[title];
+ let base=Number(v243RoleDef(title)?.pay||45000);
+ let r={min:Math.round(base*.9/500)*500,mid:Math.round(base/500)*500,max:Math.round(base*1.15/500)*500};
+ state.v243.salaryRanges[title]=r; return r
+}
+function v243DefaultScheduleFor(s){
+ let role=v242Role?.(s)||'Staff';
+ if(role==='Bus Driver'||role==='Substitute Driver')return {type:'Split Shift',start:'05:45',end:'17:00',detail:'AM route • midday off • PM route'};
+ if(/Dispatcher|Dispatch Supervisor|Operations Supervisor|Operations Manager|Assistant Director|Route Coordinator/.test(role))return {type:'Early Operations',start:'05:00',end:'13:30',detail:'Morning pull-out and operations coverage'};
+ if(/Mechanic|Fleet \/ Parts/.test(role))return {type:'Garage Day',start:'06:00',end:'14:30',detail:'Shop, inspections and PM'};
+ if(/Secretary|Coordinator|Trainer|Aide/.test(role))return {type:'Day',start:'07:00',end:'15:30',detail:'Department support'};
+ return {type:'Day',start:'07:00',end:'15:30',detail:'Standard department schedule'}
+}
+function v243EnsureSchedules(){
+ ensureV243();
+ (state.staff||[]).forEach(s=>{
+   let k=s.name; if(!state.v243.schedules[k])state.v243.schedules[k]=v243DefaultScheduleFor(s)
+ })
+}
+function v243SetSchedule(name,type){
+ ensureV243();let s=(state.staff||[]).find(x=>x.name===name);if(!s)return;
+ let map={
+   'Early Operations':{type:'Early Operations',start:'05:00',end:'13:30',detail:'Morning pull-out and operations coverage'},
+   'Day':{type:'Day',start:'07:00',end:'15:30',detail:'Standard department schedule'},
+   'Late Operations':{type:'Late Operations',start:'11:00',end:'19:30',detail:'Afternoon routes, trips and late coverage'},
+   'Split Shift':{type:'Split Shift',start:'05:45',end:'17:00',detail:'AM route • midday off • PM route'},
+   'Garage Day':{type:'Garage Day',start:'06:00',end:'14:30',detail:'Shop, inspections and PM'}
+ };
+ state.v243.schedules[name]=map[type]||map['Day'];autosaveGame?.();v243OpenSchedules()
+}
+function v243CoverageGaps(){
+ v243EnsureSchedules();let late=(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||''))&&['Late Operations','Split Shift'].includes(state.v243.schedules[s.name]?.type)).length;
+ let early=(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||''))&&['Early Operations','Split Shift','Garage Day'].includes(state.v243.schedules[s.name]?.type)).length;
+ return {early,late,lateGap:late<2,earlyGap:early<3}
+}
+function v243OpenSchedules(){
+ v243EnsureSchedules();let gap=v243CoverageGaps();
+ openModal('🕒 Workforce Schedules',`<div class="alert ${gap.lateGap?'priority-yellow':'priority-green'}"><b>${gap.lateGap?'Late-day coverage is thin':'Operational coverage looks balanced'}</b><div class="small">Early coverage ${gap.early} • Late/split coverage ${gap.late}. Scheduling affects how many routine issues reach you.</div></div>
+ ${(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||''))).map(s=>{let sc=state.v243.schedules[s.name];return`<div class="project-card"><b>${s.name} — ${v242Role(s)}</b><div class="small">${sc.type} • ${sc.start}–${sc.end}<br>${sc.detail}</div><div class="actions"><button class="btn" onclick="v243SetSchedule('${s.name.replace(/'/g,"\\'")}','Early Operations')">Early</button><button class="btn" onclick="v243SetSchedule('${s.name.replace(/'/g,"\\'")}','Day')">Day</button><button class="btn" onclick="v243SetSchedule('${s.name.replace(/'/g,"\\'")}','Late Operations')">Late</button>${/Driver/.test(v242Role(s))?`<button class="btn" onclick="v243SetSchedule('${s.name.replace(/'/g,"\\'")}','Split Shift')">Split</button>`:''}</div></div>`}).join('')}`)
+}
+
+/* qualifications and interview depth */
+function v243ApplicantTraits(a,p){
+ a.qualifications=a.qualifications||[];
+ if(/Operations|Director|Supervisor|Coordinator/.test(p.title)){
+   if(a.experience>=8)a.qualifications.push?.('8+ years relevant experience');
+ }
+ if(/Driver|Safety|Training/.test(p.title)&&a.cdl!=='N/A')a.qualifications.push?.('CDL / pupil transportation background');
+ a.strengths=a.strengths||[
+   a.leadership>=80?'Strong leadership':'Steady team contributor',
+   a.experience>=8?'Experienced in transportation operations':'Developing experience'
+ ];
+ a.concerns=a.concerns||[(a.experience<4?'Limited directly relevant experience':'None significant identified')];
+}
+function v243InterviewQuestions(appId){
+ let a=ensureV242().applications.find(x=>x.id===appId);if(!a)return;
+ let p=state.v242.postings.find(x=>x.id===a.postingId);if(!p)return;
+ v243ApplicantTraits(a,p);
+ let q=[
+  {q:'How would you handle a morning with multiple driver call-offs?',a:a.leadership>78?'I would stabilize coverage first, delegate radio/parent communication, and document the pattern for follow-up.':'I would work through the call list and ask for help where needed.'},
+  {q:'How do you balance service, safety and employee morale?',a:a.experience>7?'Safety is non-negotiable, but good systems and communication keep service reliable without burning people out.':'I would try to be fair and follow policy.'},
+  {q:'What would your first 90 days look like?',a:a.internal?'Learn the broader role, meet with each team area, and improve one process without disrupting what already works.':'Learn the district, observe routes and staff, and build relationships before making major changes.'}
+ ];
+ a.interviewQ=q;a.interview=Math.min(100,Math.round(58+a.experience*1.5+a.leadership*.2+(a.internal?5:0)));
+ a.status='Interviewed';autosaveGame?.();
+ openModal(`🎤 Interview — ${a.name}`,q.map(x=>`<div class="project-card"><b>${x.q}</b><div class="small">${x.a}</div></div>`).join('')+`<div class="alert priority-green"><b>Interview score: ${a.interview}%</b><div class="small">Strengths: ${a.strengths.join(', ')}<br>Concern: ${a.concerns.join(', ')}</div></div><div class="actions"><button class="btn primary" onclick="v242Hire('${a.id}')">${a.internal?'Promote':'Hire'}</button></div>`)
+}
+if(typeof v242Interview==='function')v242Interview=v243InterviewQuestions;
+
+/* probation */
+function v243StartProbation(name){
+ ensureV243();let s=(state.staff||[]).find(x=>x.name===name);if(!s)return;
+ state.v243.probation[name]={start:v241Key(),day:0,status:'Active',check30:false,check60:false,check90:false};
+}
+function v243AdvanceProbation(){
+ ensureV243();
+ Object.entries(state.v243.probation).forEach(([name,p])=>{
+   if(p.status!=='Active')return;p.day++;
+   let s=(state.staff||[]).find(x=>x.name===name);if(!s)return;
+   let score=Math.round((Number(s.attendance||96)+Number(s.morale||88)+Number(s.safetyScore||92))/3);
+   for(let mark of [30,60,90]){
+     let key='check'+mark;
+     if(p.day>=mark&&!p[key]){
+       p[key]=true;
+       v241AddInbox?.('Operations Manager',`${mark}-day probation update — ${name}`,`${name} is at day ${p.day}. Current onboarding score ${score}%. ${score>=85?'No concerns noted.':'Coaching is recommended.'}`,'handled');
+       if(mark===90)p.status=score>=75?'Completed':'Extended'
+     }
+   }
+ })
+}
+const _v242Hire_orig = typeof v242Hire==='function'?v242Hire:null;
+if(_v242Hire_orig){
+ v242Hire=function(id){
+  let a=ensureV242().applications.find(x=>x.id===id);
+  let wasInternal=!!a?.internal;
+  _v242Hire_orig(id);
+  if(a?.status==='Hired'&&!wasInternal)v243StartProbation(a.name)
+ }
+}
+
+/* annual reviews */
+function v243SupervisorFor(s){
+ let role=v242Role(s);
+ if(role==='Bus Driver'||role==='Substitute Driver')return v242Count('Operations Supervisor')?'Operations Supervisor':v242Count('Operations Manager')?'Operations Manager':'Transportation Director';
+ if(['Dispatcher','Route Coordinator'].includes(role))return v242Count('Dispatch Supervisor')?'Dispatch Supervisor':v242Count('Operations Manager')?'Operations Manager':'Transportation Director';
+ if(['Bus Mechanic','Fleet / Parts Coordinator'].includes(role))return 'Lead Mechanic';
+ if(['Driver Trainer','Safety & Training Coordinator'].includes(role))return v242Count('Operations Manager')?'Operations Manager':'Transportation Director';
+ return 'Transportation Director'
+}
+function v243AnnualReview(name){
+ ensureV243();let s=(state.staff||[]).find(x=>x.name===name);if(!s)return;
+ let score=Math.round((Number(s.attendance||95)+Number(s.morale||85)+Number(s.safetyScore||92)+(75+Math.min(20,Number(s.years||0))))/4);
+ let rating=score>=92?'Outstanding':score>=82?'Meets Expectations':'Development Needed';
+ let sup=v243SupervisorFor(s);
+ state.v243.reviews.unshift({date:v241Key(),name,supervisor:sup,score,rating});
+ s.lastReview=v241Key();
+ if(rating==='Outstanding')s.morale=Math.min(100,Number(s.morale||85)+3);
+ openModal(`⭐ Annual Review — ${name}`,`<div class="alert ${score>=82?'priority-green':'priority-yellow'}"><b>${rating} — ${score}%</b><div class="small">Reviewer: ${sup}<br>Attendance ${s.attendance||95}% • Safety ${s.safetyScore||92}% • Morale ${s.morale||85}%</div></div>`)
+}
+function v243OpenReviews(){
+ openModal('⭐ Performance Reviews',`<div class="alert"><b>Supervisors review their own teams.</b><div class="small">You mainly evaluate direct reports instead of personally reviewing every driver.</div></div>${(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||''))).map(s=>`<div class="kv"><span>${s.name} — ${v242Role(s)}<div class="small">Supervisor: ${v243SupervisorFor(s)} • Last review: ${s.lastReview||'None'}</div></span><button class="btn" onclick="v243AnnualReview('${s.name.replace(/'/g,"\\'")}')">Review</button></div>`).join('')}`)
+}
+
+/* attendance + retention */
+function v243AttendanceTick(){
+ ensureV243();
+ (state.staff||[]).forEach(s=>{
+   if(/retired|resigned|terminated/i.test(String(s.status||'')))return;
+   let a=state.v243.attendance[s.name]||{occurrences:0,late:0,perfectDays:0};
+   if(Math.random()<0.006){a.occurrences++;s.attendance=Math.max(70,Number(s.attendance||96)-1);if(a.occurrences>=4)v241AddInbox?.(v243SupervisorFor(s),`Attendance pattern — ${s.name}`,`${s.name} now has ${a.occurrences} attendance occurrences this year. Supervisor follow-up is recommended.`,'decision')}
+   else a.perfectDays++;
+   state.v243.attendance[s.name]=a
+ })
+}
+function v243RetentionTick(){
+ ensureV243();state.v243.retentionWarnings=[];
+ (state.staff||[]).forEach(s=>{
+   if(/retired|resigned|terminated/i.test(String(s.status||'')))return;
+   let role=v242Role(s),range=v243RangeFor(role),pay=Number(s.pay||v243RoleDef(role)?.pay||range.mid);
+   let risk=0;if(Number(s.morale||85)<70)risk+=25;if(pay<range.mid*.92)risk+=15;if((state.v243.attendance[s.name]?.occurrences||0)>4)risk+=5;
+   let sup=v243SupervisorFor(s);if(/Transportation Director/.test(sup)&&['Bus Driver','Dispatcher','Route Coordinator'].includes(role))risk+=5;
+   if(risk>=25)state.v243.retentionWarnings.push({name:s.name,risk,reason:Number(s.morale||85)<70?'low morale':'pay/structure'})
+ })
+}
+function v243OpenRetention(){
+ v243RetentionTick();
+ openModal('💙 Retention & Workforce Health',`${state.v243.retentionWarnings.length?state.v243.retentionWarnings.map(x=>`<div class="project-card"><b>${x.name} — ${x.risk}% retention risk</b><div class="small">Primary concern: ${x.reason}. Warning signs appear before resignations.</div></div>`).join(''):'<div class="alert priority-green">No major retention warnings right now.</div>'}`)
+}
+
+/* interim + cross training */
+function v243AppointInterim(name,title){
+ ensureV243();state.v243.interim=state.v243.interim.filter(x=>x.title!==title);
+ state.v243.interim.push({name,title,start:v241Key(),status:'Active',stipend:1500});
+ let s=(state.staff||[]).find(x=>x.name===name);if(s){s.morale=Math.min(100,Number(s.morale||85)+2);s.history=s.history||[];s.history.push({year:state.year,event:`Appointed Interim ${title}`})}
+ autosaveGame?.();v243OpenInterim()
+}
+function v243OpenInterim(){
+ let vacancies=v242Roles().filter(r=>['Assistant Director','Operations Manager','Operations Supervisor','Dispatch Supervisor','Safety & Training Coordinator','Lead Mechanic'].includes(r.title)&&v242Count(r.title)===0);
+ openModal('🪪 Interim Assignments',`<div class="alert"><b>Use temporary leadership assignments without immediately posting the job.</b><div class="small">Interim assignments provide experience and a small stipend.</div></div>${vacancies.map(v=>{let c=(state.staff||[]).filter(s=>v242InternalEligible(s,v.title)).slice(0,4);return`<div class="project-card"><b>Vacant: ${v.title}</b>${c.map(s=>`<div class="kv"><span>${s.name} — ${v242Role(s)}</span><button class="btn" onclick="v243AppointInterim('${s.name.replace(/'/g,"\\'")}','${v.title}')">Appoint Interim</button></div>`).join('')||'<div class="small">No obvious internal interim candidate.</div>'}</div>`}).join('')||'<div class="alert priority-green">No key leadership vacancies.</div>'}`)
+}
+function v243CrossTrain(name,skill){
+ ensureV243();let arr=state.v243.crossTraining[name]||[];if(!arr.includes(skill))arr.push(skill);state.v243.crossTraining[name]=arr;
+ let s=(state.staff||[]).find(x=>x.name===name);if(s)s.morale=Math.min(100,Number(s.morale||85)+1);autosaveGame?.();v243OpenCrossTraining()
+}
+function v243OpenCrossTraining(){
+ let candidates=(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||'')));
+ openModal('🔁 Cross-Training',`<div class="alert"><b>Cross-trained staff make the department more resilient.</b><div class="small">Examples: dispatchers maintain CDL, drivers learn dispatch, mechanics learn fleet records.</div></div>${candidates.map(s=>{let opts=[];let role=v242Role(s);if(/Dispatcher|Route Coordinator|Operations/.test(role))opts.push('Emergency CDL Coverage');if(/Driver/.test(role))opts.push('Dispatch Familiarity');if(/Mechanic/.test(role))opts.push('Fleet Records');return opts.length?`<div class="project-card"><b>${s.name} — ${role}</b><div class="small">Current: ${(state.v243.crossTraining[s.name]||[]).join(', ')||'None'}</div><div class="actions">${opts.map(o=>`<button class="btn" onclick="v243CrossTrain('${s.name.replace(/'/g,"\\'")}','${o}')">${o}</button>`).join('')}</div></div>`:''}).join('')}`)
+}
+
+/* span of control, recognition, reputation */
+function v243Span(){
+ let drivers=(state.staff||[]).filter(s=>['Bus Driver','Substitute Driver','Bus Aide / Monitor'].includes(v242Role(s))&&!/retired|resigned|terminated/i.test(String(s.status||''))).length;
+ let supervisors=v242Count('Operations Supervisor')+v242Count('Operations Manager')+v242Count('Assistant Director');
+ let ratio=supervisors?Math.round(drivers/supervisors):drivers;
+ return {drivers,supervisors,ratio,stretched:ratio>25}
+}
+function v243RecognitionTick(){
+ ensureV243();
+ (state.staff||[]).forEach(s=>{
+   let y=Number(s.years||0);for(let mark of [5,10,15,20,25,30]){
+     let key=`${s.name}-${mark}`;
+     if(y>=mark&&!state.v243.recognition.some(r=>r.key===key)){state.v243.recognition.push({key,name:s.name,type:`${mark} Years of Service`,date:v241Key()});v241AddInbox?.('Jenna Price','Employee recognition',`${s.name} reached ${mark} years of service. Recognition is ready for your next staff meeting.`,'handled')}
+   }
+ })
+}
+function v243UpdateReputation(){
+ ensureV243();let avgMorale=(state.staff||[]).length?(state.staff||[]).reduce((a,s)=>a+Number(s.morale||85),0)/(state.staff||[]).length:80;
+ let span=v243Span();let fleet=(state.buses||[]).length?((state.buses||[]).filter(b=>!/Maintenance|Shop|Inspection Due/i.test(String(b.status||''))).length/(state.buses||[]).length*100):90;
+ let score=Math.round(avgMorale*.35+fleet*.35+(span.stretched?65:90)*.15+90*.15);
+ state.v243.reputation.score=Math.max(0,Math.min(100,score));
+ return state.v243.reputation.score
+}
+function v243OpenReputation(){
+ let score=v243UpdateReputation(),span=v243Span();
+ openModal('🏆 Department Reputation',`<div class="alert ${score>=80?'priority-green':'priority-yellow'}"><b>Transportation Department Reputation: ${score}/100</b><div class="small">Built from workforce morale, fleet readiness, leadership coverage and service reliability.</div></div><div class="detail"><div class="kv"><span>Front-line staff</span><b>${span.drivers}</b></div><div class="kv"><span>Leadership coverage</span><b>${span.supervisors}</b></div><div class="kv"><span>Span of control</span><b>1:${span.ratio||0}</b></div><div class="kv"><span>Recognition events</span><b>${state.v243.recognition.length}</b></div></div>`)
+}
+
+/* leadership personalities */
+function v243LeadershipProfile(s){
+ let seed=[...String(s.name)].reduce((a,c)=>a+c.charCodeAt(0),0);
+ let styles=['People Developer','Operational Organizer','Calm Problem Solver','High Standards','Collaborative Leader'];
+ let strengths=['employee development','organization','dispatch decisions','safety culture','route planning'];
+ return {style:styles[seed%styles.length],strength:strengths[(seed*3)%strengths.length],people:70+(seed%26),ops:72+((seed*5)%24)}
+}
+
+/* Monday leadership meeting */
+function v243LeadershipMeeting(force=false){
+ ensureV243();let key=v241Key();if(state.v243.lastLeadershipMeeting===key&&!force)return v243OpenLeadershipMeeting();
+ let span=v243Span(),rep=v243UpdateReputation();
+ let leaders=(state.staff||[]).filter(s=>['Assistant Director','Operations Manager','Operations Supervisor','Dispatch Supervisor','Route Coordinator','Safety & Training Coordinator','Driver Trainer','Lead Mechanic','Special Needs Coordinator','Trip / Activity Coordinator'].includes(v242Role(s)));
+ let items=[];
+ function add(from,subject,text,decision=false,action=''){items.push({from,subject,text,decision,action})}
+ if(leaders.some(s=>v242Role(s)==='Assistant Director'))add('Rachel Owens','Operations','Daily operations are stable. I am continuing to absorb routine escalations.',false);
+ let om=leaders.find(s=>v242Role(s)==='Operations Manager');if(om){let pr=v243LeadershipProfile(om);add(om.name,'Operations Manager Report',`Leadership style: ${pr.style}. Strongest area: ${pr.strength}. Current operations score ${pr.ops}%.`,false)}
+ add('Marcus Reed','Routing',state.v237?.growth?.length?'Growth routing continues to need attention in developing areas.':'Route structure is stable this week.',false);
+ let jobs=Object.values(state.v238?.jobs||{}).filter(j=>j.status!=='Complete');add('Mike Evans','Fleet',jobs.length?`${jobs.length} active shop job${jobs.length===1?'':'s'}. Routine work is being handled automatically.`:'Fleet is currently caught up on active shop work.',false);
+ let trainee=state.v241?.trainees?.find(t=>!['Route Ready','Withdrawn'].includes(t.stage));if(trainee)add('Terry Lawson','Training',`${trainee.name} is at ${trainee.stage}. ${trainee.next||''}`,false);
+ let tripPending=(state.trips||[]).filter(t=>t.status==='Pending').length;if(tripPending)add(v242Count('Trip / Activity Coordinator')?'Trip / Activity Coordinator':'Dana Brooks','Trips',`${tripPending} trip request${tripPending===1?'':'s'} need planning.`,!v242Count('Trip / Activity Coordinator'),'trips');
+ if(span.stretched)add('Operations','Staffing',`Span of control is 1:${span.ratio}. Consider adding another supervisor as the department grows.`,true,'staffing');
+ if(state.v243.retentionWarnings.length)add('Operations','Retention',`${state.v243.retentionWarnings.length} employee${state.v243.retentionWarnings.length===1?' has':'s have'} elevated retention risk.`,true,'retention');
+ add('Jenna Price','Department Reputation',`Current reputation is ${rep}/100.`,false);
+ let meet={id:`LM-${Date.now()}`,date:key,items};state.v243.leadershipMeetings.unshift(meet);state.v243.lastLeadershipMeeting=key;v243OpenLeadershipMeeting()
+}
+function v243OpenLeadershipMeeting(){
+ ensureV243();let m=state.v243.leadershipMeetings[0];
+ if(!m)return v243LeadershipMeeting(true);
+ openModal('🗓️ Monday Leadership Meeting',`<div class="alert priority-green"><b>Department leadership briefing</b><div class="small">Your team reports what happened, what they handled and only what needs your decision.</div></div>${m.items.map(i=>`<div class="project-card"><span class="trip-status ${i.decision?'pending':'approved'}">${i.decision?'DECISION':'UPDATE'}</span><b>${i.from} — ${i.subject}</b><div class="small">${i.text}</div>${i.action?`<div class="actions"><button class="btn primary" onclick="v243MeetingAction('${i.action}')">Open</button></div>`:''}</div>`).join('')}`)
+}
+function v243MeetingAction(a){closeModal?.();if(a==='staffing')return v242Staffing?.();if(a==='retention')return v243OpenRetention();if(a==='trips')return renderTrips?.()}
+
+/* integrated workforce hub */
+function v243OpenWorkforce(){
+ ensureV243();v243EnsureSchedules();v243RetentionTick();v243UpdateReputation();
+ openModal('👥 Workforce & Leadership',`<div class="alert priority-green"><b>Run the transportation department through people, not micromanagement.</b><div class="small">Schedules, interviews, probation, reviews, retention, interim leaders, cross-training, recognition and leadership meetings all connect to operations.</div></div><div class="actions">
+ <button class="btn primary" onclick="v243LeadershipMeeting(true)">🗓️ Leadership Meeting</button>
+ <button class="btn" onclick="v243OpenSchedules()">🕒 Schedules</button>
+ <button class="btn" onclick="v243OpenReviews()">⭐ Reviews</button>
+ <button class="btn" onclick="v243OpenRetention()">💙 Retention</button>
+ <button class="btn" onclick="v243OpenInterim()">🪪 Interim Assignments</button>
+ <button class="btn" onclick="v243OpenCrossTraining()">🔁 Cross-Training</button>
+ <button class="btn" onclick="v243OpenReputation()">🏆 Reputation</button><button class="btn" onclick="v244EmployeeStories()">❤️ Employee Stories</button><button class="btn" onclick="v244Dealer()">🏪 Bus Dealer</button>
+ </div>`)
+}
+function v243Daily(){
+ ensureV243();v243EnsureSchedules();v243AdvanceProbation();v243AttendanceTick();v243RetentionTick();v243RecognitionTick();v243UpdateReputation();
+ let gap=v243CoverageGaps();
+ if(gap.lateGap&&Number(state.schoolDay||0)%10===3)v241AddInbox?.('Operations Manager','Late coverage review','Late-day staffing is thin. Afternoon trips and PM route issues are more likely to reach your desk.','decision');
+ if(Number(state.schoolDay||0)>0&&Number(state.schoolDay||0)%5===1&&state.v243.lastLeadershipMeeting!==v241Key())v241AddInbox?.('Jenna Price','Leadership meeting ready','Your weekly transportation leadership briefing is ready.','decision','leadership')
+ try{v244Daily?.()}catch(e){}
+}
+
+try{ensureV243?.()}catch(e){}
+
+/* ===== V24.5 DIRECTOR DESK + INCIDENTS + EMPLOYEE LIFE + BUS DEALER ===== */
+function ensureV244(){
+ state.v244=state.v244||{
+  incidents:[],incidentHistory:[],employeeLife:[],dealerOrders:[],dealerInventory:[],
+  desk:{calls:[],calendar:[],notes:[]},lastIncidentDay:null,lastLifeDay:null,lastDealerRefresh:null
+ };
+ return state.v244
+}
+function v244Day(){return Number(state.schoolDay||state.day||0)}
+function v244DealerRefresh(force=false){
+ ensureV244();let key=String(state.year||'')+'-'+String(Math.floor(v244Day()/20));
+ if(!force&&state.v244.lastDealerRefresh===key&&state.v244.dealerInventory.length)return;
+ state.v244.lastDealerRefresh=key;
+ let y=Number(String(state.gameDate||'2026').slice(0,4))||2026;
+ let models=[
+  ['Blue Bird Vision','Type C',77,145500],['Thomas Saf-T-Liner C2','Type C',77,149800],
+  ['IC CE','Type C',77,147900],['Thomas Saf-T-Liner HDX','Type D Rear Engine',84,191500],
+  ['Blue Bird All American RE','Type D Rear Engine',84,194000],['IC RE','Type D Rear Engine',84,192500],
+  ['Thomas Minotour','Type A / Special Needs',24,141500]
+ ];
+ state.v244.dealerInventory=models.map((m,i)=>({
+  id:`DLR-${key}-${i}`,model:m[0],type:m[1],capacity:m[2],price:m[3]+((i*1700+v244Day()*97)%6500),
+  year:y+(v244Day()>120?1:0),miles:i%3===0?1200+i*340:Math.floor(Math.random()*180),
+  fuel:i%4===1?'Propane':'Diesel',ac:i%2===0,lift:m[1].includes('Special'),
+  status:i<4?'In Stock':'Order / Incoming',dealer:'Kerlin-style Indiana Bus Dealer'
+ }))
+}
+function v244BuyDealerBus(id){
+ let x=ensureV244().dealerInventory.find(b=>b.id===id);if(!x)return;
+ let capital=Number(state.capitalBudget??state.capitalFund??state.capital??0);
+ if(capital&&capital<x.price){alert?.('Capital funds are below this purchase price.');return}
+ if('capitalBudget'in state)state.capitalBudget-=x.price;else if('capitalFund'in state)state.capitalFund-=x.price;else if('capital'in state)state.capital-=x.price;
+ if(x.status==='In Stock'){
+  let nums=(state.buses||[]).map(b=>Number(b.id)).filter(Number.isFinite),num=(Math.max(0,...nums)+1);
+  state.buses.push({id:num,year:x.year,make:x.model,model:x.model,type:x.type,capacity:x.capacity,miles:x.miles,status:'Spare',condition:98,fuel:x.fuel,wheelchairLift:x.lift,ac:x.ac,purchasePrice:x.price,dealer:x.dealer,deliveryDate:v241Key(),history:[{year:state.year,event:`Purchased from ${x.dealer}`} ]});
+  state.v244.incidentHistory.unshift({date:v241Key(),type:'Fleet Delivery',text:`Bus ${num}, a ${x.year} ${x.model}, arrived from the dealer.`});
+  alert?.(`Bus ${num} has arrived at the transportation center for acceptance inspection.`)
+ }else{
+  state.v244.dealerOrders.push({id:`ORD-${Date.now()}`,model:x.model,type:x.type,capacity:x.capacity,price:x.price,fuel:x.fuel,lift:x.lift,ordered:v241Key(),daysRemaining:45+Math.floor(Math.random()*75),status:'Ordered'});
+  alert?.(`${x.model} ordered. The dealer will update you as delivery approaches.`)
+ }
+ autosaveGame?.();v244Dealer()
+}
+function v244Dealer(){
+ v244DealerRefresh();openModal('🚌 Kerlin-Style Bus Dealer',`<div class="alert priority-green"><b>Indiana school-bus dealership experience</b><div class="small">Browse stock, incoming buses and factory orders. In-stock buses can arrive immediately; orders have real lead time. This is a fictionalized in-game dealer inspired by the kind of local dealership experience you wanted.</div></div>
+ ${state.v244.dealerInventory.map(b=>`<div class="project-card"><span class="trip-status ${b.status==='In Stock'?'approved':'pending'}">${b.status.toUpperCase()}</span><b>${b.year} ${b.model}</b><div class="small">${b.type} • ${b.capacity} passenger • ${b.fuel} • ${b.miles.toLocaleString()} mi${b.ac?' • A/C':''}${b.lift?' • Wheelchair lift':''}<br><b>${money(b.price)}</b></div><div class="actions"><button class="btn primary" onclick="v244BuyDealerBus('${b.id}')">${b.status==='In Stock'?'Purchase Bus':'Place Order'}</button></div></div>`).join('')}
+ ${state.v244.dealerOrders.length?`<h3>Factory / Incoming Orders</h3>${state.v244.dealerOrders.map(o=>`<div class="kv"><span>${o.model}<div class="small">${o.status} • approx. ${o.daysRemaining} days remaining</div></span><b>${money(o.price)}</b></div>`).join('')}`:''}`)
+}
+function v244AdvanceDealerOrders(){
+ ensureV244();state.v244.dealerOrders.filter(o=>o.status==='Ordered').forEach(o=>{
+  o.daysRemaining=Math.max(0,o.daysRemaining-1);
+  if(o.daysRemaining===0){
+   let nums=(state.buses||[]).map(b=>Number(b.id)).filter(Number.isFinite),num=Math.max(0,...nums)+1;
+   state.buses.push({id:num,year:Number(String(state.gameDate||'2026').slice(0,4))||2026,make:o.model,model:o.model,type:o.type,capacity:o.capacity,miles:18,status:'Spare',condition:100,fuel:o.fuel,wheelchairLift:o.lift,purchasePrice:o.price,dealer:'Kerlin-style Indiana Bus Dealer',history:[{year:state.year,event:'Factory order delivered'}]});
+   o.status='Delivered';o.bus=num;
+   v241AddInbox?.('Mike Evans','New bus delivery',`Bus ${num}, your ordered ${o.model}, arrived today. The garage is completing acceptance inspection and setup.`,'handled')
+  }
+ })
+}
+
+/* Rare but meaningful incidents */
+function v244MaybeIncident(){
+ ensureV244();let day=v244Day();if(day<2||state.v244.lastIncidentDay===v241Key())return;
+ // Roughly rare; serious incidents much rarer.
+ let roll=Math.random();if(roll>0.018)return;
+ state.v244.lastIncidentDay=v241Key();
+ let buses=(state.buses||[]).filter(b=>!/Maintenance|Shop|Inspection Due/i.test(String(b.status||'')));if(!buses.length)return;
+ let b=buses[Math.floor(Math.random()*buses.length)],route=(state.routes||[]).find(r=>String(r.bus)===String(b.id));
+ let types=[
+  {type:'Road Breakdown',sev:'Moderate',text:`Bus ${b.id}${route?` on Route ${route.id}`:''} reported a mechanical warning and safely pulled over. Dispatch has a spare moving and Mike is sending service.`},
+  {type:'Student Medical',sev:'Moderate',text:`A student on Bus ${b.id} became ill. The driver contacted Dispatch and school staff/EMS response is being coordinated.`},
+  {type:'Minor Contact',sev:'Significant',text:`Bus ${b.id} had minor contact with a fixed object at low speed. No injuries are reported. Safety procedures and notifications are underway.`},
+  {type:'Weather / Road',sev:'Moderate',text:`Bus ${b.id} encountered an unsafe road condition. Dispatch rerouted the bus and Marcus is reviewing the stop/road segment.`}
+ ];
+ let t=types[Math.floor(Math.random()*types.length)];
+ let inc={id:`INC-${Date.now()}`,date:v241Key(),bus:b.id,route:route?.id||null,status:'Active',...t};
+ state.v244.incidents.unshift(inc);
+ state.v244.desk.calls.unshift({date:v241Key(),from:'Dispatch',subject:t.type,text:t.text,incidentId:inc.id});
+ v241AddInbox?.('Dana Brooks',`Incident — ${t.type}`,t.text,'decision','incident')
+}
+function v244ResolveIncident(id,choice){
+ let i=ensureV244().incidents.find(x=>x.id===id);if(!i)return;i.status='Closed';i.resolution=choice;i.closed=v241Key();
+ state.v244.incidentHistory.unshift(i);state.v244.incidents=state.v244.incidents.filter(x=>x.id!==id);
+ let b=(state.buses||[]).find(x=>String(x.id)===String(i.bus));
+ if(i.type==='Road Breakdown'&&b){b.status='Maintenance';b.condition=Math.max(45,Number(b.condition||85)-5);v239ScanFleet?.()}
+ if(i.type==='Minor Contact'&&b){b.status='Inspection Due';b.condition=Math.max(50,Number(b.condition||85)-3);v239ScanFleet?.()}
+ autosaveGame?.();v244IncidentCenter()
+}
+function v244IncidentCenter(){
+ ensureV244();openModal('🚨 Incident & Response Center',`<div class="alert"><b>Incidents are intentionally uncommon.</b><div class="small">Dispatch and supervisors handle routine response. Serious or unusual situations reach the Director.</div></div>
+ ${state.v244.incidents.length?state.v244.incidents.map(i=>`<div class="project-card"><span class="trip-status pending">${i.sev}</span><b>${i.type} — Bus ${i.bus}</b><div class="small">${i.text}</div><div class="actions"><button class="btn primary" onclick="v244ResolveIncident('${i.id}','Response reviewed; staff procedures approved')">Approve Staff Response</button><button class="btn" onclick="v244ResolveIncident('${i.id}','Director follow-up completed')">Director Follow-Up</button></div></div>`).join(''):'<div class="alert priority-green">No active incidents.</div>'}
+ ${state.v244.incidentHistory.length?`<h3>Recent History</h3>${state.v244.incidentHistory.slice(0,8).map(i=>`<div class="small">${i.date} • ${i.type}: ${i.text}</div>`).join('')}`:''}`)
+}
+
+/* Employee lives and careers */
+function v244EmployeeLifeTick(){
+ ensureV244();let day=v244Day();if(day<3||state.v244.lastLifeDay===v241Key()||Math.random()>0.012)return;
+ state.v244.lastLifeDay=v241Key();
+ let pool=(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||'')));if(!pool.length)return;
+ let s=pool[Math.floor(Math.random()*pool.length)],events=[
+  {kind:'Certification',text:`${s.name} completed a professional development/certification milestone.`,morale:3},
+  {kind:'Family / Leave',text:`${s.name} requested a short period of approved family leave. Their supervisor is arranging coverage.`,morale:1},
+  {kind:'Career Interest',text:`${s.name} mentioned interest in future advancement within Transportation.`,morale:1},
+  {kind:'Recognition',text:`A school administrator sent positive feedback about ${s.name}'s professionalism.`,morale:4},
+  {kind:'Life Milestone',text:`${s.name} shared a personal life milestone with the team. Coworkers are celebrating with them.`,morale:3}
+ ];
+ let e=events[Math.floor(Math.random()*events.length)];
+ s.morale=Math.min(100,Number(s.morale||85)+e.morale);s.history=s.history||[];s.history.push({year:state.year,event:e.text});
+ state.v244.employeeLife.unshift({date:v241Key(),name:s.name,...e});
+ v241AddInbox?.(v243SupervisorFor?.(s)||'Jenna Price',e.kind,e.text,'handled')
+}
+function v244EmployeeStories(){
+ ensureV244();openModal('❤️ Employee Stories',`<div class="alert"><b>People build lives and careers here.</b><div class="small">Milestones are occasional so the department feels human without becoming a soap opera.</div></div>${state.v244.employeeLife.length?state.v244.employeeLife.slice(0,30).map(e=>`<div class="project-card"><b>${e.name} — ${e.kind}</b><div class="small">${e.date} • ${e.text}</div></div>`).join(''):'<div class="small">No employee-life milestones recorded yet.</div>'}`)
+}
+
+/* Director computer */
+function v244DeskAction(a){
+ closeModal?.();
+ if(a==='inbox')return v241OpenInbox?.();if(a==='dispatch')return v244IncidentCenter();
+ if(a==='routes')return v237OpenGrowthRouting?.();if(a==='fleet')return renderFleet?.();
+ if(a==='employees')return v243OpenWorkforce?.();if(a==='trips')return renderTrips?.();
+ if(a==='budget')return renderFinance?.();if(a==='dealer')return v244Dealer();
+ if(a==='history')return v228OpenYearbooks?.();if(a==='staffing')return v242Staffing?.()
+}
+function v244DirectorComputer(){
+ ensureV244();let active=state.v244.incidents.length,unread=(state.v241?.inbox||[]).filter(x=>x.date===v241Key()&&x.status==='Unread').length;
+ openModal('🖥️ Transportation Director Computer',`<div class="alert priority-green"><b>Good morning, Director.</b><div class="small">${v241Key()} • ${unread} unread inbox item${unread===1?'':'s'} • ${active} active incident${active===1?'':'s'}</div></div>
+ <div class="actions">
+ <button class="btn primary" onclick="v244DeskAction('inbox')">📥 Morning Inbox</button>
+ <button class="btn" onclick="v244DeskAction('dispatch')">📻 Dispatch / Incidents</button>
+ <button class="btn" onclick="v244DeskAction('routes')">🗺️ Routes</button>
+ <button class="btn" onclick="v244DeskAction('fleet')">🚌 Fleet</button>
+ <button class="btn" onclick="v244DeskAction('employees')">👥 Employees</button>
+ <button class="btn" onclick="v244DeskAction('staffing')">👔 Staffing</button>
+ <button class="btn" onclick="v244DeskAction('trips')">🏟️ Trips</button>
+ <button class="btn" onclick="v244DeskAction('budget')">💵 Budget</button>
+ <button class="btn" onclick="v244DeskAction('dealer')">🏪 Bus Dealer</button>
+ <button class="btn" onclick="v244DeskAction('history')">📚 Department History</button>
+ </div>
+ ${state.v244.desk.calls.length?`<h3>Recent Phone / Dispatch Notes</h3>${state.v244.desk.calls.slice(0,5).map(c=>`<div class="project-card"><b>${c.from} — ${c.subject}</b><div class="small">${c.text}</div></div>`).join('')}`:''}`)
+}
+function v244DirectorDesk(){
+ ensureV244();openModal('🪑 Transportation Director Office',`<div class="alert priority-green"><b>Your office is the management hub.</b><div class="small">The computer opens department systems. Phone/dispatch notes and employee conversations come to you only when needed.</div></div>
+ <div class="project-card"><b>🖥️ Director Computer</b><div class="small">Inbox • Dispatch • Routes • Fleet • Employees • Staffing • Trips • Budget • Dealer • History</div><button class="btn primary" onclick="v244DirectorComputer()">Use Computer</button></div>
+ <div class="project-card"><b>☎️ Desk Phone</b><div class="small">${state.v244.desk.calls.length?`${state.v244.desk.calls.length} recent call/dispatch note${state.v244.desk.calls.length===1?'':'s'}.`:'No calls waiting.'}</div><button class="btn" onclick="v244IncidentCenter()">Review Calls / Incidents</button></div>
+ <div class="project-card"><b>🚪 Office Door</b><div class="small">Employees waiting to talk remain connected to the Director Conversations system.</div><button class="btn" onclick="v2383OpenWaitingStaff()">Check Office Door</button></div>`)
+}
+function v244Daily(){
+ ensureV244();v244AdvanceDealerOrders();v244MaybeIncident();v244EmployeeLifeTick()
+ try{v245Daily?.()}catch(e){}
+}
+
+try{ensureV244?.();v244DealerRefresh?.()}catch(e){}
+
+/* ===== V24.5 DIRECTOR COMMAND + PROTECTED SAVES ===== */
+function ensureV245(){
+ state.v245=state.v245||{saveMeta:{lastVerified:null,lastExport:null,checksum:null},policies:{
+  callOff:'Dispatch covers routine call-offs automatically',
+  spare:'Dispatch may assign available spare buses automatically',
+  replacement:'Review buses at 12 years / high repair cost',
+  fuel:'Fuel buses below 35%',
+  incidents:'Supervisors respond first; Director handles significant exceptions',
+  attendance:'Supervisor coaching before Director escalation'
+ },compliance:{},claims:[],vendors:[],budgetPresentations:[],audits:[]};
+ return state.v245
+}
+function v245Snapshot(){
+ ensureV245();
+ return JSON.parse(JSON.stringify(state))
+}
+function v245Checksum(obj){
+ let s=JSON.stringify(obj),h=2166136261;
+ for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+ return (h>>>0).toString(16).padStart(8,'0')
+}
+function v245DownloadSave(){
+ let snap=v245Snapshot(),payload={format:'SchoolTransportationTycoonSave',version:'24.5',created:new Date().toISOString(),checksum:v245Checksum(snap),state:snap};
+ let blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download=`transport-tycoon-save-${String(v241Key?.()||'save').replace(/[^0-9A-Za-z-]/g,'-')}.json`;
+ document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove?.()},500);
+ state.v245.saveMeta.lastExport=payload.created;state.v245.saveMeta.checksum=payload.checksum
+}
+function v245ImportPrompt(){
+ let inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+ inp.onchange=async()=>{let f=inp.files?.[0];if(!f)return;try{
+   let p=JSON.parse(await f.text());if(p.format!=='SchoolTransportationTycoonSave'||!p.state)throw Error('Not a Transportation Tycoon save file');
+   let check=v245Checksum(p.state);if(p.checksum&&check!==p.checksum)throw Error('Save checksum does not match; file may be damaged');
+   if(!confirm(`Restore this save?\nDate: ${p.state.gameDate||'unknown'}\nStaff: ${(p.state.staff||[]).length}\nBuses: ${(p.state.buses||[]).length}\nRoutes: ${(p.state.routes||[]).length}`))return;
+   state=p.state;ensureV245();state.v245.saveMeta.lastVerified=new Date().toISOString();state.v245.saveMeta.checksum=check;
+   try{await v236Put?.('manual',v236Snapshot?.()||state)}catch(e){}
+   try{localStorage.setItem('transportTycoonV245Recovery',JSON.stringify({checksum:check,state}))}catch(e){}
+   render?.();alert('Save restored and verified.')
+ }catch(e){alert(`Import failed: ${e.message}`)}};
+ inp.click()
+}
+async function v245ProtectedSave(){
+ ensureV245();let snap=v245Snapshot(),check=v245Checksum(snap);
+ try{await v236Put?.('manual',v236Snapshot?.()||snap)}catch(e){}
+ try{localStorage.setItem('transportTycoonV245Recovery',JSON.stringify({checksum:check,state:snap}))}catch(e){}
+ state.v245.saveMeta.lastVerified=new Date().toISOString();state.v245.saveMeta.checksum=check;
+ alert(`SAVE VERIFIED\nDate: ${state.gameDate||'Current'}\nStaff: ${(state.staff||[]).length}\nBuses: ${(state.buses||[]).length}\nRoutes: ${(state.routes||[]).length}\nChecksum: ${check}`)
+}
+function v245SaveCenter(){
+ ensureV245();openModal('🛡️ Protected Save Center',`<div class="alert priority-green"><b>Protect long-running districts.</b><div class="small">Manual saves are verified and you can export a portable JSON backup that can be imported later.</div></div>
+ <div class="actions"><button class="btn primary" onclick="v245ProtectedSave()">💾 Save & Verify</button><button class="btn" onclick="v245DownloadSave()">⬇️ Export Save</button><button class="btn" onclick="v245ImportPrompt()">⬆️ Import Save</button></div>
+ <div class="detail"><div class="kv"><span>Last verified</span><b>${state.v245.saveMeta.lastVerified?new Date(state.v245.saveMeta.lastVerified).toLocaleString():'Not yet'}</b></div><div class="kv"><span>Checksum</span><b>${state.v245.saveMeta.checksum||'—'}</b></div></div>`)
+}
+
+/* Director scorecard */
+function v245Metrics(){
+ ensureV245();
+ let active=(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||'')));
+ let morale=active.length?active.reduce((a,s)=>a+Number(s.morale||85),0)/active.length:85;
+ let attendance=active.length?active.reduce((a,s)=>a+Number(s.attendance||96),0)/active.length:96;
+ let buses=state.buses||[],ready=buses.length?buses.filter(b=>!/Maintenance|Shop|Inspection Due/i.test(String(b.status||''))).length/buses.length*100:95;
+ let incidents=(state.v244?.incidents||[]).length,ret=(state.v243?.retentionWarnings||[]).length;
+ let staffing=Math.max(45,Math.round((morale*.55+attendance*.45)-ret*3));
+ let fleet=Math.round(ready);
+ let safety=Math.max(45,Math.round(96-incidents*8-(buses.filter(b=>String(b.status).includes('Inspection Due')).length*3)));
+ let operations=Math.max(50,Math.round((fleet*.45+attendance*.35+Math.min(100,Number(state.v243?.reputation?.score||85))*.2)));
+ let finance=88; try{let op=Number(state.operatingBudget??state.budget??0);if(op<0)finance=55}catch(e){}
+ let service=Math.max(50,Math.round((operations*.55+morale*.45)));
+ return {operations,safety,staffing,fleet,finance,service}
+}
+function v245Status(n){return n>=88?'🟢':n>=75?'🟡':'🔴'}
+function v245DirectorDashboard(){
+ let m=v245Metrics();openModal('📊 Director Dashboard',`<div class="alert priority-green"><b>Transportation Department Health</b><div class="small">A quick executive view. Morning Inbox = today. Leadership Meeting = recommendations. Dashboard = overall health.</div></div>
+ ${Object.entries(m).map(([k,v])=>`<div class="project-card"><div class="kv"><span><b>${v245Status(v)} ${k[0].toUpperCase()+k.slice(1)}</b></span><b>${v}%</b></div><div class="meter"><div style="width:${v}%"></div></div></div>`).join('')}
+ <div class="actions"><button class="btn primary" onclick="v241OpenInbox()">📥 Morning Inbox</button><button class="btn" onclick="v243LeadershipMeeting(true)">🗓️ Leadership Meeting</button><button class="btn" onclick="v245Compliance()">🪪 Compliance</button></div>`)
+}
+
+/* policies */
+function v245PolicySet(k,v){ensureV245();state.v245.policies[k]=v;autosaveGame?.();v245Policies()}
+function v245Policies(){
+ ensureV245();let p=state.v245.policies;
+ openModal('📘 Department Policies',`<div class="alert"><b>Your leadership team operates according to these standing policies.</b></div>
+ ${Object.entries(p).map(([k,v])=>`<div class="project-card"><b>${k.replace(/([A-Z])/g,' $1').replace(/^./,x=>x.toUpperCase())}</b><div class="small">${v}</div></div>`).join('')}
+ <div class="actions"><button class="btn" onclick="v245PolicySet('fuel','Fuel buses below 25%')">Fuel at 25%</button><button class="btn" onclick="v245PolicySet('fuel','Fuel buses below 35%')">Fuel at 35%</button><button class="btn" onclick="v245PolicySet('replacement','Review buses at 10 years / high repair cost')">10-Year Fleet Review</button><button class="btn" onclick="v245PolicySet('replacement','Review buses at 12 years / high repair cost')">12-Year Fleet Review</button></div>`)
+}
+
+/* compliance */
+function v245Compliance(){
+ ensureV245();let drivers=(state.staff||[]).filter(s=>/Driver/.test(v242Role?.(s)||''));
+ let due=drivers.filter(s=>Number(s.safetyScore||92)<80);
+ let buses=(state.buses||[]).filter(b=>/Inspection Due/.test(String(b.status||'')));
+ openModal('🪪 Safety & Compliance',`<div class="alert ${due.length||buses.length?'priority-yellow':'priority-green'}"><b>${due.length||buses.length?'Exceptions need attention':'Compliance is in good standing'}</b><div class="small">Terry/Safety handles routine records and escalates exceptions.</div></div>
+ <div class="kv"><span>Drivers tracked</span><b>${drivers.length}</b></div><div class="kv"><span>Driver safety exceptions</span><b>${due.length}</b></div><div class="kv"><span>Buses inspection due</span><b>${buses.length}</b></div>
+ ${due.map(s=>`<div class="small">⚠️ ${s.name}: safety/training score ${s.safetyScore||0}%</div>`).join('')}${buses.map(b=>`<div class="small">⚠️ Bus ${b.id}: inspection due</div>`).join('')}`)
+}
+
+/* payroll / OT summary */
+function v245Payroll(){
+ let active=(state.staff||[]).filter(s=>!/retired|resigned|terminated/i.test(String(s.status||'')));
+ let salary=active.reduce((a,s)=>a+Number(s.pay||v243RoleDef?.(v242Role?.(s)||'')?.pay||45000),0);
+ let benefits=Math.round(salary*.28),ot=Math.round(active.filter(s=>/Driver|Dispatcher|Mechanic/.test(v242Role?.(s)||'')).length*1100);
+ openModal('💵 Payroll & Staffing Cost',`<div class="alert"><b>Annual workforce forecast</b><div class="small">Vacancies save payroll but can create service and overtime pressure. Supervisors control routine OT.</div></div>
+ <div class="kv"><span>Base wages / salaries</span><b>${money(salary)}</b></div><div class="kv"><span>Estimated benefits</span><b>${money(benefits)}</b></div><div class="kv"><span>Estimated overtime / extra duty</span><b>${money(ot)}</b></div><div class="kv"><span>Total workforce forecast</span><b>${money(salary+benefits+ot)}</b></div>`)
+}
+
+/* vendors and claims */
+function v245Vendors(){
+ ensureV245();let vendors=['Towing / Road Service','Tires','Glass','Body Repair','Radio / Camera Systems','Major Powertrain'];
+ openModal('🔧 Outside Vendors',`<div class="alert"><b>Mike keeps normal work in-house.</b><div class="small">Specialized or capacity-heavy work can be outsourced automatically when appropriate.</div></div>${vendors.map(v=>`<div class="kv"><span>${v}</span><b>Approved Vendor</b></div>`).join('')}`)
+}
+
+/* annual budget presentation */
+function v245BudgetPresentation(){
+ ensureV245();let old=(state.buses||[]).filter(b=>((Number(String(state.gameDate||'2026').slice(0,4))||2026)-Number(b.year||2020))>=12).length;
+ let span=v243Span?.()||{stretched:false};let req={date:v241Key(),buses:Math.max(0,old),supervisor:span.stretched?1:0,status:'Draft'};
+ state.v245.budgetPresentations.unshift(req);
+ openModal('🏛️ Annual Budget Presentation',`<div class="alert priority-green"><b>Leadership recommendation prepared</b><div class="small">Your team builds the request; you decide what to take forward.</div></div><div class="project-card"><b>Fleet replacement</b><div class="small">${req.buses} bus${req.buses===1?'':'es'} currently meet the age-based review threshold.</div></div><div class="project-card"><b>Staffing</b><div class="small">${req.supervisor?'Leadership span suggests considering one additional Operations Supervisor.':'Current leadership span is reasonable.'}</div></div><div class="actions"><button class="btn primary" onclick="state.v245.budgetPresentations[0].status='Presented';alert('Budget recommendation presented to administration/board.');closeModal()">Present Recommendation</button></div>`)
+}
+
+/* state audit event */
+function v245MaybeAudit(){
+ ensureV245();if(v244Day()<20||Math.random()>0.0015)return;
+ let key='AUD-'+(state.year||'')+'-'+Math.floor(v244Day()/30);if(state.v245.audits.some(a=>a.key===key))return;
+ let m=v245Metrics(),score=Math.round((m.safety+m.fleet)/2),result=score>=85?'Passed':'Corrective Action';
+ state.v245.audits.unshift({key,date:v241Key(),score,result});
+ v241AddInbox?.('Safety & Training Coordinator','State transportation inspection',`State review completed: ${result}, score ${score}%. ${result==='Passed'?'Staff handled the inspection successfully.':'A corrective-action review is required.'}`,result==='Passed'?'handled':'decision','compliance')
+}
+
+/* enhanced Director computer */
+const _v244DirectorComputer_v245=typeof v244DirectorComputer==='function'?v244DirectorComputer:null;
+v244DirectorComputer=function(){
+ ensureV245();let active=state.v244?.incidents?.length||0,unread=(state.v241?.inbox||[]).filter(x=>x.date===v241Key()&&x.status==='Unread').length,m=v245Metrics();
+ openModal('🖥️ Transportation Director Computer',`<div class="alert priority-green"><b>Director Command Center</b><div class="small">${v241Key()} • ${unread} unread • ${active} active incidents</div></div>
+ <div class="project-card"><b>Department Health</b><div class="small">${v245Status(m.operations)} Operations ${m.operations}% &nbsp; ${v245Status(m.safety)} Safety ${m.safety}% &nbsp; ${v245Status(m.staffing)} Staffing ${m.staffing}% &nbsp; ${v245Status(m.fleet)} Fleet ${m.fleet}%</div></div>
+ <div class="actions">
+ <button class="btn primary" onclick="v245DirectorDashboard()">📊 Dashboard</button><button class="btn primary" onclick="v241OpenInbox()">📥 Inbox</button><button class="btn" onclick="v243LeadershipMeeting(true)">🗓️ Leadership Meeting</button>
+ <button class="btn" onclick="v244IncidentCenter()">📻 Dispatch</button><button class="btn" onclick="v237OpenGrowthRouting()">🗺️ Routes</button><button class="btn" onclick="renderFleet()">🚌 Fleet</button>
+ <button class="btn" onclick="v243OpenWorkforce()">👥 Employees</button><button class="btn" onclick="v242Staffing()">👔 Staffing</button><button class="btn" onclick="renderTrips()">🏟️ Trips</button>
+ <button class="btn" onclick="v245Payroll()">💵 Payroll</button><button class="btn" onclick="v245Compliance()">🪪 Compliance</button><button class="btn" onclick="v245Policies()">📘 Policies</button>
+ <button class="btn" onclick="v244Dealer()">🏪 Bus Dealer</button><button class="btn" onclick="v245Vendors()">🔧 Vendors</button><button class="btn" onclick="v245BudgetPresentation()">🏛️ Budget Presentation</button>
+ <button class="btn" onclick="v245SaveCenter()">🛡️ Save Center</button>
+ </div>`)
+}
+function v245Daily(){ensureV245();v245MaybeAudit()}
+
+try{ensureV245?.()}catch(e){}
 render();
 </script>
 </body>
