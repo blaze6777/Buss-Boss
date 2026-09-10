@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V24.7.1 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V24.7.2 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V24.7.1 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V24.7.2 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -6927,7 +6927,7 @@ function generateApplicant(){
   v2110MigrateApplicantsToExactPostings();
   let open=(state.hr203?.postings||[]).filter(p=>p.status==='Open' && Number(p.filled||0)<Number(p.openings||1));
   if(!open.length){
-    // V24.7.1: no hiring popup unless the Director has actually posted a job.
+    // V24.7.2: no hiring popup unless the Director has actually posted a job.
     return false
   }
   if(open.length===1)return v203SimulateApplicant(open[0].postingId);
@@ -7042,7 +7042,7 @@ function v22GarageAlerts(){
   if(uncovered)a.push({c:'bad',t:`${uncovered} uncovered route${uncovered===1?'':'s'}`,d:'Assign a regular or substitute driver before pull-out.'});
   if(shop)a.push({c:'warn',t:`${shop} bus${shop===1?'':'es'} unavailable`,d:'Check the shop and spare fleet.'});
   if(over)a.push({c:'warn',t:`${over} route${over===1?'':'s'} over capacity`,d:'Move stops, assign a larger bus, or create relief.'});
-  /* V24.7.1: funded vacancies stay quiet until the director opens Hiring. */
+  /* V24.7.2: funded vacancies stay quiet until the director opens Hiring. */
   if(!a.length)a.push({c:'good',t:'Morning operation ready',d:'No major issues currently require Director attention.'});
   return a
 }
@@ -7129,7 +7129,7 @@ function v221NeedsAttention(){
   if(uncovered)arr.push({sev:'bad',title:`${uncovered} route${uncovered===1?'':'s'} uncovered`,detail:'Assign a substitute, double-route a qualified driver, or fill the vacancy.',action:`document.querySelector('[data-view="dispatch"]')?.click()`});
   if(over)arr.push({sev:'warn',title:`${over} route${over===1?'':'s'} over capacity`,detail:'Move stops, use a larger bus, or build relief service.',action:`document.querySelector('[data-view="routes"]')?.click()`});
   if(shop)arr.push({sev:'warn',title:`${shop} bus${shop===1?'':'es'} unavailable`,detail:'Review open work orders and spare coverage.',action:`v221OpenWorkOrders()`});
-  /* V24.7.1: no automatic vacancy nag. */
+  /* V24.7.2: no automatic vacancy nag. */
   if(proj.over>0)arr.push({sev:'bad',title:`Projected ${money(proj.over)} over operating budget`,detail:'Current spending pace will exhaust the annual appropriation.',action:`v221OpenFinancialForecast()`});
   if(inspections)arr.push({sev:'warn',title:`${inspections} inspection item${inspections===1?'':'s'} due`,detail:'Move them into the shop plan before service is affected.',action:`v221OpenWorkOrders()`});
   return arr
@@ -7616,7 +7616,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V24.7.1 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V24.7.2 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7844,7 +7844,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V24.7.1 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V24.7.2 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8587,7 +8587,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V24.7.1 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V24.7.2 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8636,7 +8636,7 @@ function v2303MaintenanceSources(busId){
 }
 function v2303SyncMaintenanceToShop(){
   ensureV2303?.();
-  // V24.7.1: the shop reacts to actual defects, work orders and due service.
+  // V24.7.2: the shop reacts to actual defects, work orders and due service.
   // Merely having an old "Maintenance" status never creates a fake defect.
   try{v239ScanFleet?.()}catch(e){}
   state.v2303.lastMaintenanceSync=String(state.gameDate||state.schoolDay||'');
@@ -8671,10 +8671,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V24.7.1: legacy R handler replaced by live-day keyboard controls. */
+/* V24.7.2: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V24.7.1 LIVE TRANSPORTATION DAY ===== */
+/* ===== V24.7.2 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8785,7 +8785,7 @@ function v231Keyboard(e){
 }
 if(typeof window!=='undefined'&&!window.__v231KeyBound){
   window.__v231KeyBound=true;
-  /* V24.7.1 old keyboard listener disabled */
+  /* V24.7.2 old keyboard listener disabled */
 }
 
 
@@ -8799,7 +8799,7 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 
 
 
-/* ===== V24.7.1 MAINTENANCE ONLY WHEN ACTUALLY NEEDED ===== */
+/* ===== V24.7.2 MAINTENANCE ONLY WHEN ACTUALLY NEEDED ===== */
 function ensureV2381(){
   state.v2381=state.v2381||{cleanedLegacyMaintenance:false};
   return state.v2381
@@ -8928,7 +8928,7 @@ function v2381GarageSweep(){
   }
 }
 
-/* ===== V24.7.1 AUTONOMOUS BUS GARAGE ===== */
+/* ===== V24.7.2 AUTONOMOUS BUS GARAGE ===== */
 function ensureV238(){
   state.v238=state.v238||{
     jobs:{},
@@ -9097,7 +9097,7 @@ function v238QuietHiring(){
   return false
 }
 
-/* ===== V24.7.1 AUTOMATIC SUBSTITUTE COVERAGE ===== */
+/* ===== V24.7.2 AUTOMATIC SUBSTITUTE COVERAGE ===== */
 function ensureV2371(){
   state.v2371=state.v2371||{coverageLog:[],lastCoverageDay:null};
   return state.v2371
@@ -9156,7 +9156,7 @@ function v2371SilentCoverageCheck(){
   return result
 }
 
-/* ===== V24.7.1 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
+/* ===== V24.7.2 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
 function ensureV237(){
   state.v237=state.v237||{
     driverConversations:[],
@@ -9185,7 +9185,7 @@ function v237QueueDriverConversation(driver,kind,text){
   state.v237.driverConversations=state.v237.driverConversations.slice(0,200);
   try{v232Phone?.(`Driver stopped by: ${driver.name}`,text,'attention')}catch(e){}
   try{notify?.(`${driver.name} is waiting to talk with you.`,'decision')}catch(e){}
-  // V24.7.1: a conversation alert is actionable immediately instead of becoming a hidden notice.
+  // V24.7.2: a conversation alert is actionable immediately instead of becoming a hidden notice.
   try{v239PopupWaitingConversation?.()}catch(e){}
   return item
 }
@@ -9307,7 +9307,7 @@ function v237OpenGrowthRouting(){
   openModal('🏘️ New Developments & Route Growth',body)
 }
 
-/* ===== V24.7.1 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
+/* ===== V24.7.2 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
 const V236_DB='SchoolTransportationTycoon';
 const V236_STORE='saves';
 function ensureV236(){
@@ -9372,7 +9372,7 @@ async function v236ManualSave(){
     alert(`GAME SAVED\n\n${v236SaveSummary(snap)}`);
     return true
   }catch(e){
-    console.error('V24.7.1 manual save failed',e);
+    console.error('V24.7.2 manual save failed',e);
     alert('SAVE FAILED: '+(e?.message||e));
     return false
   }
@@ -9383,7 +9383,7 @@ async function v236Autosave(){
     let snap=v236Snapshot();
     await v236Put('autosave',snap);
     return true
-  }catch(e){console.warn('V24.7.1 autosave failed',e);return false}
+  }catch(e){console.warn('V24.7.2 autosave failed',e);return false}
 }
 async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
   if(!v236Validate(s)){if(showNotice)alert(`${source} is not a valid district save.`);return false}
@@ -9398,7 +9398,7 @@ async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
     return true
   }catch(e){
     window.__transportBooting=false;window.__v236Loading=false;
-    console.error('V24.7.1 restore failed',e);
+    console.error('V24.7.2 restore failed',e);
     if(showNotice)alert('LOAD FAILED: '+(e?.message||e));
     return false
   }
@@ -9476,7 +9476,7 @@ function v236AutoCoverCalloffs(){
   return {manager,uncovered}
 }
 
-/* ===== V24.7.1 INDEXEDDB PRIMARY SAVE ===== */
+/* ===== V24.7.2 INDEXEDDB PRIMARY SAVE ===== */
 const V2351_DB='SchoolTransportationTycoon';
 const V2351_STORE='saves';
 function v2351Db(){
@@ -9593,7 +9593,7 @@ window.autosaveGame=function(){
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
 
-/* ===== V24.7.1 SAVE REPAIR + DELEGATED OPERATIONS ===== */
+/* ===== V24.7.2 SAVE REPAIR + DELEGATED OPERATIONS ===== */
 function ensureV235(){
   state.v235=state.v235||{
     saveFormat:1,dispatcherLog:[],driverTouchpoints:[],interactionMilestones:{},quietVacancyPrompts:true
@@ -9646,7 +9646,7 @@ function v235SaveCurrent(showNotice=false){
     if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
     return true
   }catch(e){
-    console.error('V24.7.1 save failed',e);
+    console.error('V24.7.2 save failed',e);
     if(String(e?.name||'').includes('Quota')||String(e?.message||'').toLowerCase().includes('quota')){
       ['transportSave1','transportSave2','transportSave3'].forEach(k=>{
         try{
@@ -9662,7 +9662,7 @@ function v235SaveCurrent(showNotice=false){
         if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
         return true
       }catch(e2){
-        alert('Save storage is still full. V24.7.1 removed redundant old backups, but this browser still does not have enough local storage for this district.');
+        alert('Save storage is still full. V24.7.2 removed redundant old backups, but this browser still does not have enough local storage for this district.');
         return false
       }
     }
@@ -9743,7 +9743,7 @@ function v235DailyPeople(){
   if(Math.random()<.018)v235CreateDriverInteraction(false)
 }
 
-/* ===== V24.7.1 RELIABLE SAVES + INSTANT DAYS ===== */
+/* ===== V24.7.2 RELIABLE SAVES + INSTANT DAYS ===== */
 function ensureV234(){state.v234=state.v234||{lastManualSave:null,lastAutosave:null,lastDayResult:null};return state.v234}
 function v234ValidState(s){return !!(s&&Array.isArray(s.buses)&&Array.isArray(s.routes)&&(Array.isArray(s.staff)||Array.isArray(s.drivers)))}
 function v234ReadRaw(key){let raw=localStorage.getItem(key);if(!raw)return null;try{let s=JSON.parse(raw);return v234ValidState(s)?s:null}catch(e){return null}}
@@ -9767,7 +9767,7 @@ function v234LoadPrimary(){
 function v234RecoveryRows(){let rows=[['Manual Save','transportDirectorSave','transportDirectorSaveTime'],['Previous Manual','transportV234PreviousManual','transportV234PreviousManualTime'],['Autosave','transportAutosave','transportAutosaveTime'],['Slot 1','transportSave1','transportSave1Time'],['Slot 2','transportSave2','transportSave2Time'],['Slot 3','transportSave3','transportSave3Time']];return rows.map(([name,key,time])=>{let s=v234ReadRaw(key);return s?{name,key,state:s,ts:Number(localStorage.getItem(time)||0),day:Number(s.schoolDay||s.day||0),date:s.gameDate||'',staff:(s.staff||s.drivers||[]).length,buses:(s.buses||[]).length}:null}).filter(Boolean)}
 function v235RecoveryCenter(){let rows=v234RecoveryRows();openModal('🛟 Save Recovery Center',rows.length?rows.map(r=>`<div class="v233-backup"><b>${r.name}</b><div class="small">${r.date} • Day ${r.day} • ${r.staff} staff • ${r.buses} buses${r.ts?`<br>${new Date(r.ts).toLocaleString()}`:''}</div><button class="btn" onclick="v234RestoreKey('${r.key}')">Restore This Save</button></div>`).join(''):'<div class="alert">No valid saves found.</div>')}
 function v234RestoreKey(key){let s=v234ReadRaw(key);if(!s)return alert('Snapshot invalid.');window.__transportBooting=true;state=JSON.parse(JSON.stringify(s));window.__transportBooting=false;v234ManualSave();closeModal?.();render?.()}
-/* V24.7.1: legacy V23.4 save bindings disabled */
+/* V24.7.2: legacy V23.4 save bindings disabled */
 
 function v234RunDayInstant(){
  try{
@@ -9779,11 +9779,11 @@ function v234RunDayInstant(){
   if(d2!==d||state.gameDate!==date){ensureV234();state.v234.lastDayResult={from:date,to:state.gameDate,day:d2};v234Autosave();notify?.(`Transportation day complete. Now ${state.gameDate||''} • Day ${d2}.`,'decision')}
  }catch(e){console.error(e);alert('Transportation day could not be completed: '+(e?.message||e))}finally{window.__v234InstantDay=false}
 }
-/* V24.7.1 final save bindings */
-/* V24.7.1: legacy V23.5 save bindings disabled */
+/* V24.7.2 final save bindings */
+/* V24.7.2: legacy V23.5 save bindings disabled */
 
 
-/* ===== V24.7.1 RUN DAY / KEYBOARD REPAIR ===== */
+/* ===== V24.7.2 RUN DAY / KEYBOARD REPAIR ===== */
 function ensureV2331(){state.v2331=state.v2331||{lastStart:null};return state.v2331}
 function v2331CurrentDayKey(){return String(state.gameDate||state.schoolDay||'')}
 function v2331RunDay(){
@@ -9830,7 +9830,7 @@ function v2331BindKeys(){
 function v231Minute(){return Number(state.v231?.minute||330)}
 
 if(typeof window!=='undefined')setTimeout(()=>v2331BindKeys(),0);
-/* ===== V24.7.1 RELIABILITY + REAL OPERATIONS ===== */
+/* ===== V24.7.2 RELIABILITY + REAL OPERATIONS ===== */
 function ensureV233(){state.v233=state.v233||{absences:{},repairs:{},routeRuntime:{},tomorrow:{date:null,issues:[]},liveProcessed:{},backupMeta:{lastDay:null,lastWeek:null},employeeHistory:{}};return state.v233}
 function v233Clone(x){return JSON.parse(JSON.stringify(x))}
 function v233DateKey(){return String(state.gameDate||state.date||'')}
@@ -9857,7 +9857,7 @@ function v233ConsumeRouteFuel(busId,miles){let pct=Math.min(22,Math.max(3,Number
 function v233ProcessRouteDeparture(phase){ensureV233();v233RefreshAbsences();v233MaintainSpareAssignments();(state.routes||[]).forEach(r=>{let driver=v233RouteDriverName(r),d=v233DriverByName(driver);if(d&&(d.calledOff||d.absent))return;let busId=v233RouteBusId(r);if(!busId)return;let key=`${v233DateKey()}-${phase}-${r.id}`;if(state.v233.routeRuntime[key])return;state.v233.routeRuntime[key]={route:r.id,bus:busId,driver,phase,status:'Departed',depart:v231Minute?.()||0};let b=v233BusById(busId);if(b){b.liveStatus='Route';b.status='Route'}})}
 function v233ProcessRouteReturn(phase){ensureV233();(state.routes||[]).forEach(r=>{let key=`${v233DateKey()}-${phase}-${r.id}`,run=state.v233.routeRuntime[key];if(!run||run.status==='Returned')return;let miles=v233RouteMiles(r)/2;v233AddMileage(run.bus,miles,`${phase} route ${r.id}`);v233ConsumeRouteFuel(run.bus,miles);run.status='Returned';run.return=v231Minute?.()||0;run.miles=miles;let b=v233BusById(run.bus);if(b){b.liveStatus='Parked';b.status='Ready'}})}
 function v233FuelReturningBuses(){ensureV233();let spend=0;(state.routes||[]).forEach(r=>{let busId=v233RouteBusId(r),driver=v233RouteDriverName(r);if(busId&&v233BusFuel(busId)<55)spend+=v233FuelBus(busId,driver||'Driver','Post-route fueling')});return spend}
-function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V24.7.1 live event',key,e)}}}
+function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V24.7.2 live event',key,e)}}}
 function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v2371AutoCoverAll?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
 function v233TomorrowDate(){return v233ShiftDate(v233DateKey(),1)}
 function v233BuildTomorrowBoard(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233MaintainSpareAssignments();let issues=[],tom=v233TomorrowDate();(state.routes||[]).forEach(r=>{let drv=v233RouteDriverName(r),d=v233DriverByName(drv);if(!drv||!d)issues.push({level:'danger',title:`Route ${r.id} — driver coverage needed`,detail:'No active assigned driver.'});else{let a=state.v233.absences[drv];if(a&&a.through>=tom)issues.push({level:'warn',title:`Route ${r.id} — ${drv} absent`,detail:`Absence continues through ${a.through}.`})}let regular=r.bus||r.busId||r.assignedBus,rep=state.v233.repairs[String(regular)];if(rep&&!['Released','Closed'].includes(rep.status)){issues.push({level:r.tempBus?'warn':'danger',title:`Route ${r.id} — Bus ${regular} in shop`,detail:r.tempBus?`Bus ${r.tempBus} remains assigned as temporary spare.`:'No temporary spare assigned yet.'})}});Object.values(state.v233.repairs).forEach(rep=>{if(!['Released','Closed'].includes(rep.status))issues.push({level:'warn',title:`Bus ${rep.bus} — ${rep.status}`,detail:`${rep.issue}; estimated ${rep.days} day repair.`})});let trips=(state.trips||[]).filter(t=>String(t.date||'')===tom&&!/cancel/i.test(String(t.status||'')));if(trips.length)issues.push({level:'good',title:`${trips.length} trip${trips.length===1?'':'s'} scheduled`,detail:'Confirm bus and driver coverage.'});state.v233.tomorrow={date:tom,issues,generated:v233DateKey()};return state.v233.tomorrow}
@@ -9872,7 +9872,7 @@ function v233OpenBackupCenter(){let A=v233BackupCandidates();openModal('🧰 Rot
 function v233LoadBackup(type){let x=v233BackupCandidates().find(a=>a.type===type);if(!x)return alert('Backup unavailable.');try{window.__transportBooting=true;state=v233Clone(x.state);ensureV233();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();window.__transportBooting=false;localStorage.setItem('transportDirectorSave',JSON.stringify(state));localStorage.setItem('transportDirectorSaveTime',String(Date.now()));render?.();closeModal?.();notify?.(`${type} backup restored.`,'decision')}catch(e){window.__transportBooting=false;alert('Backup could not be restored: '+(e?.message||e))}}
 function v233PrepareNextDay(){ensureV233();v233RotatingBackups();v233EmployeeHistory();v233BuildTomorrowBoard()}
 
-/* ===== V24.7.1 LIVING GARAGE ===== */
+/* ===== V24.7.2 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -10031,7 +10031,7 @@ function v232GarageHTML(){
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V24.7.1',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V24.7.2',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -10301,7 +10301,7 @@ function v235RestoreSave(key){
 }
 
 
-/* V24.7.1 FINAL SAVE/LOAD BINDING */
+/* V24.7.2 FINAL SAVE/LOAD BINDING */
 window.saveGame=v2351Save;
 window.loadGame=v2351Load;
 window.autosaveGame=function(){
@@ -10309,10 +10309,10 @@ window.autosaveGame=function(){
   clearTimeout(window.__v2351AutoTimer);
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
-/* V24.7.1: old IndexedDB auto-restore disabled */
+/* V24.7.2: old IndexedDB auto-restore disabled */
 
 
-/* V24.7.1 FINAL SAVE / LOAD AUTHORITY */
+/* V24.7.2 FINAL SAVE / LOAD AUTHORITY */
 window.saveGame=v236ManualSave;
 window.loadGame=v236ManualLoad;
 window.autosaveGame=function(){
@@ -10323,7 +10323,7 @@ window.autosaveGame=function(){
 window.addEventListener('load',()=>setTimeout(()=>v236StartupRestore?.(),250));
 
 
-/* ===== V24.7.1 FINAL QUIET-HIRING GUARD ===== */
+/* ===== V24.7.2 FINAL QUIET-HIRING GUARD ===== */
 const v2382GenerateApplicantOriginal=generateApplicant;
 generateApplicant=function(){
   try{
@@ -10335,7 +10335,7 @@ generateApplicant=function(){
 };
 
 
-/* ===== V24.7.1 STAFF CONVERSATION ACCESS ===== */
+/* ===== V24.7.2 STAFF CONVERSATION ACCESS ===== */
 function ensureV2383(){
   state.v2383=state.v2383||{talked:{},conversationLog:[]};
   return state.v2383
@@ -10444,7 +10444,7 @@ function v2383ConversationButton(){
 }
 
 
-/* ===== V24.7.1 MAIN GARAGE CONVERSATIONS ===== */
+/* ===== V24.7.2 MAIN GARAGE CONVERSATIONS ===== */
 function v2384MainConversationBanner(){
   let names=v2383WaitingNames?.()||[];
   if(!names.length)return '';
@@ -10468,7 +10468,7 @@ function v2384DirectorConversationCard(){
 
 
 
-/* V24.7.1 conversation popup bridge */
+/* V24.7.2 conversation popup bridge */
 function v239PopupWaitingConversation(){
   try{
     let x=(state.v227?.requests||[]).find(r=>r.status==='Open'&&r.driver&&
@@ -10481,7 +10481,7 @@ function v239PopupWaitingConversation(){
   }catch(e){return false}
 }
 
-/* ===== V24.7.1 FULLY AUTOMATIC SERVICE DEPARTMENT ===== */
+/* ===== V24.7.2 FULLY AUTOMATIC SERVICE DEPARTMENT ===== */
 function ensureV239(){
   state.v239=state.v239||{lastSweep:null,serviceHistory:[]};
   return state.v239
@@ -10686,7 +10686,7 @@ function v239GarageSweep(){
 try{setTimeout(()=>{v239ScanFleet?.();v239PopupWaitingConversation?.();render?.()},250)}catch(e){}
 
 
-/* ===== V24.7.1 TRIPS + SUMMER PLANNING OVERHAUL ===== */
+/* ===== V24.7.2 TRIPS + SUMMER PLANNING OVERHAUL ===== */
 function ensureV240(){
   state.v240=state.v240||{
     tripSignups:{},tripHistory:[],summer:{week:0,requestsGenerated:false,trainingScheduled:false},
@@ -11003,7 +11003,7 @@ function summerPlanning(){
 }
 
 
-/* ===== V24.7.1 PEOPLE + DIRECTOR OPERATIONS ===== */
+/* ===== V24.7.2 PEOPLE + DIRECTOR OPERATIONS ===== */
 function ensureV241(){
   state.v241=state.v241||{
     inbox:[],lastInboxDay:null,rideAlongs:[],evaluations:[],driverBusHistory:[],
@@ -11222,7 +11222,7 @@ function v241DailyPeopleSystems(){
 
 try{ensureV241?.();v241GenerateMorningInbox?.()}catch(e){}
 
-/* ===== V24.7.1 FULL DEPARTMENT STAFFING ===== */
+/* ===== V24.7.2 FULL DEPARTMENT STAFFING ===== */
 function ensureV242(){
  state.v242=state.v242||{postings:[],applications:[],careerHistory:[],lastBrief:null};
  return state.v242
@@ -11352,7 +11352,7 @@ function v242Daily(){
 
 try{ensureV242?.()}catch(e){}
 
-/* ===== V24.7.1 WORKFORCE + LEADERSHIP ===== */
+/* ===== V24.7.2 WORKFORCE + LEADERSHIP ===== */
 function ensureV243(){
  state.v243=state.v243||{
    schedules:{},probation:{},reviews:[],attendance:{},interim:[],crossTraining:{},
@@ -11616,7 +11616,7 @@ function v243Daily(){
 
 try{ensureV243?.()}catch(e){}
 
-/* ===== V24.7.1 DIRECTOR DESK + INCIDENTS + EMPLOYEE LIFE + BUS DEALER ===== */
+/* ===== V24.7.2 DIRECTOR DESK + INCIDENTS + EMPLOYEE LIFE + BUS DEALER ===== */
 function ensureV244(){
  state.v244=state.v244||{
   incidents:[],incidentHistory:[],employeeLife:[],dealerOrders:[],dealerInventory:[],
@@ -11770,7 +11770,7 @@ function v244Daily(){
 
 try{ensureV244?.();v244DealerRefresh?.()}catch(e){}
 
-/* ===== V24.7.1 DIRECTOR COMMAND + PROTECTED SAVES ===== */
+/* ===== V24.7.2 DIRECTOR COMMAND + PROTECTED SAVES ===== */
 function ensureV245(){
  state.v245=state.v245||{saveMeta:{lastVerified:null,lastExport:null,checksum:null},policies:{
   callOff:'Dispatch covers routine call-offs automatically',
@@ -11917,7 +11917,7 @@ function v245Daily(){ensureV245();v245MaybeAudit()}
 
 try{ensureV245?.()}catch(e){}
 
-/* V24.7.1 maintenance recovery */
+/* V24.7.2 maintenance recovery */
 function ensureV2451(){state.v2451=state.v2451||{recovered:[]};return state.v2451}
 function v2451NeedsService(b){return /Maintenance|Shop|Inspection Due|Out of Service|Repair/i.test(String(b.status||''))||b.needsMaintenance===true||b.maintenanceDue===true||b.pmDue===true||!!b.maintenanceReason||!!b.issue||!!b.defect}
 function v2451Jobs(){let a=[];try{a=a.concat(Object.values(state.v238?.jobs||{}))}catch(e){};try{a=a.concat(state.v239?.jobs||[])}catch(e){};let s=new Set();return a.filter(j=>{let k=String(j.id||`${j.bus}-${j.created}`);if(s.has(k))return false;s.add(k);return !/Complete|Closed|Released/i.test(String(j.status||''))})}
@@ -11937,7 +11937,7 @@ function v2451Daily(){v2451Sync();v2451Advance()}
 
 try{ensureV2451();v2451Sync()}catch(e){}
 
-/* ===== V24.7.1 REALISTIC SHOP CAPACITY =====
+/* ===== V24.7.2 REALISTIC SHOP CAPACITY =====
    Only two buses may actively occupy Mike's two shop bays.
    Other legitimate maintenance jobs WAIT in queue and do not progress
    until a bay opens. Routine PM is staggered to avoid fleet-wide service.
@@ -12004,7 +12004,7 @@ function v2452StaggerRoutinePM(){
 try{v2452StaggerRoutinePM();v2452AssignBays()}catch(e){}
 
 
-/* ===== V24.7.1 GROWTH ROUTE SYNC FIX =====
+/* ===== V24.7.2 GROWTH ROUTE SYNC FIX =====
    Growth assignments now update the V15 route/stop model that the visible
    Route Operations screen actually renders.
 */
@@ -12112,7 +12112,7 @@ function v2453GrowthImpact(){
 }
 
 
-/* ===== V24.7.1 SUMMER DRIVER PREFERENCES + MORALE VISIBILITY ===== */
+/* ===== V24.7.2 SUMMER DRIVER PREFERENCES + MORALE VISIBILITY ===== */
 function ensureV2454(){
  state.v2454=state.v2454||{moraleNotes:{},summerPrefCache:{}};
  return state.v2454
@@ -12202,7 +12202,7 @@ function v2454SummerDriverPreferences(){
 }
 
 
-/* ===== V24.7.1 SUMMER PLANNING VISIBILITY + TRAINING FIX ===== */
+/* ===== V24.7.2 SUMMER PLANNING VISIBILITY + TRAINING FIX ===== */
 function ensureV2455(){
   state.v2455=state.v2455||{summerTrainingPlan:null};
   return state.v2455
@@ -12320,7 +12320,7 @@ v240OpenSummerPlanning=v2455SummerPlanning;
 v240ScheduleAnnualTraining=v2455OpenTrainingPlan;
 
 
-/* ===== V24.7.1 UNIFIED SUMMER PAGE + PERSISTENT NEIGHBORHOOD GROWTH ===== */
+/* ===== V24.7.2 UNIFIED SUMMER PAGE + PERSISTENT NEIGHBORHOOD GROWTH ===== */
 function ensureV2456(){
   state.v2456=state.v2456||{routeGrowth:{},growthEvents:[],summerTraining:null};
   return state.v2456
@@ -12533,10 +12533,10 @@ function v2456RepairPriorGrowth(){
   });
   v213NormalizeAllRoutes?.()
 }
-try{v2456RepairPriorGrowth()}catch(e){console.error('V24.7.1 prior growth repair',e)}
+try{v2456RepairPriorGrowth()}catch(e){console.error('V24.7.2 prior growth repair',e)}
 
 
-/* ===== V24.7.1: FIX THE ACTUAL ASSIGNMENT BOARD + ACTUAL VISIBLE ROUTE STOPS ===== */
+/* ===== V24.7.2: FIX THE ACTUAL ASSIGNMENT BOARD + ACTUAL VISIBLE ROUTE STOPS ===== */
 function ensureV2457(){state.v2457=state.v2457||{growthApplied:{}};return state.v2457}
 
 /* Put each driver's summer request on the page where buses are actually assigned. */
@@ -12644,10 +12644,10 @@ growDistrictAnnually=function(){
 }
 
 /* Repair the user's existing save on load: any already-announced routed neighborhoods become visible now. */
-try{v2457ReapplyAllGrowth()}catch(e){console.error('V24.7.1 growth repair',e)}
+try{v2457ReapplyAllGrowth()}catch(e){console.error('V24.7.2 growth repair',e)}
 
 
-/* ===== V24.7.1 GROWTH-AWARE RELIEF ROUTES ===== */
+/* ===== V24.7.2 GROWTH-AWARE RELIEF ROUTES ===== */
 function ensureV2458(){state.v2458=state.v2458||{};return state.v2458}
 
 function v2458GrowthStops(routeId){
@@ -12853,7 +12853,7 @@ v202OpenAutoBalance=function(){
 }
 
 
-/* ===== V24.7.1 SMART ROUTE REBALANCING =====
+/* ===== V24.7.2 SMART ROUTE REBALANCING =====
    Goal: move whole stops from overloaded routes into compatible routes with room first.
    Create a new relief route only when existing routes cannot absorb enough riders.
 */
@@ -13027,7 +13027,7 @@ v202OpenCapacityCenter=function(){
 }
 
 
-/* ===== V24.7.1 TRUE STOP-BASED AUTO BALANCE =====
+/* ===== V24.7.2 TRUE STOP-BASED AUTO BALANCE =====
    The V24.5.9 planner changed student records but did not always move the
    visible route-stop object. This version plans and applies directly against
    the same ops15.stopTimes model shown on Route Operations.
@@ -13188,7 +13188,7 @@ function v2460Apply(){
     (state.routes||[]).forEach(r=>opsRecalcRouteV15?.(r));
     v2457ReapplyAllGrowth?.();
     (state.routes||[]).forEach(r=>opsRecalcRouteV15?.(r));
-  }catch(e){console.error('V24.7.1 recalc',e)}
+  }catch(e){console.error('V24.7.2 recalc',e)}
 
   let after=(state.routes||[]).map(r=>({
     id:r.id,load:v2460Load(r),cap:v2460Cap(r)
@@ -13233,7 +13233,7 @@ v2459Preview=v2460Preview;
 v2459ApplyPlan=v2460Apply;
 
 
-/* ===== V24.7.1 UNIFIED ROUTE LOAD COUNTS =====
+/* ===== V24.7.2 UNIFIED ROUTE LOAD COUNTS =====
    Marcus now uses the exact same rider total shown on Route Operations.
    This eliminates cases where stale AM/PM totals made a route look full
    in the balance planner while the route screen showed open seats.
@@ -13328,7 +13328,7 @@ v2460Preview=function(){
 v2459Preview=v2460Preview;
 
 
-/* ===== V24.7.1 ONE ROUTE CAPACITY SOURCE =====
+/* ===== V24.7.2 ONE ROUTE CAPACITY SOURCE =====
    Fix from screenshots: Live Route Board is authoritative.
    Relief Center must NEVER call recalculation functions that mutate rider totals.
 */
@@ -13448,7 +13448,7 @@ v2460Preview=function(){
 v2459Preview=v2460Preview;
 
 
-/* ===== V24.7.1 ROUTE BOARD BALANCE SYNC =====
+/* ===== V24.7.2 ROUTE BOARD BALANCE SYNC =====
    Root cause: renderRoutes() calls v213NormalizeAllRoutes(), and an older
    neighborhood-growth wrapper was adding route-level growth AGAIN after the
    stop-based balance had already moved that growth. That made the Live Route
@@ -13506,7 +13506,7 @@ function v2463SyncRoutesAfterBalance(){
       r.ops15.ridersPM=r.ops15.riders;
       r.ops15.growthRiders=v2463GrowthTotal(r)
     });
-  }catch(e){console.error('V24.7.1 route sync',e)}
+  }catch(e){console.error('V24.7.2 route sync',e)}
 }
 
 /* Replace apply so the saved and displayed route totals are synchronized
@@ -13559,11 +13559,11 @@ window.addEventListener('load',()=>setTimeout(()=>{
     v2463SyncRoutesAfterBalance();
     renderRoutes?.();
     autosaveGame?.()
-  }catch(e){console.error('V24.7.1 startup route repair',e)}
+  }catch(e){console.error('V24.7.2 startup route repair',e)}
 },700));
 
 
-/* ===== V24.7.1 SPLIT/RELIEF SCREEN USES LIVE BOARD =====
+/* ===== V24.7.2 SPLIT/RELIEF SCREEN USES LIVE BOARD =====
    The remaining mismatch came from v202PlanRelief() itself. It still ran
    riderSyncRoutesV16() before opening the split screen, which could rebuild
    rider totals and make a route look overfilled even when the Live Route
@@ -13675,7 +13675,7 @@ v202ApproveRelief=function(){
 };
 
 
-/* ===== V24.7.1 LIVE BOARD IS THE ROUTE TRUTH =====
+/* ===== V24.7.2 LIVE BOARD IS THE ROUTE TRUTH =====
    Screenshot-driven fix:
    - Live Route Board showed Route 24 = 35/72.
    - Capacity/Relief showed Route 24 = 144/72.
@@ -13723,7 +13723,7 @@ v213NormalizeAllRoutes=function(){
 v2463SyncRoutesAfterBalance=function(){
   try{
     (state.routes||[]).forEach(r=>v2465RecalcNonRiderMetrics(r))
-  }catch(e){console.error('V24.7.1 safe sync',e)}
+  }catch(e){console.error('V24.7.2 safe sync',e)}
 };
 
 function v2465RecalcNonRiderMetrics(r){
@@ -13934,7 +13934,7 @@ v2460Preview=function(){
 v2459Preview=v2460Preview;
 
 
-/* ===== V24.7.1 FINAL BALANCE SYNC FIX =====
+/* ===== V24.7.2 FINAL BALANCE SYNC FIX =====
    Screenshot/behavior fix:
    V24.6.5 unified the board + planner, but the APPLY success screen was still
    inherited from V24.6.3 and used v2463StopTotal(), so it could say some
@@ -14015,7 +14015,7 @@ v202OpenAutoBalance=function(){
 };
 
 
-/* ===== V24.7.1 CANONICAL RIDER LEDGER =====
+/* ===== V24.7.2 CANONICAL RIDER LEDGER =====
    Architectural fix:
    - Regular riders come from actual student AM/PM assignments.
    - New-development riders come from developmentRoutingHistory assignments.
@@ -14339,11 +14339,11 @@ v2459Preview=v2460Preview;
 
 /* Startup repair: rebuild display totals from the two real rider ledgers. */
 window.addEventListener('load',()=>setTimeout(()=>{
-  try{v2470SyncAll();renderRoutes?.();autosaveGame?.()}catch(e){console.error('V24.7.1 canonical rider repair',e)}
+  try{v2470SyncAll();renderRoutes?.();autosaveGame?.()}catch(e){console.error('V24.7.2 canonical rider repair',e)}
 },900));
 
 
-/* ===== V24.7.1 GROWTH RIDERS ALWAYS ROUTED =====
+/* ===== V24.7.2 GROWTH RIDERS ALWAYS ROUTED =====
    User-intent fix:
    A neighborhood coming online must affect an actual route immediately.
    The older V11 logic stopped assigning once routes reached ~92% and left
@@ -14537,8 +14537,170 @@ window.addEventListener('load',()=>setTimeout(()=>{
     v2470SyncAll();
     renderRoutes?.();
     if(a||b)autosaveGame?.()
-  }catch(e){console.error('V24.7.1 growth routing repair',e)}
+  }catch(e){console.error('V24.7.2 growth routing repair',e)}
 },1100));
+
+
+/* ===== V24.7.2 CORRECT RIDER CONSERVATION =====
+   The 581 -> 617 cancellation was a false alarm.
+
+   Why: v2470DistrictTotal() added each route's PEAK(AM,PM) load.
+   Moving students between routes can legitimately change the SUM OF ROUTE
+   PEAKS even though not one student was added or removed. That is a capacity
+   metric, not a district headcount.
+
+   New rule:
+   - Route capacity still uses peak AM/PM + growth.
+   - "Did we lose students?" uses a true rider ledger total:
+       unique transported students + all routed development riders.
+   - Auto-balance rolls back only if THAT ledger total changes.
+*/
+function v2472UniqueStudentRiders(){
+  return v2470ActiveStudents().filter(s=>{
+    let am=s.ridesAM!==false && Number.isFinite(Number(s.routeAM));
+    let pm=s.ridesPM!==false && Number.isFinite(Number(s.routePM));
+    return am||pm
+  }).length
+}
+function v2472GrowthLedgerTotal(){
+  return (state.v11?.developmentRoutingHistory||[]).reduce((total,rec)=>{
+    let assigned=(rec.assignments||[]).reduce((n,a)=>n+Math.max(0,Number(a.riders||0)),0);
+    let unassigned=Math.max(0,Number(rec.unassigned||0));
+    return total+assigned+unassigned
+  },0)
+}
+function v2472LedgerTotal(){
+  return v2472UniqueStudentRiders()+v2472GrowthLedgerTotal()
+}
+function v2472RoutePeakTotal(){
+  return (state.routes||[]).reduce((n,r)=>n+v2470CanonicalLoad(r),0)
+}
+
+/* "District rider total" now means actual rider ledger headcount, not sum of route peaks. */
+v2470DistrictTotal=v2472LedgerTotal;
+
+/* Transfer regular student groups robustly: count a move if either AM or PM changed. */
+v2470TransferGroup=function(m){
+  if(m.type==='student'){
+    let changed=0;
+    v2470ActiveStudents().forEach(s=>{
+      let name=s.stopName||s.stop||'Unassigned Stop';
+      if(name!==m.name)return;
+      let touched=false;
+      if(Number(s.routeAM)===Number(m.source)){s.routeAM=Number(m.dest);touched=true}
+      if(Number(s.routePM)===Number(m.source)){s.routePM=Number(m.dest);touched=true}
+      if(touched)changed++
+    });
+    return changed>0
+  }
+  if(m.type==='growth'){
+    let rec=(state.v11?.developmentRoutingHistory||[])[m.recIndex];
+    let a=rec?.assignments?.[m.assignmentIndex];
+    if(!rec||!a||Number(a.route)!==Number(m.source)||Number(a.riders||0)<=0)return false;
+    let n=Number(a.riders||0);
+    a.riders=0;
+    let dest=(rec.assignments||[]).find(x=>Number(x.route)===Number(m.dest));
+    if(dest)dest.riders=Number(dest.riders||0)+n;
+    else rec.assignments.push({route:Number(m.dest),riders:n});
+    return true
+  }
+  return false
+};
+
+/* Correct apply invariant. Route-peak totals are reported for information,
+   but are allowed to change because AM/PM distribution can change. */
+v2460Apply=function(){
+  let P=state.v2460?.lastPlan||v2460Plan();if(!P)return;
+
+  let beforeLedger=v2472LedgerTotal();
+  let beforePeak=v2472RoutePeakTotal();
+  let backup=v2470BackupLedger(),done=[],failed=[];
+
+  (P.moves||[]).forEach(m=>{(v2470TransferGroup(m)?done:failed).push(m)});
+  v2470SyncAll();
+
+  let afterLedger=v2472LedgerTotal();
+  let afterPeak=v2472RoutePeakTotal();
+
+  if(afterLedger!==beforeLedger){
+    v2470RestoreLedger(backup);
+    openModal('⚠️ Balance Cancelled',
+      `<div class="alert priority-yellow"><b>The rider ledger changed unexpectedly, so every move was rolled back.</b>
+       <br>Actual riders before: ${beforeLedger} • attempted after: ${afterLedger}</div>
+       <div class="actions"><button class="btn" onclick="closeModal()">Close</button></div>`);
+    return
+  }
+
+  let after=v2470Rows().sort((a,b)=>Number(a.r.id)-Number(b.r.id)),still=after.filter(x=>x.over);
+  ensureV2470();
+  state.v2470.history.unshift({
+    year:state.year,date:state.gameDate,
+    beforeLedger,afterLedger,beforePeak,afterPeak,moves:done
+  });
+  state.v2470.history=state.v2470.history.slice(0,40);
+
+  try{autosaveGame?.()}catch(e){}
+  try{renderRoutes?.()}catch(e){}
+
+  openModal('✅ Routes Rebalanced — All Riders Preserved',
+    `<div class="alert priority-green">
+       <b>Actual riders before: ${beforeLedger} • after: ${afterLedger}</b>
+       <div class="small">No students or neighborhood riders were created or deleted.</div>
+     </div>
+     <div class="alert priority-blue">
+       <b>Combined route peak load: ${beforePeak} → ${afterPeak}</b>
+       <div class="small">This number may change when AM/PM riders are redistributed. That is normal and is not district headcount.</div>
+     </div>
+     ${done.map(m=>`<div class="kv"><span><b>${m.name}</b><div class="small">Route ${m.source} → Route ${m.dest}${m.growth?' • new development':''}</div></span><b>${m.riders} riders</b></div>`).join('')}
+     ${failed.length?`<div class="alert priority-yellow">${failed.length} planned move(s) could not be applied and stayed on their original routes.</div>`:''}
+     <h3>Final Route Loads</h3>
+     ${after.map(x=>`<div class="kv"><span>Route ${x.r.id}${x.growth?` <span class="small">• ${x.growth} growth</span>`:''}</span><b>${x.riders}/${x.cap} (${x.pct}%)</b></div>`).join('')}
+     ${still.length
+       ? `<div class="alert priority-yellow"><b>Still needs relief:</b><br>${still.map(x=>`Route ${x.r.id}: ${x.riders}/${x.cap}`).join('<br>')}</div>`
+       : `<div class="alert priority-green"><b>All routes are within capacity.</b></div>`}
+     <div class="actions">
+       <button class="btn primary" onclick="closeModal();goView('routes');renderRoutes()">Open Live Route Board</button>
+       <button class="btn" onclick="closeModal();v202OpenCapacityCenter()">Capacity Center</button>
+     </div>`
+  )
+};
+v2459ApplyPlan=v2460Apply;
+
+/* Preview uses true rider headcount in the lock banner. */
+v2460Preview=function(){
+  let before=v2470Rows().sort((a,b)=>Number(a.r.id)-Number(b.r.id));
+  let P=v2460Plan(),M=P.moves||[],R=P.needsRelief||[];
+  let ledger=v2472LedgerTotal(),peak=v2472RoutePeakTotal();
+  openModal('🧠 Marcus — Route Balance Plan',
+    `<div class="alert priority-blue"><b>Actual district riders locked: ${ledger}</b>
+      <div class="small">Current combined route peak load: ${peak}. Peak load may change during balancing; actual rider headcount may not.</div>
+     </div>
+     <h3>Before → Projected After</h3>
+     ${before.map(x=>{let v=P.virtual[String(x.r.id)]||{load:x.riders,cap:x.cap};return `<div class="kv"><span>Route ${x.r.id}${x.growth?` <span class="small">• ${x.growth} growth</span>`:''}</span><b>${x.riders}/${x.cap} → ${v.load}/${v.cap}</b></div>`}).join('')}
+     ${M.length?`<h3>Moves</h3>${M.map(m=>`<div class="kv"><span><b>${m.name}</b><div class="small">Route ${m.source} → Route ${m.dest}${m.growth?' • new development':''}</div></span><b>${m.riders}</b></div>`).join('')}`:'<div class="alert">No existing-route moves fit safely.</div>'}
+     ${R.length?`<div class="alert priority-yellow">${R.map(r=>`Route ${r.source} still needs relief: ${r.remaining}/${r.cap}`).join('<br>')}</div>`:'<div class="alert priority-green"><b>No new route should be needed after these moves.</b></div>'}
+     <div class="actions">${M.length?'<button class="btn primary" onclick="v2460Apply()">Apply Auto-Balance</button>':''}<button class="btn" onclick="closeModal();v202OpenCapacityCenter()">Cancel</button></div>`
+  )
+};
+v2459Preview=v2460Preview;
+
+/* Capacity Center shows both real headcount and route peak demand to avoid ambiguity. */
+const _v202OpenCapacityCenter_2472=v202OpenCapacityCenter;
+v202OpenCapacityCenter=function(){
+  _v202OpenCapacityCenter_2472();
+  setTimeout(()=>{
+    let modal=document.querySelector('.modal-content,.modalCard,.modal');
+    if(!modal)return;
+    let alert=modal.querySelector('.alert');
+    if(alert&&!document.getElementById('v2472-ledger-audit')){
+      let d=document.createElement('div');
+      d.id='v2472-ledger-audit';
+      d.className='kv';
+      d.innerHTML=`<span>Actual district riders</span><b>${v2472LedgerTotal()}</b><span>Combined route peak demand</span><b>${v2472RoutePeakTotal()}</b>`;
+      alert.after(d)
+    }
+  },0)
+};
 
 render();
 </script>
