@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — Tycoon Web V24.7.3 — Durable Save & Fleet Recovery</title>
+<title>School Transportation Tycoon — Tycoon Web V25.0.0 — Durable Save & Fleet Recovery</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — Tycoon Web V24.7.3 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — Tycoon Web V25.0.0 — Durable Save & Fleet Recovery</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -6927,7 +6927,7 @@ function generateApplicant(){
   v2110MigrateApplicantsToExactPostings();
   let open=(state.hr203?.postings||[]).filter(p=>p.status==='Open' && Number(p.filled||0)<Number(p.openings||1));
   if(!open.length){
-    // V24.7.3: no hiring popup unless the Director has actually posted a job.
+    // V25.0.0: no hiring popup unless the Director has actually posted a job.
     return false
   }
   if(open.length===1)return v203SimulateApplicant(open[0].postingId);
@@ -7042,7 +7042,7 @@ function v22GarageAlerts(){
   if(uncovered)a.push({c:'bad',t:`${uncovered} uncovered route${uncovered===1?'':'s'}`,d:'Assign a regular or substitute driver before pull-out.'});
   if(shop)a.push({c:'warn',t:`${shop} bus${shop===1?'':'es'} unavailable`,d:'Check the shop and spare fleet.'});
   if(over)a.push({c:'warn',t:`${over} route${over===1?'':'s'} over capacity`,d:'Move stops, assign a larger bus, or create relief.'});
-  /* V24.7.3: funded vacancies stay quiet until the director opens Hiring. */
+  /* V25.0.0: funded vacancies stay quiet until the director opens Hiring. */
   if(!a.length)a.push({c:'good',t:'Morning operation ready',d:'No major issues currently require Director attention.'});
   return a
 }
@@ -7129,7 +7129,7 @@ function v221NeedsAttention(){
   if(uncovered)arr.push({sev:'bad',title:`${uncovered} route${uncovered===1?'':'s'} uncovered`,detail:'Assign a substitute, double-route a qualified driver, or fill the vacancy.',action:`document.querySelector('[data-view="dispatch"]')?.click()`});
   if(over)arr.push({sev:'warn',title:`${over} route${over===1?'':'s'} over capacity`,detail:'Move stops, use a larger bus, or build relief service.',action:`document.querySelector('[data-view="routes"]')?.click()`});
   if(shop)arr.push({sev:'warn',title:`${shop} bus${shop===1?'':'es'} unavailable`,detail:'Review open work orders and spare coverage.',action:`v221OpenWorkOrders()`});
-  /* V24.7.3: no automatic vacancy nag. */
+  /* V25.0.0: no automatic vacancy nag. */
   if(proj.over>0)arr.push({sev:'bad',title:`Projected ${money(proj.over)} over operating budget`,detail:'Current spending pace will exhaust the annual appropriation.',action:`v221OpenFinancialForecast()`});
   if(inspections)arr.push({sev:'warn',title:`${inspections} inspection item${inspections===1?'':'s'} due`,detail:'Move them into the shop plan before service is affected.',action:`v221OpenWorkOrders()`});
   return arr
@@ -7616,7 +7616,7 @@ function v223RepairOperatingFund(){
 }
 
 
-/* ===== V24.7.3 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
+/* ===== V25.0.0 DURABLE SAVE + PURCHASED FLEET RECOVERY ===== */
 function v224SaveMeta(){
   state.saveMeta224=state.saveMeta224||{schema:224,updatedAt:0,saveCount:0,lastFleetCount:0,lastBusIds:[]};
   return state.saveMeta224
@@ -7844,7 +7844,7 @@ function v225EndDay(){ensureV225();(state.buses||[]).forEach(b=>{let L=state.v22
 
 /* ===== V22.6 GARAGE OPERATIONS + REALISTIC DISPATCH ===== */
 
-/* ===== V24.7.3 GARAGE COMPATIBILITY REPAIR ===== */
+/* ===== V25.0.0 GARAGE COMPATIBILITY REPAIR ===== */
 function v2301Compat(){
   if(!state.v225)return;
   state.v225.driverProfiles=state.v225.drivers||state.v225.driverProfiles||{};
@@ -8587,7 +8587,7 @@ function v230DailyReputation(){
 }
 
 
-/* ===== V24.7.3 GARAGE OPERATIONS REPAIR ===== */
+/* ===== V25.0.0 GARAGE OPERATIONS REPAIR ===== */
 function ensureV2303(){
   ensureV230?.();ensureV226?.();ensureV227?.();ensureV228?.();
   state.v2303=state.v2303||{keyboardRunEnabled:true,lastMaintenanceSync:null};
@@ -8636,7 +8636,7 @@ function v2303MaintenanceSources(busId){
 }
 function v2303SyncMaintenanceToShop(){
   ensureV2303?.();
-  // V24.7.3: the shop reacts to actual defects, work orders and due service.
+  // V25.0.0: the shop reacts to actual defects, work orders and due service.
   // Merely having an old "Maintenance" status never creates a fake defect.
   try{v239ScanFleet?.()}catch(e){}
   state.v2303.lastMaintenanceSync=String(state.gameDate||state.schoolDay||'');
@@ -8671,10 +8671,10 @@ function v2303RunDayFromKeyboard(e){
     runTransportationDay();
   }
 }
-/* V24.7.3: legacy R handler replaced by live-day keyboard controls. */
+/* V25.0.0: legacy R handler replaced by live-day keyboard controls. */
 
 
-/* ===== V24.7.3 LIVE TRANSPORTATION DAY ===== */
+/* ===== V25.0.0 LIVE TRANSPORTATION DAY ===== */
 function ensureV231(){
   ensureV2303?.();
   state.v231=state.v231||{running:false,paused:true,speed:1,minute:330,events:[],completed:false,lastDay:null,interval:null};
@@ -8785,7 +8785,7 @@ function v231Keyboard(e){
 }
 if(typeof window!=='undefined'&&!window.__v231KeyBound){
   window.__v231KeyBound=true;
-  /* V24.7.3 old keyboard listener disabled */
+  /* V25.0.0 old keyboard listener disabled */
 }
 
 
@@ -8799,7 +8799,7 @@ if(typeof window!=='undefined'&&!window.__v231KeyBound){
 
 
 
-/* ===== V24.7.3 MAINTENANCE ONLY WHEN ACTUALLY NEEDED ===== */
+/* ===== V25.0.0 MAINTENANCE ONLY WHEN ACTUALLY NEEDED ===== */
 function ensureV2381(){
   state.v2381=state.v2381||{cleanedLegacyMaintenance:false};
   return state.v2381
@@ -8928,7 +8928,7 @@ function v2381GarageSweep(){
   }
 }
 
-/* ===== V24.7.3 AUTONOMOUS BUS GARAGE ===== */
+/* ===== V25.0.0 AUTONOMOUS BUS GARAGE ===== */
 function ensureV238(){
   state.v238=state.v238||{
     jobs:{},
@@ -9097,7 +9097,7 @@ function v238QuietHiring(){
   return false
 }
 
-/* ===== V24.7.3 AUTOMATIC SUBSTITUTE COVERAGE ===== */
+/* ===== V25.0.0 AUTOMATIC SUBSTITUTE COVERAGE ===== */
 function ensureV2371(){
   state.v2371=state.v2371||{coverageLog:[],lastCoverageDay:null};
   return state.v2371
@@ -9156,7 +9156,7 @@ function v2371SilentCoverageCheck(){
   return result
 }
 
-/* ===== V24.7.3 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
+/* ===== V25.0.0 DRIVER CONVERSATIONS + GROWTH ROUTING ===== */
 function ensureV237(){
   state.v237=state.v237||{
     driverConversations:[],
@@ -9185,7 +9185,7 @@ function v237QueueDriverConversation(driver,kind,text){
   state.v237.driverConversations=state.v237.driverConversations.slice(0,200);
   try{v232Phone?.(`Driver stopped by: ${driver.name}`,text,'attention')}catch(e){}
   try{notify?.(`${driver.name} is waiting to talk with you.`,'decision')}catch(e){}
-  // V24.7.3: a conversation alert is actionable immediately instead of becoming a hidden notice.
+  // V25.0.0: a conversation alert is actionable immediately instead of becoming a hidden notice.
   try{v239PopupWaitingConversation?.()}catch(e){}
   return item
 }
@@ -9307,7 +9307,7 @@ function v237OpenGrowthRouting(){
   openModal('🏘️ New Developments & Route Growth',body)
 }
 
-/* ===== V24.7.3 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
+/* ===== V25.0.0 EXACT SAVE/LOAD + STAFF DISPATCH ===== */
 const V236_DB='SchoolTransportationTycoon';
 const V236_STORE='saves';
 function ensureV236(){
@@ -9372,7 +9372,7 @@ async function v236ManualSave(){
     alert(`GAME SAVED\n\n${v236SaveSummary(snap)}`);
     return true
   }catch(e){
-    console.error('V24.7.3 manual save failed',e);
+    console.error('V25.0.0 manual save failed',e);
     alert('SAVE FAILED: '+(e?.message||e));
     return false
   }
@@ -9383,7 +9383,7 @@ async function v236Autosave(){
     let snap=v236Snapshot();
     await v236Put('autosave',snap);
     return true
-  }catch(e){console.warn('V24.7.3 autosave failed',e);return false}
+  }catch(e){console.warn('V25.0.0 autosave failed',e);return false}
 }
 async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
   if(!v236Validate(s)){if(showNotice)alert(`${source} is not a valid district save.`);return false}
@@ -9398,7 +9398,7 @@ async function v236RestoreSnapshot(s,source='Manual Save',showNotice=true){
     return true
   }catch(e){
     window.__transportBooting=false;window.__v236Loading=false;
-    console.error('V24.7.3 restore failed',e);
+    console.error('V25.0.0 restore failed',e);
     if(showNotice)alert('LOAD FAILED: '+(e?.message||e));
     return false
   }
@@ -9476,7 +9476,7 @@ function v236AutoCoverCalloffs(){
   return {manager,uncovered}
 }
 
-/* ===== V24.7.3 INDEXEDDB PRIMARY SAVE ===== */
+/* ===== V25.0.0 INDEXEDDB PRIMARY SAVE ===== */
 const V2351_DB='SchoolTransportationTycoon';
 const V2351_STORE='saves';
 function v2351Db(){
@@ -9593,7 +9593,7 @@ window.autosaveGame=function(){
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
 
-/* ===== V24.7.3 SAVE REPAIR + DELEGATED OPERATIONS ===== */
+/* ===== V25.0.0 SAVE REPAIR + DELEGATED OPERATIONS ===== */
 function ensureV235(){
   state.v235=state.v235||{
     saveFormat:1,dispatcherLog:[],driverTouchpoints:[],interactionMilestones:{},quietVacancyPrompts:true
@@ -9646,7 +9646,7 @@ function v235SaveCurrent(showNotice=false){
     if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
     return true
   }catch(e){
-    console.error('V24.7.3 save failed',e);
+    console.error('V25.0.0 save failed',e);
     if(String(e?.name||'').includes('Quota')||String(e?.message||'').toLowerCase().includes('quota')){
       ['transportSave1','transportSave2','transportSave3'].forEach(k=>{
         try{
@@ -9662,7 +9662,7 @@ function v235SaveCurrent(showNotice=false){
         if(showNotice)notify?.(`Saved ${snapshot.gameDate||''} • Day ${snapshot.schoolDay||snapshot.day||0}.`,'decision');
         return true
       }catch(e2){
-        alert('Save storage is still full. V24.7.3 removed redundant old backups, but this browser still does not have enough local storage for this district.');
+        alert('Save storage is still full. V25.0.0 removed redundant old backups, but this browser still does not have enough local storage for this district.');
         return false
       }
     }
@@ -9743,7 +9743,7 @@ function v235DailyPeople(){
   if(Math.random()<.018)v235CreateDriverInteraction(false)
 }
 
-/* ===== V24.7.3 RELIABLE SAVES + INSTANT DAYS ===== */
+/* ===== V25.0.0 RELIABLE SAVES + INSTANT DAYS ===== */
 function ensureV234(){state.v234=state.v234||{lastManualSave:null,lastAutosave:null,lastDayResult:null};return state.v234}
 function v234ValidState(s){return !!(s&&Array.isArray(s.buses)&&Array.isArray(s.routes)&&(Array.isArray(s.staff)||Array.isArray(s.drivers)))}
 function v234ReadRaw(key){let raw=localStorage.getItem(key);if(!raw)return null;try{let s=JSON.parse(raw);return v234ValidState(s)?s:null}catch(e){return null}}
@@ -9767,7 +9767,7 @@ function v234LoadPrimary(){
 function v234RecoveryRows(){let rows=[['Manual Save','transportDirectorSave','transportDirectorSaveTime'],['Previous Manual','transportV234PreviousManual','transportV234PreviousManualTime'],['Autosave','transportAutosave','transportAutosaveTime'],['Slot 1','transportSave1','transportSave1Time'],['Slot 2','transportSave2','transportSave2Time'],['Slot 3','transportSave3','transportSave3Time']];return rows.map(([name,key,time])=>{let s=v234ReadRaw(key);return s?{name,key,state:s,ts:Number(localStorage.getItem(time)||0),day:Number(s.schoolDay||s.day||0),date:s.gameDate||'',staff:(s.staff||s.drivers||[]).length,buses:(s.buses||[]).length}:null}).filter(Boolean)}
 function v235RecoveryCenter(){let rows=v234RecoveryRows();openModal('🛟 Save Recovery Center',rows.length?rows.map(r=>`<div class="v233-backup"><b>${r.name}</b><div class="small">${r.date} • Day ${r.day} • ${r.staff} staff • ${r.buses} buses${r.ts?`<br>${new Date(r.ts).toLocaleString()}`:''}</div><button class="btn" onclick="v234RestoreKey('${r.key}')">Restore This Save</button></div>`).join(''):'<div class="alert">No valid saves found.</div>')}
 function v234RestoreKey(key){let s=v234ReadRaw(key);if(!s)return alert('Snapshot invalid.');window.__transportBooting=true;state=JSON.parse(JSON.stringify(s));window.__transportBooting=false;v234ManualSave();closeModal?.();render?.()}
-/* V24.7.3: legacy V23.4 save bindings disabled */
+/* V25.0.0: legacy V23.4 save bindings disabled */
 
 function v234RunDayInstant(){
  try{
@@ -9779,11 +9779,11 @@ function v234RunDayInstant(){
   if(d2!==d||state.gameDate!==date){ensureV234();state.v234.lastDayResult={from:date,to:state.gameDate,day:d2};v234Autosave();notify?.(`Transportation day complete. Now ${state.gameDate||''} • Day ${d2}.`,'decision')}
  }catch(e){console.error(e);alert('Transportation day could not be completed: '+(e?.message||e))}finally{window.__v234InstantDay=false}
 }
-/* V24.7.3 final save bindings */
-/* V24.7.3: legacy V23.5 save bindings disabled */
+/* V25.0.0 final save bindings */
+/* V25.0.0: legacy V23.5 save bindings disabled */
 
 
-/* ===== V24.7.3 RUN DAY / KEYBOARD REPAIR ===== */
+/* ===== V25.0.0 RUN DAY / KEYBOARD REPAIR ===== */
 function ensureV2331(){state.v2331=state.v2331||{lastStart:null};return state.v2331}
 function v2331CurrentDayKey(){return String(state.gameDate||state.schoolDay||'')}
 function v2331RunDay(){
@@ -9830,7 +9830,7 @@ function v2331BindKeys(){
 function v231Minute(){return Number(state.v231?.minute||330)}
 
 if(typeof window!=='undefined')setTimeout(()=>v2331BindKeys(),0);
-/* ===== V24.7.3 RELIABILITY + REAL OPERATIONS ===== */
+/* ===== V25.0.0 RELIABILITY + REAL OPERATIONS ===== */
 function ensureV233(){state.v233=state.v233||{absences:{},repairs:{},routeRuntime:{},tomorrow:{date:null,issues:[]},liveProcessed:{},backupMeta:{lastDay:null,lastWeek:null},employeeHistory:{}};return state.v233}
 function v233Clone(x){return JSON.parse(JSON.stringify(x))}
 function v233DateKey(){return String(state.gameDate||state.date||'')}
@@ -9857,7 +9857,7 @@ function v233ConsumeRouteFuel(busId,miles){let pct=Math.min(22,Math.max(3,Number
 function v233ProcessRouteDeparture(phase){ensureV233();v233RefreshAbsences();v233MaintainSpareAssignments();(state.routes||[]).forEach(r=>{let driver=v233RouteDriverName(r),d=v233DriverByName(driver);if(d&&(d.calledOff||d.absent))return;let busId=v233RouteBusId(r);if(!busId)return;let key=`${v233DateKey()}-${phase}-${r.id}`;if(state.v233.routeRuntime[key])return;state.v233.routeRuntime[key]={route:r.id,bus:busId,driver,phase,status:'Departed',depart:v231Minute?.()||0};let b=v233BusById(busId);if(b){b.liveStatus='Route';b.status='Route'}})}
 function v233ProcessRouteReturn(phase){ensureV233();(state.routes||[]).forEach(r=>{let key=`${v233DateKey()}-${phase}-${r.id}`,run=state.v233.routeRuntime[key];if(!run||run.status==='Returned')return;let miles=v233RouteMiles(r)/2;v233AddMileage(run.bus,miles,`${phase} route ${r.id}`);v233ConsumeRouteFuel(run.bus,miles);run.status='Returned';run.return=v231Minute?.()||0;run.miles=miles;let b=v233BusById(run.bus);if(b){b.liveStatus='Parked';b.status='Ready'}})}
 function v233FuelReturningBuses(){ensureV233();let spend=0;(state.routes||[]).forEach(r=>{let busId=v233RouteBusId(r),driver=v233RouteDriverName(r);if(busId&&v233BusFuel(busId)<55)spend+=v233FuelBus(busId,driver||'Driver','Post-route fueling')});return spend}
-function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V24.7.3 live event',key,e)}}}
+function v233LiveEvent(minute,key,fn){ensureV233();let dk=`${v233DateKey()}-${key}`;if(v231Minute?.()>=minute&&!state.v233.liveProcessed[dk]){state.v233.liveProcessed[dk]=true;try{fn()}catch(e){console.error('V25.0.0 live event',key,e)}}}
 function v233IncrementalOps(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233LiveEvent(350,'calloffs',()=>{v2371AutoCoverAll?.();v233MaintainSpareAssignments()});v233LiveEvent(370,'amDepart',()=>{v233ProcessRouteDeparture('AM');v231AddEvent?.('AM buses physically depart; assigned spaces are now empty.')});v233LiveEvent(500,'amReturn',()=>{v233ProcessRouteReturn('AM');v231AddEvent?.('AM route mileage posted to the buses that actually ran.')});v233LiveEvent(545,'amFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(720,'repairs',()=>{let n=v233ReleaseReadyRepairs();if(n)v231AddEvent?.(`${n} repaired bus${n===1?'':'es'} passed road test and returned to service.`)});v233LiveEvent(890,'pmDepart',()=>{v233ProcessRouteDeparture('PM');v231AddEvent?.('PM buses depart the garage.')});v233LiveEvent(1020,'pmReturn',()=>{v233ProcessRouteReturn('PM');v231AddEvent?.('PM route mileage posted and buses return to campus.')});v233LiveEvent(1060,'pmFuel',()=>{let n=v233FuelReturningBuses();if(n)v231AddEvent?.(`Evening fleet-card fueling posted: ${typeof money==='function'?money(n):'$'+n.toFixed(2)}.`)});v233LiveEvent(1080,'tomorrow',()=>{v233BuildTomorrowBoard()})}
 function v233TomorrowDate(){return v233ShiftDate(v233DateKey(),1)}
 function v233BuildTomorrowBoard(){ensureV233();v233RefreshAbsences();v233SyncRepairs();v233MaintainSpareAssignments();let issues=[],tom=v233TomorrowDate();(state.routes||[]).forEach(r=>{let drv=v233RouteDriverName(r),d=v233DriverByName(drv);if(!drv||!d)issues.push({level:'danger',title:`Route ${r.id} — driver coverage needed`,detail:'No active assigned driver.'});else{let a=state.v233.absences[drv];if(a&&a.through>=tom)issues.push({level:'warn',title:`Route ${r.id} — ${drv} absent`,detail:`Absence continues through ${a.through}.`})}let regular=r.bus||r.busId||r.assignedBus,rep=state.v233.repairs[String(regular)];if(rep&&!['Released','Closed'].includes(rep.status)){issues.push({level:r.tempBus?'warn':'danger',title:`Route ${r.id} — Bus ${regular} in shop`,detail:r.tempBus?`Bus ${r.tempBus} remains assigned as temporary spare.`:'No temporary spare assigned yet.'})}});Object.values(state.v233.repairs).forEach(rep=>{if(!['Released','Closed'].includes(rep.status))issues.push({level:'warn',title:`Bus ${rep.bus} — ${rep.status}`,detail:`${rep.issue}; estimated ${rep.days} day repair.`})});let trips=(state.trips||[]).filter(t=>String(t.date||'')===tom&&!/cancel/i.test(String(t.status||'')));if(trips.length)issues.push({level:'good',title:`${trips.length} trip${trips.length===1?'':'s'} scheduled`,detail:'Confirm bus and driver coverage.'});state.v233.tomorrow={date:tom,issues,generated:v233DateKey()};return state.v233.tomorrow}
@@ -9872,7 +9872,7 @@ function v233OpenBackupCenter(){let A=v233BackupCandidates();openModal('🧰 Rot
 function v233LoadBackup(type){let x=v233BackupCandidates().find(a=>a.type===type);if(!x)return alert('Backup unavailable.');try{window.__transportBooting=true;state=v233Clone(x.state);ensureV233();ensureV225?.();ensureV226?.();ensureV227?.();ensureV228?.();ensureV230?.();ensureV2303?.();ensureV231?.();ensureV232?.();ensureV233?.();window.__transportBooting=false;localStorage.setItem('transportDirectorSave',JSON.stringify(state));localStorage.setItem('transportDirectorSaveTime',String(Date.now()));render?.();closeModal?.();notify?.(`${type} backup restored.`,'decision')}catch(e){window.__transportBooting=false;alert('Backup could not be restored: '+(e?.message||e))}}
 function v233PrepareNextDay(){ensureV233();v233RotatingBackups();v233EmployeeHistory();v233BuildTomorrowBoard()}
 
-/* ===== V24.7.3 LIVING GARAGE ===== */
+/* ===== V25.0.0 LIVING GARAGE ===== */
 function ensureV232(){
   ensureV231?.();ensureV2303?.();
   state.v232=state.v232||{
@@ -10031,7 +10031,7 @@ function v232GarageHTML(){
 }
 function v232OpenLivingGarage(){
   ensureV232();v232SyncStates();
-  openModal('🚌 Living Garage — V24.7.3',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
+  openModal('🚌 Living Garage — V25.0.0',`<div id="v232LivingRoot">${v232GarageHTML()}</div>`)
 }
 function v232Refresh(){
   let root=document.getElementById?.('v232LivingRoot');if(root)root.innerHTML=v232GarageHTML()
@@ -10301,7 +10301,7 @@ function v235RestoreSave(key){
 }
 
 
-/* V24.7.3 FINAL SAVE/LOAD BINDING */
+/* V25.0.0 FINAL SAVE/LOAD BINDING */
 window.saveGame=v2351Save;
 window.loadGame=v2351Load;
 window.autosaveGame=function(){
@@ -10309,10 +10309,10 @@ window.autosaveGame=function(){
   clearTimeout(window.__v2351AutoTimer);
   window.__v2351AutoTimer=setTimeout(()=>v2351Save().catch(()=>{}),250)
 };
-/* V24.7.3: old IndexedDB auto-restore disabled */
+/* V25.0.0: old IndexedDB auto-restore disabled */
 
 
-/* V24.7.3 FINAL SAVE / LOAD AUTHORITY */
+/* V25.0.0 FINAL SAVE / LOAD AUTHORITY */
 window.saveGame=v236ManualSave;
 window.loadGame=v236ManualLoad;
 window.autosaveGame=function(){
@@ -10323,7 +10323,7 @@ window.autosaveGame=function(){
 window.addEventListener('load',()=>setTimeout(()=>v236StartupRestore?.(),250));
 
 
-/* ===== V24.7.3 FINAL QUIET-HIRING GUARD ===== */
+/* ===== V25.0.0 FINAL QUIET-HIRING GUARD ===== */
 const v2382GenerateApplicantOriginal=generateApplicant;
 generateApplicant=function(){
   try{
@@ -10335,7 +10335,7 @@ generateApplicant=function(){
 };
 
 
-/* ===== V24.7.3 STAFF CONVERSATION ACCESS ===== */
+/* ===== V25.0.0 STAFF CONVERSATION ACCESS ===== */
 function ensureV2383(){
   state.v2383=state.v2383||{talked:{},conversationLog:[]};
   return state.v2383
@@ -10444,7 +10444,7 @@ function v2383ConversationButton(){
 }
 
 
-/* ===== V24.7.3 MAIN GARAGE CONVERSATIONS ===== */
+/* ===== V25.0.0 MAIN GARAGE CONVERSATIONS ===== */
 function v2384MainConversationBanner(){
   let names=v2383WaitingNames?.()||[];
   if(!names.length)return '';
@@ -10468,7 +10468,7 @@ function v2384DirectorConversationCard(){
 
 
 
-/* V24.7.3 conversation popup bridge */
+/* V25.0.0 conversation popup bridge */
 function v239PopupWaitingConversation(){
   try{
     let x=(state.v227?.requests||[]).find(r=>r.status==='Open'&&r.driver&&
@@ -10481,7 +10481,7 @@ function v239PopupWaitingConversation(){
   }catch(e){return false}
 }
 
-/* ===== V24.7.3 FULLY AUTOMATIC SERVICE DEPARTMENT ===== */
+/* ===== V25.0.0 FULLY AUTOMATIC SERVICE DEPARTMENT ===== */
 function ensureV239(){
   state.v239=state.v239||{lastSweep:null,serviceHistory:[]};
   return state.v239
@@ -10686,7 +10686,7 @@ function v239GarageSweep(){
 try{setTimeout(()=>{v239ScanFleet?.();v239PopupWaitingConversation?.();render?.()},250)}catch(e){}
 
 
-/* ===== V24.7.3 TRIPS + SUMMER PLANNING OVERHAUL ===== */
+/* ===== V25.0.0 TRIPS + SUMMER PLANNING OVERHAUL ===== */
 function ensureV240(){
   state.v240=state.v240||{
     tripSignups:{},tripHistory:[],summer:{week:0,requestsGenerated:false,trainingScheduled:false},
@@ -11003,7 +11003,7 @@ function summerPlanning(){
 }
 
 
-/* ===== V24.7.3 PEOPLE + DIRECTOR OPERATIONS ===== */
+/* ===== V25.0.0 PEOPLE + DIRECTOR OPERATIONS ===== */
 function ensureV241(){
   state.v241=state.v241||{
     inbox:[],lastInboxDay:null,rideAlongs:[],evaluations:[],driverBusHistory:[],
@@ -11222,7 +11222,7 @@ function v241DailyPeopleSystems(){
 
 try{ensureV241?.();v241GenerateMorningInbox?.()}catch(e){}
 
-/* ===== V24.7.3 FULL DEPARTMENT STAFFING ===== */
+/* ===== V25.0.0 FULL DEPARTMENT STAFFING ===== */
 function ensureV242(){
  state.v242=state.v242||{postings:[],applications:[],careerHistory:[],lastBrief:null};
  return state.v242
@@ -11352,7 +11352,7 @@ function v242Daily(){
 
 try{ensureV242?.()}catch(e){}
 
-/* ===== V24.7.3 WORKFORCE + LEADERSHIP ===== */
+/* ===== V25.0.0 WORKFORCE + LEADERSHIP ===== */
 function ensureV243(){
  state.v243=state.v243||{
    schedules:{},probation:{},reviews:[],attendance:{},interim:[],crossTraining:{},
@@ -11616,7 +11616,7 @@ function v243Daily(){
 
 try{ensureV243?.()}catch(e){}
 
-/* ===== V24.7.3 DIRECTOR DESK + INCIDENTS + EMPLOYEE LIFE + BUS DEALER ===== */
+/* ===== V25.0.0 DIRECTOR DESK + INCIDENTS + EMPLOYEE LIFE + BUS DEALER ===== */
 function ensureV244(){
  state.v244=state.v244||{
   incidents:[],incidentHistory:[],employeeLife:[],dealerOrders:[],dealerInventory:[],
@@ -11770,7 +11770,7 @@ function v244Daily(){
 
 try{ensureV244?.();v244DealerRefresh?.()}catch(e){}
 
-/* ===== V24.7.3 DIRECTOR COMMAND + PROTECTED SAVES ===== */
+/* ===== V25.0.0 DIRECTOR COMMAND + PROTECTED SAVES ===== */
 function ensureV245(){
  state.v245=state.v245||{saveMeta:{lastVerified:null,lastExport:null,checksum:null},policies:{
   callOff:'Dispatch covers routine call-offs automatically',
@@ -11917,7 +11917,7 @@ function v245Daily(){ensureV245();v245MaybeAudit()}
 
 try{ensureV245?.()}catch(e){}
 
-/* V24.7.3 maintenance recovery */
+/* V25.0.0 maintenance recovery */
 function ensureV2451(){state.v2451=state.v2451||{recovered:[]};return state.v2451}
 function v2451NeedsService(b){return /Maintenance|Shop|Inspection Due|Out of Service|Repair/i.test(String(b.status||''))||b.needsMaintenance===true||b.maintenanceDue===true||b.pmDue===true||!!b.maintenanceReason||!!b.issue||!!b.defect}
 function v2451Jobs(){let a=[];try{a=a.concat(Object.values(state.v238?.jobs||{}))}catch(e){};try{a=a.concat(state.v239?.jobs||[])}catch(e){};let s=new Set();return a.filter(j=>{let k=String(j.id||`${j.bus}-${j.created}`);if(s.has(k))return false;s.add(k);return !/Complete|Closed|Released/i.test(String(j.status||''))})}
@@ -11937,7 +11937,7 @@ function v2451Daily(){v2451Sync();v2451Advance()}
 
 try{ensureV2451();v2451Sync()}catch(e){}
 
-/* ===== V24.7.3 REALISTIC SHOP CAPACITY =====
+/* ===== V25.0.0 REALISTIC SHOP CAPACITY =====
    Only two buses may actively occupy Mike's two shop bays.
    Other legitimate maintenance jobs WAIT in queue and do not progress
    until a bay opens. Routine PM is staggered to avoid fleet-wide service.
@@ -12004,7 +12004,7 @@ function v2452StaggerRoutinePM(){
 try{v2452StaggerRoutinePM();v2452AssignBays()}catch(e){}
 
 
-/* ===== V24.7.3 GROWTH ROUTE SYNC FIX =====
+/* ===== V25.0.0 GROWTH ROUTE SYNC FIX =====
    Growth assignments now update the V15 route/stop model that the visible
    Route Operations screen actually renders.
 */
@@ -12112,7 +12112,7 @@ function v2453GrowthImpact(){
 }
 
 
-/* ===== V24.7.3 SUMMER DRIVER PREFERENCES + MORALE VISIBILITY ===== */
+/* ===== V25.0.0 SUMMER DRIVER PREFERENCES + MORALE VISIBILITY ===== */
 function ensureV2454(){
  state.v2454=state.v2454||{moraleNotes:{},summerPrefCache:{}};
  return state.v2454
@@ -12202,7 +12202,7 @@ function v2454SummerDriverPreferences(){
 }
 
 
-/* ===== V24.7.3 SUMMER PLANNING VISIBILITY + TRAINING FIX ===== */
+/* ===== V25.0.0 SUMMER PLANNING VISIBILITY + TRAINING FIX ===== */
 function ensureV2455(){
   state.v2455=state.v2455||{summerTrainingPlan:null};
   return state.v2455
@@ -12320,7 +12320,7 @@ v240OpenSummerPlanning=v2455SummerPlanning;
 v240ScheduleAnnualTraining=v2455OpenTrainingPlan;
 
 
-/* ===== V24.7.3 UNIFIED SUMMER PAGE + PERSISTENT NEIGHBORHOOD GROWTH ===== */
+/* ===== V25.0.0 UNIFIED SUMMER PAGE + PERSISTENT NEIGHBORHOOD GROWTH ===== */
 function ensureV2456(){
   state.v2456=state.v2456||{routeGrowth:{},growthEvents:[],summerTraining:null};
   return state.v2456
@@ -12533,10 +12533,10 @@ function v2456RepairPriorGrowth(){
   });
   v213NormalizeAllRoutes?.()
 }
-try{v2456RepairPriorGrowth()}catch(e){console.error('V24.7.3 prior growth repair',e)}
+try{v2456RepairPriorGrowth()}catch(e){console.error('V25.0.0 prior growth repair',e)}
 
 
-/* ===== V24.7.3: FIX THE ACTUAL ASSIGNMENT BOARD + ACTUAL VISIBLE ROUTE STOPS ===== */
+/* ===== V25.0.0: FIX THE ACTUAL ASSIGNMENT BOARD + ACTUAL VISIBLE ROUTE STOPS ===== */
 function ensureV2457(){state.v2457=state.v2457||{growthApplied:{}};return state.v2457}
 
 /* Put each driver's summer request on the page where buses are actually assigned. */
@@ -12644,10 +12644,10 @@ growDistrictAnnually=function(){
 }
 
 /* Repair the user's existing save on load: any already-announced routed neighborhoods become visible now. */
-try{v2457ReapplyAllGrowth()}catch(e){console.error('V24.7.3 growth repair',e)}
+try{v2457ReapplyAllGrowth()}catch(e){console.error('V25.0.0 growth repair',e)}
 
 
-/* ===== V24.7.3 GROWTH-AWARE RELIEF ROUTES ===== */
+/* ===== V25.0.0 GROWTH-AWARE RELIEF ROUTES ===== */
 function ensureV2458(){state.v2458=state.v2458||{};return state.v2458}
 
 function v2458GrowthStops(routeId){
@@ -12853,7 +12853,7 @@ v202OpenAutoBalance=function(){
 }
 
 
-/* ===== V24.7.3 SMART ROUTE REBALANCING =====
+/* ===== V25.0.0 SMART ROUTE REBALANCING =====
    Goal: move whole stops from overloaded routes into compatible routes with room first.
    Create a new relief route only when existing routes cannot absorb enough riders.
 */
@@ -13027,7 +13027,7 @@ v202OpenCapacityCenter=function(){
 }
 
 
-/* ===== V24.7.3 TRUE STOP-BASED AUTO BALANCE =====
+/* ===== V25.0.0 TRUE STOP-BASED AUTO BALANCE =====
    The V24.5.9 planner changed student records but did not always move the
    visible route-stop object. This version plans and applies directly against
    the same ops15.stopTimes model shown on Route Operations.
@@ -13188,7 +13188,7 @@ function v2460Apply(){
     (state.routes||[]).forEach(r=>opsRecalcRouteV15?.(r));
     v2457ReapplyAllGrowth?.();
     (state.routes||[]).forEach(r=>opsRecalcRouteV15?.(r));
-  }catch(e){console.error('V24.7.3 recalc',e)}
+  }catch(e){console.error('V25.0.0 recalc',e)}
 
   let after=(state.routes||[]).map(r=>({
     id:r.id,load:v2460Load(r),cap:v2460Cap(r)
@@ -13233,7 +13233,7 @@ v2459Preview=v2460Preview;
 v2459ApplyPlan=v2460Apply;
 
 
-/* ===== V24.7.3 UNIFIED ROUTE LOAD COUNTS =====
+/* ===== V25.0.0 UNIFIED ROUTE LOAD COUNTS =====
    Marcus now uses the exact same rider total shown on Route Operations.
    This eliminates cases where stale AM/PM totals made a route look full
    in the balance planner while the route screen showed open seats.
@@ -13328,7 +13328,7 @@ v2460Preview=function(){
 v2459Preview=v2460Preview;
 
 
-/* ===== V24.7.3 ONE ROUTE CAPACITY SOURCE =====
+/* ===== V25.0.0 ONE ROUTE CAPACITY SOURCE =====
    Fix from screenshots: Live Route Board is authoritative.
    Relief Center must NEVER call recalculation functions that mutate rider totals.
 */
@@ -13448,7 +13448,7 @@ v2460Preview=function(){
 v2459Preview=v2460Preview;
 
 
-/* ===== V24.7.3 ROUTE BOARD BALANCE SYNC =====
+/* ===== V25.0.0 ROUTE BOARD BALANCE SYNC =====
    Root cause: renderRoutes() calls v213NormalizeAllRoutes(), and an older
    neighborhood-growth wrapper was adding route-level growth AGAIN after the
    stop-based balance had already moved that growth. That made the Live Route
@@ -13506,7 +13506,7 @@ function v2463SyncRoutesAfterBalance(){
       r.ops15.ridersPM=r.ops15.riders;
       r.ops15.growthRiders=v2463GrowthTotal(r)
     });
-  }catch(e){console.error('V24.7.3 route sync',e)}
+  }catch(e){console.error('V25.0.0 route sync',e)}
 }
 
 /* Replace apply so the saved and displayed route totals are synchronized
@@ -13559,11 +13559,11 @@ window.addEventListener('load',()=>setTimeout(()=>{
     v2463SyncRoutesAfterBalance();
     renderRoutes?.();
     autosaveGame?.()
-  }catch(e){console.error('V24.7.3 startup route repair',e)}
+  }catch(e){console.error('V25.0.0 startup route repair',e)}
 },700));
 
 
-/* ===== V24.7.3 SPLIT/RELIEF SCREEN USES LIVE BOARD =====
+/* ===== V25.0.0 SPLIT/RELIEF SCREEN USES LIVE BOARD =====
    The remaining mismatch came from v202PlanRelief() itself. It still ran
    riderSyncRoutesV16() before opening the split screen, which could rebuild
    rider totals and make a route look overfilled even when the Live Route
@@ -13675,7 +13675,7 @@ v202ApproveRelief=function(){
 };
 
 
-/* ===== V24.7.3 LIVE BOARD IS THE ROUTE TRUTH =====
+/* ===== V25.0.0 LIVE BOARD IS THE ROUTE TRUTH =====
    Screenshot-driven fix:
    - Live Route Board showed Route 24 = 35/72.
    - Capacity/Relief showed Route 24 = 144/72.
@@ -13723,7 +13723,7 @@ v213NormalizeAllRoutes=function(){
 v2463SyncRoutesAfterBalance=function(){
   try{
     (state.routes||[]).forEach(r=>v2465RecalcNonRiderMetrics(r))
-  }catch(e){console.error('V24.7.3 safe sync',e)}
+  }catch(e){console.error('V25.0.0 safe sync',e)}
 };
 
 function v2465RecalcNonRiderMetrics(r){
@@ -13934,7 +13934,7 @@ v2460Preview=function(){
 v2459Preview=v2460Preview;
 
 
-/* ===== V24.7.3 FINAL BALANCE SYNC FIX =====
+/* ===== V25.0.0 FINAL BALANCE SYNC FIX =====
    Screenshot/behavior fix:
    V24.6.5 unified the board + planner, but the APPLY success screen was still
    inherited from V24.6.3 and used v2463StopTotal(), so it could say some
@@ -14015,7 +14015,7 @@ v202OpenAutoBalance=function(){
 };
 
 
-/* ===== V24.7.3 CANONICAL RIDER LEDGER =====
+/* ===== V25.0.0 CANONICAL RIDER LEDGER =====
    Architectural fix:
    - Regular riders come from actual student AM/PM assignments.
    - New-development riders come from developmentRoutingHistory assignments.
@@ -14339,11 +14339,11 @@ v2459Preview=v2460Preview;
 
 /* Startup repair: rebuild display totals from the two real rider ledgers. */
 window.addEventListener('load',()=>setTimeout(()=>{
-  try{v2470SyncAll();renderRoutes?.();autosaveGame?.()}catch(e){console.error('V24.7.3 canonical rider repair',e)}
+  try{v2470SyncAll();renderRoutes?.();autosaveGame?.()}catch(e){console.error('V25.0.0 canonical rider repair',e)}
 },900));
 
 
-/* ===== V24.7.3 GROWTH RIDERS ALWAYS ROUTED =====
+/* ===== V25.0.0 GROWTH RIDERS ALWAYS ROUTED =====
    User-intent fix:
    A neighborhood coming online must affect an actual route immediately.
    The older V11 logic stopped assigning once routes reached ~92% and left
@@ -14537,11 +14537,11 @@ window.addEventListener('load',()=>setTimeout(()=>{
     v2470SyncAll();
     renderRoutes?.();
     if(a||b)autosaveGame?.()
-  }catch(e){console.error('V24.7.3 growth routing repair',e)}
+  }catch(e){console.error('V25.0.0 growth routing repair',e)}
 },1100));
 
 
-/* ===== V24.7.3 CORRECT RIDER CONSERVATION =====
+/* ===== V25.0.0 CORRECT RIDER CONSERVATION =====
    The 581 -> 617 cancellation was a false alarm.
 
    Why: v2470DistrictTotal() added each route's PEAK(AM,PM) load.
@@ -14703,7 +14703,7 @@ v202OpenCapacityCenter=function(){
 };
 
 
-/* ===== V24.7.3 MANUAL STOP TRANSFER FIX =====
+/* ===== V25.0.0 MANUAL STOP TRANSFER FIX =====
    Root cause: the old "Move Stops Between Existing Routes" screen used the
    legacy v214CommitTransfer path. It could add the stop/riders to the new
    route, then run riderSync/opsRecalc and leave the FROM route's old rider
@@ -14881,6 +14881,1393 @@ function v2473CommitTransfer(){
 
 /* Redirect every old manual transfer commit call to the fixed path. */
 v214CommitTransfer=v2473CommitTransfer;
+
+
+/* ===== V25.0.0 REALISTIC SMALLER STOPS =====
+   Big aggregate stops (example: 1 stop with 85 riders) make balancing impossible.
+   New rule: route demand is broken into realistic stop groups of about 10 riders.
+   - Existing large student stops are automatically split into smaller named stops.
+   - Growth/development riders are also exposed as multiple smaller stop groups.
+   - Marcus/manual transfer can move one small group at a time instead of an 85-rider block.
+*/
+function ensureV2474(){
+  state.v2474=state.v2474||{maxStopRiders:10,migrated:false};
+  return state.v2474
+}
+function v2474Max(){return Math.max(4,Number(ensureV2474().maxStopRiders||10))}
+
+function v2474StudentKey(s,i){
+  if(!s._v2474id)s._v2474id=`S${i}-${Math.random().toString(36).slice(2,8)}`;
+  return s._v2474id
+}
+
+/* Permanently break oversized student stops into smaller stop names so the
+   route screen, move-stop screen, and balancing system all see the same thing. */
+function v2474SplitOversizedStudentStops(){
+  let students=v2470ActiveStudents();
+  students.forEach((s,i)=>v2474StudentKey(s,i));
+  let max=v2474Max();
+
+  (state.routes||[]).forEach(r=>{
+    let groups={};
+    students.forEach(s=>{
+      let on=Number(s.routeAM)===Number(r.id)||Number(s.routePM)===Number(r.id);
+      if(!on)return;
+      let base=s.stopName||s.stop||'Neighborhood Stop';
+      /* Don't repeatedly split names already generated by this migration. */
+      let clean=base.replace(/\s•\sStop\s\d+$/,'');
+      groups[clean]=groups[clean]||[];
+      groups[clean].push(s)
+    });
+
+    Object.entries(groups).forEach(([base,list])=>{
+      if(list.length<=max)return;
+      list.forEach((s,i)=>{
+        let num=Math.floor(i/max)+1;
+        s.stopName=`${base} • Stop ${num}`;
+        if('stop' in s)s.stop=s.stopName
+      })
+    })
+  });
+  ensureV2474().migrated=true
+}
+
+/* Student route groups are now guaranteed small. */
+v2470StudentGroups=function(routeId){
+  let map={};
+  let students=v2470ActiveStudents();
+  students.forEach((s,i)=>{
+    let am=s.ridesAM!==false&&Number(s.routeAM)===Number(routeId);
+    let pm=s.ridesPM!==false&&Number(s.routePM)===Number(routeId);
+    if(!am&&!pm)return;
+    let name=s.stopName||s.stop||'Unassigned Stop';
+    map[name]=map[name]||{
+      type:'student',key:`STU|${routeId}|${name}`,name,
+      am:0,pm:0,riders:0,growth:false,studentKeys:[]
+    };
+    if(am)map[name].am++;
+    if(pm)map[name].pm++;
+    map[name].riders=Math.max(map[name].am,map[name].pm);
+    map[name].studentKeys.push(v2474StudentKey(s,i))
+  });
+  return Object.values(map).filter(x=>x.riders>0)
+};
+
+/* Growth assignments remain one accounting record, but are presented as
+   multiple small movable stop segments. */
+v2470GrowthGroups=function(routeId){
+  let max=v2474Max(),out=[];
+  v2470GrowthEntries(routeId).forEach(x=>{
+    let remaining=Number(x.riders||0),seg=1;
+    while(remaining>0){
+      let n=Math.min(max,remaining);
+      out.push({
+        type:'growth',
+        key:`GROW|${x.key}|SEG${seg}`,
+        name:`${x.development} • Stop ${seg}`,
+        development:x.development,year:x.year,
+        riders:n,growth:true,
+        recIndex:x.recIndex,assignmentIndex:x.assignmentIndex,
+        segment:seg
+      });
+      remaining-=n;seg++
+    }
+  });
+  return out
+};
+
+v2470Groups=function(routeId){
+  return [...v2470StudentGroups(routeId),...v2470GrowthGroups(routeId)]
+};
+
+/* Transfer exactly the small group selected, not the whole original stop. */
+v2470TransferGroup=function(m){
+  if(m.type==='student'){
+    let keys=new Set(m.studentKeys||[]);
+    let changed=0;
+    v2470ActiveStudents().forEach((s,i)=>{
+      v2474StudentKey(s,i);
+      if(keys.size){
+        if(!keys.has(s._v2474id))return;
+      }else{
+        let name=s.stopName||s.stop||'Unassigned Stop';
+        if(name!==m.name)return;
+      }
+      let touched=false;
+      if(Number(s.routeAM)===Number(m.source)){s.routeAM=Number(m.dest);touched=true}
+      if(Number(s.routePM)===Number(m.source)){s.routePM=Number(m.dest);touched=true}
+      if(touched)changed++
+    });
+    return changed>0
+  }
+
+  if(m.type==='growth'){
+    let rec=(state.v11?.developmentRoutingHistory||[])[m.recIndex];
+    let src=rec?.assignments?.[m.assignmentIndex];
+    if(!rec||!src||Number(src.route)!==Number(m.source)||Number(src.riders||0)<=0)return false;
+
+    let n=Math.min(Number(m.riders||0),Number(src.riders||0));
+    if(n<=0)return false;
+
+    src.riders=Number(src.riders||0)-n;
+    let dest=(rec.assignments||[]).find(x=>Number(x.route)===Number(m.dest));
+    if(dest)dest.riders=Number(dest.riders||0)+n;
+    else rec.assignments.push({route:Number(m.dest),riders:n,stops:1,fromSplit:true});
+    return true
+  }
+  return false
+};
+
+/* Rebuild visible stop rows directly from the smaller canonical groups. */
+v2470SyncRoute=function(r){
+  if(!r)return;
+  r.ops15=r.ops15||{};
+  let sc=v2470StudentCounts(r.id),growth=v2470GrowthCount(r.id),total=v2470CanonicalLoad(r);
+  let hasStudentTouches=v2470ActiveStudents().some(s=>Number(s.routeAM)===Number(r.id)||Number(s.routePM)===Number(r.id));
+
+  if(hasStudentTouches){
+    r.ops15.ridersAM=sc.am+growth;
+    r.ops15.ridersPM=sc.pm+growth
+  }else{
+    r.ops15.ridersAM=total;
+    r.ops15.ridersPM=total
+  }
+  r.ops15.riders=total;
+  r.ops15.growthRiders=growth;
+
+  let old=r.ops15.stopTimes||[];
+  let oldByName={};
+  old.forEach(s=>{
+    let nm=s.name||s.stop;
+    if(nm&&!oldByName[nm])oldByName[nm]=s
+  });
+
+  let groups=v2470Groups(r.id);
+  let stops=[];
+  groups.forEach((g,i)=>{
+    let prior=oldByName[g.name]||{};
+    stops.push({
+      ...prior,
+      id:prior.id||`V2474-${r.id}-${i}-${Math.random().toString(36).slice(2,7)}`,
+      name:g.name,
+      riders:Number(g.riders||0),
+      time:Number(prior.time||r.ops15.firstStop||360)+(i*4),
+      miles:Number(prior.miles||1.2),
+      crossing:!!prior.crossing,
+      safety:prior.safety||'Normal',
+      sourceDevelopment:g.growth?g.development:undefined,
+      v2470GrowthKey:g.growth?g.key:undefined,
+      v2474Type:g.type,
+      v2474Key:g.key
+    })
+  });
+  r.ops15.stopTimes=stops;
+  try{v2465RecalcNonRiderMetrics?.(r)}catch(e){}
+};
+
+/* Transfer UI gets the smaller groups. */
+v214TransferableStops=function(routeId){return v2470Groups(routeId)};
+
+v214ChooseTransferStop=function(){
+  let fromId=Number($('v214From')?.value);
+  let from=(state.routes||[]).find(r=>Number(r.id)===fromId);
+  if(!from)return;
+  let stops=v2470Groups(fromId);
+  let destinations=(state.routes||[]).filter(r=>Number(r.id)!==fromId&&r.active!==false&&v2470Capacity(r)>0&&v2470Compatible(from,r));
+
+  openModal(`🔄 Transfer Stop from Route ${fromId}`,
+    `<div class="alert"><b>Stops are capped around ${v2474Max()} riders each.</b><br>
+      You can now move a small stop at a time instead of one giant 80+ rider block.</div>
+    ${stops.map((s,i)=>`<div class="v214-transfer">
+      <b>${s.name}${s.growth?' 🏘️':''}</b>
+      <div class="small">${s.riders} rider(s)</div>
+      <label>Move to
+        <select id="v214Dest${i}">
+          ${destinations.map(r=>{
+            let room=v2470Capacity(r)-v2470CanonicalLoad(r),ok=room>=s.riders;
+            return `<option value="${r.id}" ${ok?'':'disabled'}>Route ${r.id} — ${room} open seat(s)${ok?'':' — NOT ENOUGH ROOM'}</option>`
+          }).join('')}
+        </select>
+      </label>
+      <button class="btn primary" onclick="v2473PreviewTransfer(${fromId},'${encodeURIComponent(s.key)}',${i})">Preview Move</button>
+    </div>`).join('')||'<div class="v203-empty">No stops available to move.</div>'}
+    <div class="actions"><button class="btn" onclick="v214OpenStopTransfer()">Back</button></div>`
+  )
+};
+
+/* Preview finder must use the new small canonical groups. */
+v2473TransferGroups=function(routeId){return v2470Groups(routeId)};
+
+/* Marcus planner already calls v2470Groups(), so once those are small it can
+   naturally fill existing routes in realistic chunks. */
+
+/* One-time repair for existing saves, then rebuild route display. */
+window.addEventListener('load',()=>setTimeout(()=>{
+  try{
+    v2474SplitOversizedStudentStops();
+    v2470SyncAll();
+    renderRoutes?.();
+    autosaveGame?.()
+  }catch(e){console.error('V25.0.0 small-stop migration',e)}
+},1300));
+
+
+/* ===== V25.0.0 UNIFIED ROUTING ENGINE ===== */
+function ensureV2480(){
+  state.v2480=state.v2480||{
+    version:'24.8.0',maxStopRiders:10,lastRebuild:null,
+    integrity:{lastCheck:null,lastStudentCount:0,lastGrowthCount:0,lastDistrictTotal:0}
+  };
+  return state.v2480
+}
+function v2480Students(){return (state.riders16?.students||[]).filter(s=>s.active!==false)}
+function v2480StudentId(s,i){
+  if(!s._v2480id)s._v2480id=s._v2474id||`ST${i}-${Math.random().toString(36).slice(2,8)}`;
+  return s._v2480id
+}
+function v2480GrowthRecords(){
+  let out=[];
+  (state.v11?.developmentRoutingHistory||[]).forEach((rec,ri)=>{
+    (rec.assignments||[]).forEach((a,ai)=>{
+      let n=Math.max(0,Number(a.riders||0));
+      if(n<=0)return;
+      out.push({type:'growth',recIndex:ri,assignmentIndex:ai,route:Number(a.route),riders:n,
+        development:rec.development||'New Development',year:Number(rec.year||state.year||2026),
+        key:`G|${ri}|${ai}|${rec.development||''}|${a.route}`})
+    })
+  });
+  return out
+}
+function v2480Capacity(r){
+  if(!r)return 0;
+  let bus=(state.buses||[]).find(b=>Number(b.id)===Number(r.temporaryBus||r.bus||r.busId));
+  let c=Number(state.v13?.busSpecs?.[bus?.id]?.capacity||bus?.capacity||r.ops15?.capacity||r.capacity||0);
+  if(c>0)return c;
+  try{let z=opsRouteCapacityV15?.(r);return Number(z?.cap||z||0)}catch(e){return 0}
+}
+function v2480StudentCounts(routeId){
+  let am=0,pm=0;
+  v2480Students().forEach(s=>{
+    if(s.ridesAM!==false&&Number(s.routeAM)===Number(routeId))am++;
+    if(s.ridesPM!==false&&Number(s.routePM)===Number(routeId))pm++
+  });
+  return {am,pm,peak:Math.max(am,pm)}
+}
+function v2480GrowthCount(routeId){return v2480GrowthRecords().filter(x=>Number(x.route)===Number(routeId)).reduce((n,x)=>n+x.riders,0)}
+function v2480Load(r){
+  if(!r)return 0;
+  let s=v2480StudentCounts(r.id),g=v2480GrowthCount(r.id);
+  let touches=v2480Students().some(x=>Number(x.routeAM)===Number(r.id)||Number(x.routePM)===Number(r.id));
+  let base=touches?s.peak:Math.max(0,Number(r.ops15?.legacyBaseRiders ?? r.ops15?.riders ?? 0)-g);
+  return Math.max(0,base+g)
+}
+function v2480DistrictLedgerTotal(){
+  let unique=v2480Students().filter(s=>{
+    let am=s.ridesAM!==false&&Number.isFinite(Number(s.routeAM));
+    let pm=s.ridesPM!==false&&Number.isFinite(Number(s.routePM));
+    return am||pm
+  }).length;
+  let growth=v2480GrowthRecords().reduce((n,x)=>n+x.riders,0);
+  return unique+growth
+}
+function v2480SplitName(base,i){return `${base} • Stop ${i+1}`}
+function v2480StudentGroups(routeId){
+  let max=Math.max(4,Number(ensureV2480().maxStopRiders||10)),buckets={},students=v2480Students();
+  students.forEach((s,i)=>{
+    if(Number(s.routeAM)!==Number(routeId)&&Number(s.routePM)!==Number(routeId))return;
+    v2480StudentId(s,i);
+    let raw=s.stopName||s.stop||'Neighborhood Stop',base=raw.replace(/\s•\sStop\s\d+$/,'');
+    buckets[base]=buckets[base]||[];buckets[base].push(s)
+  });
+  let out=[];
+  Object.entries(buckets).forEach(([base,list])=>{
+    for(let i=0;i<list.length;i+=max){
+      let chunk=list.slice(i,i+max),name=list.length>max?v2480SplitName(base,Math.floor(i/max)):base;
+      out.push({type:'student',key:`S|${routeId}|${base}|${Math.floor(i/max)}`,name,baseName:base,
+        riders:chunk.length,studentIds:chunk.map(x=>x._v2480id),growth:false})
+    }
+  });
+  return out
+}
+function v2480GrowthGroups(routeId){
+  let max=Math.max(4,Number(ensureV2480().maxStopRiders||10)),out=[];
+  v2480GrowthRecords().filter(x=>Number(x.route)===Number(routeId)).forEach(rec=>{
+    let left=rec.riders,seg=0;
+    while(left>0){
+      let n=Math.min(max,left);
+      out.push({type:'growth',key:`${rec.key}|SEG${seg}`,name:v2480SplitName(rec.development,seg),baseName:rec.development,
+        riders:n,growth:true,recIndex:rec.recIndex,assignmentIndex:rec.assignmentIndex,development:rec.development,year:rec.year});
+      left-=n;seg++
+    }
+  });
+  return out
+}
+function v2480Groups(routeId){return [...v2480StudentGroups(routeId),...v2480GrowthGroups(routeId)]}
+function v2480SyncRoute(r){
+  if(!r)return;
+  r.ops15=r.ops15||{};
+  if(r.ops15.legacyBaseRiders===undefined){
+    let g=v2480GrowthCount(r.id);
+    r.ops15.legacyBaseRiders=Math.max(0,Number(r.ops15.riders||0)-g)
+  }
+  let counts=v2480StudentCounts(r.id),growth=v2480GrowthCount(r.id),total=v2480Load(r);
+  r.ops15.riders=total;
+  r.ops15.ridersAM=(counts.am||Math.max(0,total-growth))+growth;
+  r.ops15.ridersPM=(counts.pm||Math.max(0,total-growth))+growth;
+  r.ops15.growthRiders=growth;
+  r.ops15.baseRiders=Math.max(0,total-growth);
+
+  let old=r.ops15.stopTimes||[],oldBy={};
+  old.forEach(s=>{let n=s.name||s.stop;if(n&&!oldBy[n])oldBy[n]=s});
+  r.ops15.stopTimes=v2480Groups(r.id).map((g,i)=>{
+    let p=oldBy[g.name]||{};
+    return {...p,id:p.id||`V2480-${r.id}-${i}-${Math.random().toString(36).slice(2,7)}`,
+      name:g.name,riders:g.riders,time:Number(p.time||r.ops15.firstStop||360)+(i*4),
+      miles:Number(p.miles||1.2),crossing:!!p.crossing,safety:p.safety||'Normal',
+      v2480Key:g.key,v2480Type:g.type,sourceDevelopment:g.growth?g.development:undefined}
+  });
+  try{v2465RecalcNonRiderMetrics?.(r)}catch(e){}
+}
+function v2480SyncAll(){
+  (state.routes||[]).forEach(v2480SyncRoute);
+  let e=ensureV2480();
+  e.lastRebuild=Date.now();
+  e.integrity={lastCheck:Date.now(),lastStudentCount:v2480Students().length,
+    lastGrowthCount:v2480GrowthRecords().reduce((n,x)=>n+x.riders,0),
+    lastDistrictTotal:v2480DistrictLedgerTotal()}
+}
+function v2480Rows(){
+  v2480SyncAll();
+  return (state.routes||[]).map(r=>{
+    let riders=v2480Load(r),cap=v2480Capacity(r),pct=cap?Math.round(riders/cap*100):0;
+    return {r,riders,cap,pct,growth:v2480GrowthCount(r.id),over:cap>0&&riders>cap,near:cap>0&&pct>=90}
+  }).sort((a,b)=>(b.over-a.over)||(b.pct-a.pct))
+}
+function v2480Compatible(a,b){
+  if(!a||!b||Number(a.id)===Number(b.id))return false;
+  let A=(a.ops15?.schools||[]).map(String),B=(b.ops15?.schools||[]).map(String);
+  return !A.length||!B.length||A.some(s=>B.includes(s))
+}
+function v2480Backup(){
+  return {
+    students:v2480Students().map((s,i)=>({id:v2480StudentId(s,i),routeAM:s.routeAM,routePM:s.routePM,stopName:s.stopName,stop:s.stop})),
+    growth:JSON.parse(JSON.stringify(state.v11?.developmentRoutingHistory||[])),
+    routes:JSON.parse(JSON.stringify((state.routes||[]).map(r=>({id:r.id,legacyBaseRiders:r.ops15?.legacyBaseRiders}))))
+  }
+}
+function v2480Restore(b){
+  let sm=new Map((b.students||[]).map(x=>[x.id,x]));
+  v2480Students().forEach((s,i)=>{let x=sm.get(v2480StudentId(s,i));if(x){s.routeAM=x.routeAM;s.routePM=x.routePM;s.stopName=x.stopName;if('stop'in s)s.stop=x.stop}});
+  state.v11=state.v11||{};state.v11.developmentRoutingHistory=JSON.parse(JSON.stringify(b.growth||[]));
+  (b.routes||[]).forEach(x=>{let r=(state.routes||[]).find(z=>Number(z.id)===Number(x.id));if(r){r.ops15=r.ops15||{};r.ops15.legacyBaseRiders=x.legacyBaseRiders}});
+  v2480SyncAll()
+}
+function v2480TransferGroup(m){
+  if(m.type==='student'){
+    let ids=new Set(m.studentIds||[]),changed=0;
+    v2480Students().forEach((s,i)=>{
+      if(!ids.has(v2480StudentId(s,i)))return;
+      let touched=false;
+      if(Number(s.routeAM)===Number(m.source)){s.routeAM=Number(m.dest);touched=true}
+      if(Number(s.routePM)===Number(m.source)){s.routePM=Number(m.dest);touched=true}
+      if(touched)changed++
+    });
+    return changed>0
+  }
+  if(m.type==='growth'){
+    let rec=(state.v11?.developmentRoutingHistory||[])[m.recIndex],src=rec?.assignments?.[m.assignmentIndex];
+    if(!rec||!src||Number(src.route)!==Number(m.source))return false;
+    let n=Math.min(Number(m.riders||0),Math.max(0,Number(src.riders||0)));
+    if(n<=0)return false;
+    src.riders=Number(src.riders||0)-n;
+    let d=(rec.assignments||[]).find(a=>Number(a.route)===Number(m.dest));
+    if(d)d.riders=Number(d.riders||0)+n;
+    else rec.assignments.push({route:Number(m.dest),riders:n,stops:1,fromUnifiedRouter:true});
+    return true
+  }
+  return false
+}
+function v2480PlanBalance(){
+  v2480SyncAll();
+  let routes=state.routes||[],virtual={};
+  routes.forEach(r=>virtual[String(r.id)]={load:v2480Load(r),cap:v2480Capacity(r)});
+  let moves=[],relief=[];
+  let overloaded=routes.filter(r=>virtual[String(r.id)].cap>0&&virtual[String(r.id)].load>virtual[String(r.id)].cap)
+    .sort((a,b)=>(virtual[String(b.id)].load-virtual[String(b.id)].cap)-(virtual[String(a.id)].load-virtual[String(a.id)].cap));
+  overloaded.forEach(source=>{
+    let S=virtual[String(source.id)],target=Math.floor(S.cap*.88),need=Math.max(0,S.load-target);
+    let groups=v2480Groups(source.id).sort((a,b)=>a.riders-b.riders),used=new Set();
+    while(need>0){
+      let best=null;
+      for(let dest of routes){
+        if(!v2480Compatible(source,dest))continue;
+        let D=virtual[String(dest.id)];if(!D||D.cap<=0)continue;
+        let room=Math.max(0,Math.floor(D.cap*.90)-D.load);if(room<=0)continue;
+        for(let g of groups){
+          if(used.has(g.key)||g.riders>room)continue;
+          let score=Math.abs(need-g.riders)+(room-g.riders)*.05;
+          if(!best||score<best.score)best={dest,g,score}
+        }
+      }
+      if(!best)break;
+      used.add(best.g.key);
+      moves.push({source:Number(source.id),dest:Number(best.dest.id),...best.g});
+      virtual[String(source.id)].load-=best.g.riders;
+      virtual[String(best.dest.id)].load+=best.g.riders;
+      need=Math.max(0,virtual[String(source.id)].load-target)
+    }
+    if(virtual[String(source.id)].load>S.cap)relief.push({source:Number(source.id),remaining:virtual[String(source.id)].load,cap:S.cap,excess:virtual[String(source.id)].load-S.cap})
+  });
+  ensureV2480().lastPlan={moves,relief,virtual,ledger:v2480DistrictLedgerTotal()};
+  return ensureV2480().lastPlan
+}
+function v2480PreviewBalance(){
+  let rows=v2480Rows().sort((a,b)=>Number(a.r.id)-Number(b.r.id)),P=v2480PlanBalance();
+  openModal('🧠 Marcus — Unified Route Balance',
+    `<div class="alert priority-blue"><b>One routing engine is now in control.</b><div class="small">District rider ledger: ${P.ledger}. Existing routes are used first; new relief routes only if needed.</div></div>
+     <h3>Before → Projected After</h3>
+     ${rows.map(x=>{let v=P.virtual[String(x.r.id)]||{load:x.riders,cap:x.cap};return `<div class="kv"><span>Route ${x.r.id}${x.growth?` <span class="small">• ${x.growth} growth</span>`:''}</span><b>${x.riders}/${x.cap} → ${v.load}/${v.cap}</b></div>`}).join('')}
+     ${P.moves.length?`<h3>Moves</h3>${P.moves.map(m=>`<div class="kv"><span><b>${m.name}</b><div class="small">Route ${m.source} → Route ${m.dest}${m.growth?' • growth':''}</div></span><b>${m.riders}</b></div>`).join('')}`:'<div class="alert">No existing-route moves are needed.</div>'}
+     ${P.relief.length?`<div class="alert priority-yellow"><b>Still needs relief:</b><br>${P.relief.map(r=>`Route ${r.source}: ${r.remaining}/${r.cap}`).join('<br>')}</div>`:'<div class="alert priority-green"><b>No new route should be needed.</b></div>'}
+     <div class="actions">${P.moves.length?'<button class="btn primary" onclick="v2480ApplyBalance()">Apply Balance</button>':''}<button class="btn" onclick="closeModal()">Cancel</button></div>`
+  )
+}
+function v2480ApplyBalance(){
+  let P=ensureV2480().lastPlan||v2480PlanBalance(),backup=v2480Backup(),before=v2480DistrictLedgerTotal(),done=[],failed=[];
+  (P.moves||[]).forEach(m=>(v2480TransferGroup(m)?done:failed).push(m));
+  v2480SyncAll();
+  let after=v2480DistrictLedgerTotal();
+  if(after!==before){v2480Restore(backup);openModal('⚠️ Balance Rolled Back',`<div class="alert priority-yellow"><b>Rider ledger changed unexpectedly.</b><br>${before} → ${after}. All moves were undone.</div><button class="btn" onclick="closeModal()">Close</button>`);return}
+  let rows=v2480Rows(),still=rows.filter(x=>x.over);
+  ensureV2480().history=ensureV2480().history||[];ensureV2480().history.unshift({year:state.year,date:state.gameDate,moves:done,before,after});
+  try{autosaveGame?.();renderRoutes?.()}catch(e){}
+  openModal('✅ Unified Route Balance Complete',
+    `<div class="alert priority-green"><b>Riders preserved: ${before} → ${after}</b><br>${done.length} stop move(s) completed.</div>
+     ${failed.length?`<div class="alert priority-yellow">${failed.length} move(s) could not be completed and stayed put.</div>`:''}
+     <h3>Final Route Loads</h3>
+     ${rows.sort((a,b)=>Number(a.r.id)-Number(b.r.id)).map(x=>`<div class="kv"><span>Route ${x.r.id}</span><b>${x.riders}/${x.cap} (${x.pct}%)</b></div>`).join('')}
+     ${still.length?`<div class="alert priority-yellow"><b>Relief route still needed:</b><br>${still.map(x=>`Route ${x.r.id}: ${x.riders}/${x.cap}`).join('<br>')}</div>`:'<div class="alert priority-green"><b>All routes within capacity.</b></div>'}
+     <div class="actions"><button class="btn primary" onclick="closeModal();goView('routes');renderRoutes()">Open Live Route Board</button></div>`
+  )
+}
+function v2480OpenTransfer(){
+  let routes=v2480Rows().sort((a,b)=>Number(a.r.id)-Number(b.r.id));
+  openModal('🔄 Move Stops Between Routes',
+    `<div class="alert"><b>Unified transfer system.</b><br>Moves small stop groups and updates both route totals from the same ledger.</div>
+     <label>From Route<select id="v2480From">${routes.map(x=>`<option value="${x.r.id}">Route ${x.r.id} — ${x.riders}/${x.cap}</option>`).join('')}</select></label>
+     <button class="btn primary" onclick="v2480ChooseStop()">Choose Stop</button>`
+  )
+}
+function v2480ChooseStop(){
+  let fromId=Number($('v2480From')?.value),from=(state.routes||[]).find(r=>Number(r.id)===fromId);if(!from)return;
+  let groups=v2480Groups(fromId),dests=(state.routes||[]).filter(r=>Number(r.id)!==fromId&&v2480Compatible(from,r));
+  openModal(`🔄 Route ${fromId} — Choose Stop`,
+    `<div class="alert"><b>Stops are kept around ${ensureV2480().maxStopRiders} riders or fewer.</b></div>
+     ${groups.map((g,i)=>`<div class="v214-transfer"><b>${g.name}${g.growth?' 🏘️':''}</b><div class="small">${g.riders} riders</div>
+       <label>To Route<select id="v2480Dest${i}">${dests.map(r=>{let room=v2480Capacity(r)-v2480Load(r),ok=room>=g.riders;return `<option value="${r.id}" ${ok?'':'disabled'}>Route ${r.id} — ${room} open${ok?'':' — full'}</option>`}).join('')}</select></label>
+       <button class="btn primary" onclick="v2480PreviewTransfer(${fromId},'${encodeURIComponent(g.key)}',${i})">Preview</button>
+     </div>`).join('')}
+     <button class="btn" onclick="v2480OpenTransfer()">Back</button>`
+  )
+}
+function v2480PreviewTransfer(fromId,keyEnc,i){
+  let key=decodeURIComponent(keyEnc),destId=Number($(`v2480Dest${i}`)?.value);
+  let g=v2480Groups(fromId).find(x=>x.key===key),from=(state.routes||[]).find(r=>Number(r.id)===fromId),dest=(state.routes||[]).find(r=>Number(r.id)===destId);
+  if(!g||!from||!dest)return;
+  state.v2480.pendingTransfer={source:fromId,dest:destId,...g};
+  let a=v2480Load(from),b=v2480Load(dest);
+  openModal('🔄 Preview Stop Move',
+    `<div class="kv"><span>${g.name}</span><b>${g.riders} riders</b></div>
+     <div class="kv"><span>Route ${fromId}</span><b>${a} → ${a-g.riders}</b></div>
+     <div class="kv"><span>Route ${destId}</span><b>${b} → ${b+g.riders}</b></div>
+     <div class="actions"><button class="btn primary" onclick="v2480CommitTransfer()">Move Stop</button><button class="btn" onclick="v2480OpenTransfer()">Cancel</button></div>`
+  )
+}
+function v2480CommitTransfer(){
+  let m=state.v2480?.pendingTransfer;if(!m)return;
+  let before=v2480DistrictLedgerTotal(),backup=v2480Backup();
+  if(!v2480TransferGroup(m)){alert('The stop could not be moved.');return}
+  v2480SyncAll();
+  let after=v2480DistrictLedgerTotal();
+  if(after!==before){v2480Restore(backup);alert('Transfer rolled back because rider total changed.');return}
+  try{autosaveGame?.();renderRoutes?.()}catch(e){}
+  let a=(state.routes||[]).find(r=>Number(r.id)===Number(m.source)),b=(state.routes||[]).find(r=>Number(r.id)===Number(m.dest));
+  openModal('✅ Stop Moved',
+    `<div class="alert priority-green"><b>${m.name}</b> moved successfully.</div>
+     <div class="kv"><span>Route ${m.source}</span><b>${v2480Load(a)}/${v2480Capacity(a)}</b></div>
+     <div class="kv"><span>Route ${m.dest}</span><b>${v2480Load(b)}/${v2480Capacity(b)}</b></div>
+     <div class="kv"><span>District riders</span><b>${before} → ${after}</b></div>
+     <div class="actions"><button class="btn primary" onclick="closeModal();goView('routes');renderRoutes()">Live Route Board</button><button class="btn" onclick="closeModal();v2480OpenTransfer()">Move Another</button></div>`
+  )
+}
+function v2480NextRoute(){return v202NextRouteNumber?.()||Math.max(90,...(state.routes||[]).map(r=>Number(r.id)||0))+1}
+function v2480CreateRelief(sourceId){
+  let source=(state.routes||[]).find(r=>Number(r.id)===Number(sourceId));if(!source)return;
+  let cap=v2480Capacity(source),load=v2480Load(source),target=Math.max(1,load-Math.floor(cap*.80));
+  let groups=v2480Groups(sourceId).sort((a,b)=>b.riders-a.riders),pick=[],n=0;
+  for(let g of groups){if(n>=target)break;pick.push(g);n+=g.riders}
+  let newId=v2480NextRoute(),spare=v202BestSpareBus?.(n),driver=v202BestAvailableDriver?.(sourceId);
+  state.v2480.pendingRelief={sourceId,newId,groups:pick,moved:n,spareBus:spare?.id||null,driver:driver?.name||null};
+  openModal(`🛣️ Relief Route ${sourceId}`,
+    `<div class="alert"><b>Route ${sourceId}: ${load}/${cap}</b><br>Move ${n} riders to proposed Route ${newId}.</div>
+     ${pick.map(g=>`<div class="kv"><span>${g.name}</span><b>${g.riders}</b></div>`).join('')}
+     <div class="kv"><span>Bus</span><b>${spare?'Bus '+spare.id:'Unassigned'}</b></div>
+     <div class="kv"><span>Driver</span><b>${driver?.name||'Unassigned'}</b></div>
+     <button class="btn primary" onclick="v2480ApproveRelief()">Create Route ${newId}</button>`
+  )
+}
+function v2480ApproveRelief(){
+  let P=state.v2480?.pendingRelief;if(!P)return;
+  let source=(state.routes||[]).find(r=>Number(r.id)===Number(P.sourceId));if(!source)return;
+  let before=v2480DistrictLedgerTotal(),backup=v2480Backup();
+  let nr=v202CreateRouteSkeleton?.(source,P.newId,P.spareBus,P.driver,P.moved);
+  if(!nr){
+    nr=JSON.parse(JSON.stringify(source));
+    nr.id=P.newId;nr.bus=P.spareBus;nr.driver=P.driver;nr.ops15={...(nr.ops15||{}),stopTimes:[],riders:0,ridersAM:0,ridersPM:0}
+  }
+  state.routes.push(nr);
+  let ok=true;
+  (P.groups||[]).forEach(g=>{if(!v2480TransferGroup({source:P.sourceId,dest:P.newId,...g}))ok=false});
+  v2480SyncAll();
+  let after=v2480DistrictLedgerTotal();
+  if(!ok||after!==before){
+    state.routes=state.routes.filter(r=>Number(r.id)!==Number(P.newId));
+    v2480Restore(backup);alert('Relief creation rolled back because riders could not be transferred safely.');return
+  }
+  try{autosaveGame?.();renderRoutes?.()}catch(e){}
+  openModal('✅ Relief Route Created',
+    `<div class="alert priority-green"><b>Route ${P.newId} created.</b><br>${P.moved} riders moved from Route ${P.sourceId}.</div>
+     <div class="kv"><span>District riders</span><b>${before} → ${after}</b></div>
+     <button class="btn primary" onclick="closeModal();goView('routes');renderRoutes()">Open Live Route Board</button>`
+  )
+}
+v2460Preview=v2480PreviewBalance;
+v2459Preview=v2480PreviewBalance;
+v2460Apply=v2480ApplyBalance;
+v2459ApplyPlan=v2480ApplyBalance;
+v214OpenStopTransfer=v2480OpenTransfer;
+v214ChooseTransferStop=v2480ChooseStop;
+v2473CommitTransfer=v2480CommitTransfer;
+v214CommitTransfer=v2480CommitTransfer;
+v202PlanRelief=v2480CreateRelief;
+v202ApproveRelief=v2480ApproveRelief;
+v202OpenAutoBalance=function(){
+  let rows=v2480Rows();
+  if(!rows.some(x=>x.over)){openModal('✅ Auto-Balance Review','<div class="alert priority-green"><b>No routes are over capacity.</b></div>');return}
+  v2480PreviewBalance()
+};
+v202OpenCapacityCenter=function(){
+  let rows=v2480Rows();
+  openModal('🚌 Route Capacity & Relief Center',
+    `<div class="alert"><b>Marcus Reed — Unified Routing Engine</b><br><span class="small">Students, neighborhood growth, stops, route totals and balancing now come from one system.</span></div>
+     <div class="kv"><span>District rider ledger</span><b>${v2480DistrictLedgerTotal()}</b></div>
+     <div class="actions"><button class="btn primary" onclick="v2480PreviewBalance()">🧠 Balance Existing Routes First</button><button class="btn" onclick="v2480OpenTransfer()">Move Stops Manually</button><button class="btn" onclick="closeModal();goView('routes')">Open Route Management</button></div>
+     ${rows.map(x=>`<div class="v202-caprow"><b>Route ${x.r.id}</b><span><div class="v202-capbar ${x.over?'bad':x.near?'warn':''}"><i style="width:${Math.min(100,x.pct)}%"></i></div><span class="small">${(x.r.ops15?.schools||[]).join(', ')}${x.growth?` • 🏘️ ${x.growth} growth`:''}</span></span><b>${x.riders}/${x.cap} (${x.pct}%)</b><span>${x.over?`<button class="btn primary" onclick="v2480CreateRelief(${Number(x.r.id)})">Create Relief Route</button>`:x.near?'Review soon':'✓ Balanced'}</span></div>`).join('')}`
+  )
+};
+renderRoutes=function(){
+  ensureOpsV15?.();v2480SyncAll();if(!$('routeCards'))return;
+  let totalMiles=state.routes.reduce((a,r)=>a+Number(r.ops15?.dailyMiles||0),0),
+      avgOn=Math.round(state.routes.reduce((a,r)=>a+Number(r.ops15?.onTimePct||0),0)/Math.max(1,state.routes.length)),
+      cross=state.routes.reduce((a,r)=>a+Number(r.ops15?.crossings||0),0);
+  if($('routeOpsKpis'))$('routeOpsKpis').innerHTML=[['Active Routes',state.routes.length],['Daily Route Miles',totalMiles.toFixed(0)],['Avg On-Time',avgOn+'%'],['Rail Crossings',cross],['District Riders',v2480DistrictLedgerTotal()]].map(x=>`<div class="panel"><div class="small">${x[0]}</div><div class="big-kpi">${x[1]}</div></div>`).join('');
+  if($('routeOpsBoard'))$('routeOpsBoard').innerHTML=state.routes.map(r=>{
+    let riders=v2480Load(r),cap=v2480Capacity(r),growth=v2480GrowthCount(r.id),delay=opsRouteCurrentDelayV15(r),over=cap&&riders>cap,cls=over?'bad':delay>=8?'bad':delay>=4?'warn':'';
+    return `<div class="ops15-status ${over?'ops15-over':''}" onclick="selectRoute(${r.id})"><div><span class="ops15-dot ${cls}"></span><b>${r.id}</b></div><div><b>${r.ops15.routeType}</b><br><span class="small">${(r.ops15.schools||[]).join(' → ')}${growth?` • 🏘️ +${growth} growth`:''}</span></div><div><b>${riders}/${cap} riders</b>${growth?`<br><span class="small">${r.ops15.baseRiders} base + ${growth} new</span>`:''}${over?'<br><span class="status bad">OVER CAPACITY</span>':''}</div><div>${r.ops15.dailyMiles} mi/day</div><div>${delay?`+${delay} min`:'On time'}</div></div>`
+  }).join('');
+  $('routeCards').innerHTML=state.routes.map(r=>{
+    let riders=v2480Load(r),cap=v2480Capacity(r),growth=v2480GrowthCount(r.id),pct=cap?Math.round(riders/cap*100):0;
+    return `<button class="card ${pct>100?'ops15-over':''}" onclick="selectRoute(${r.id})"><span class="status ${r.driver?'good':'bad'}">${r.driver?'Covered':'Uncovered'}</span><b>Route ${r.id}</b><div class="small">${r.ops15.routeType} • Bus ${r.temporaryBus||r.bus||'—'} • ${r.temporaryDriver||r.driver||'No driver'}</div><div style="margin-top:7px">${(r.ops15.schools||[]).map(s=>`<span class="ops15-schooltag">${s}</span>`).join('')}</div><div class="small">${riders}/${cap} riders${growth?` • 🏘️ +${growth} new`:''} • ${r.ops15.dailyMiles} mi/day • ${r.ops15.onTimePct}% on-time</div></button>`
+  }).join('');
+  if(!state.routes.some(r=>Number(r.id)===Number(selectedRoute))&&state.routes.length)selectedRoute=state.routes[0].id;
+  if(state.routes.length)selectRoute(Number(selectedRoute),false)
+};
+window.addEventListener('load',()=>setTimeout(()=>{
+  try{
+    v2471RepairUnassignedGrowth?.();
+    v2471RepairMissingGrowthHistory?.();
+    v2474SplitOversizedStudentStops?.();
+    v2480SyncAll();
+    renderRoutes?.();
+    autosaveGame?.()
+  }catch(e){console.error('V24.8 unified routing startup',e)}
+},1500));
+
+
+/* ===== V25.0.0 LIVING TRANSPORTATION DEPARTMENT =====
+   Next-batch expansion: route optimization, realistic stop types, summer rollover,
+   driver bidding, trip signups, employee life, delegation, budget season,
+   five-year fleet planning, facility expansion, parent/principal contacts,
+   and department history.
+*/
+function ensureV2490(){
+  state.v2490=state.v2490||{
+    version:'24.9.0',
+    routeReviews:[],summer:{phase:'Planning',bids:[],practiceRuns:[],openingReady:false},
+    tripVolunteers:{},lifeEvents:[],delegationLog:[],
+    budget:{season:null,requests:[],decisions:[]},
+    fleetPlan:[],facility:{level:1,projects:[],completed:[]},
+    contacts:[],history:[],lastDailyKey:null,lastYear:null
+  };
+  return state.v2490
+}
+function v2490Money(n){return '$'+Math.round(Number(n||0)).toLocaleString()}
+function v2490Staff(){
+  let a=[...(state.drivers||[]),...(state.supportStaff||[]),...(state.staff||[])];
+  let seen=new Set();return a.filter(x=>x?.name&&!seen.has(x.name)&&seen.add(x.name))
+}
+function v2490Routes(){return state.routes||[]}
+function v2490Buses(){return state.buses||[]}
+function v2490Driver(name){return (state.drivers||[]).find(d=>d.name===name)||v2490Staff().find(d=>d.name===name)}
+function v2490Route(id){return v2490Routes().find(r=>Number(r.id)===Number(id))}
+function v2490Bus(id){return v2490Buses().find(b=>Number(b.id)===Number(id))}
+function v2490PushHistory(type,text){
+  let V=ensureV2490();V.history.unshift({year:state.year,date:state.gameDate,type,text});
+  V.history=V.history.slice(0,250)
+}
+
+/* ---------- ROUTE OPTIMIZATION ---------- */
+function v2490ReviewRoutes(){
+  let rows=v2480Rows(),reviews=[];
+  rows.forEach(x=>{
+    let stops=v2480Groups(x.r.id),miles=Number(x.r.ops15?.dailyMiles||0),
+        ride=Math.round(Number(x.r.ops15?.routeMinutes||stops.length*4+20)),
+        deadhead=Math.max(2,Math.round(miles*.14)),
+        issues=[],score=100;
+    if(x.over){issues.push(`Over capacity by ${x.riders-x.cap}`);score-=30}
+    if(x.pct>=90&&!x.over){issues.push('Near capacity');score-=10}
+    if(ride>75){issues.push(`Long ride time ~${ride} min`);score-=15}
+    if(deadhead>18){issues.push(`High deadhead ~${deadhead} mi/day`);score-=10}
+    if(stops.length>14){issues.push(`${stops.length} stops`);score-=8}
+    if(x.growth){issues.push(`${x.growth} growth riders`)}
+    reviews.push({route:x.r.id,load:x.riders,cap:x.cap,stops:stops.length,miles,ride,deadhead,score:Math.max(0,score),issues})
+  });
+  ensureV2490().routeReviews=reviews;
+  openModal('🗺️ Marcus — Annual Route Optimization Review',
+    `<div class="alert"><b>Marcus reviewed capacity, stop count, ride time, deadhead mileage and neighborhood growth.</b></div>
+     ${reviews.map(r=>`<div class="kv"><span><b>Route ${r.route}</b><div class="small">${r.stops} stops • ${r.ride} min • ${r.deadhead} deadhead mi${r.issues.length?' • '+r.issues.join(' • '):''}</div></span><b>${r.score}/100</b></div>`).join('')}
+     <div class="actions"><button class="btn primary" onclick="v2480PreviewBalance()">Let Marcus Balance Capacity</button><button class="btn" onclick="closeModal()">Close</button></div>`)
+}
+
+/* ---------- REALISTIC STOP TYPES ---------- */
+function v2490StopType(name,riders,growth){
+  let n=String(name||'').toLowerCase();
+  if(growth)return n.includes('apartment')?'Apartment Complex':'New Subdivision';
+  if(n.includes('apartment'))return 'Apartment Complex';
+  if(n.includes('rural')||n.includes('county'))return 'Rural Cluster';
+  if(riders<=3)return 'Driveway Cluster';
+  if(riders>=8)return 'Subdivision Corner';
+  return 'Neighborhood Corner'
+}
+function v2490DecorateStops(){
+  v2490Routes().forEach(r=>(r.ops15?.stopTimes||[]).forEach(s=>{
+    s.stopType=v2490StopType(s.name,s.riders,!!s.sourceDevelopment)
+  }))
+}
+
+/* ---------- SUMMER / DRIVER BIDDING ---------- */
+function v2490GenerateBids(force=false){
+  let V=ensureV2490();if(V.summer.bids.length&&!force)return V.summer.bids;
+  V.summer.bids=(state.drivers||[]).filter(d=>d.status!=='Retired').map((d,i)=>{
+    let route=v2490Routes().find(r=>(r.driver||r.temporaryDriver)===d.name),bus=v2490Bus(route?.bus||route?.temporaryBus);
+    let senior=Number(d.years||d.yearsEmployed||0),prefs=['Keep Current','Newer Bus','Shorter Route','Elementary Route','Special Needs'];
+    let pref=senior>=15?'Keep Current':prefs[i%prefs.length];
+    return {driver:d.name,seniority:senior,currentRoute:route?.id||null,currentBus:bus?.id||null,preference:pref,status:'Pending'}
+  }).sort((a,b)=>b.seniority-a.seniority);
+  return V.summer.bids
+}
+function v2490SummerCenter(){
+  let V=ensureV2490(),bids=v2490GenerateBids();
+  openModal('☀️ Summer Transportation Planning',
+    `<div class="alert priority-blue"><b>Summer phase: ${V.summer.phase}</b><br><span class="small">Bidding → training → garage prep → practice runs → opening-day readiness.</span></div>
+     <h3>Driver Bids</h3>
+     ${bids.map((b,i)=>`<div class="kv"><span><b>${b.driver}</b><div class="small">${b.seniority} yrs • Route ${b.currentRoute||'—'} • Bus ${b.currentBus||'—'}</div></span><span><b>${b.preference}</b><br><button class="btn" onclick="v2490HonorBid(${i})">${b.status==='Approved'?'Approved ✓':'Approve'}</button></span></div>`).join('')}
+     <div class="actions"><button class="btn primary" onclick="v2490AdvanceSummer()">Advance Summer Phase</button><button class="btn" onclick="v2490PracticeRuns()">Run Practice Routes</button><button class="btn" onclick="v2490OpeningMeeting()">Opening-Day Meeting</button></div>`)
+}
+function v2490HonorBid(i){let b=ensureV2490().summer.bids[i];if(!b)return;b.status='Approved';v2490PushHistory('Summer',`${b.driver}'s ${b.preference} request was approved.`);v2490SummerCenter()}
+function v2490AdvanceSummer(){
+  let V=ensureV2490(),p=['Planning','Driver Bidding','Training','Garage Prep','Practice Runs','Opening Day'];
+  V.summer.phase=p[Math.min(p.length-1,Math.max(0,p.indexOf(V.summer.phase))+1)];
+  if(V.summer.phase==='Training')try{v2456PlanTraining?.()}catch(e){}
+  if(V.summer.phase==='Garage Prep')try{v240SummerGaragePrep?.()}catch(e){}
+  v2490PushHistory('Summer',`Summer planning advanced to ${V.summer.phase}.`);v2490SummerCenter()
+}
+function v2490PracticeRuns(){
+  let V=ensureV2490();V.summer.phase='Practice Runs';
+  V.summer.practiceRuns=v2490Routes().map(r=>({route:r.id,status:Math.random()<.88?'Ready':'Needs adjustment'}));
+  v2490PushHistory('Operations','Practice route runs completed.');
+  openModal('🚌 Practice Runs',V.summer.practiceRuns.map(x=>`<div class="kv"><span>Route ${x.route}</span><b>${x.status}</b></div>`).join('')+`<button class="btn primary" onclick="v2490SummerCenter()">Back</button>`)
+}
+function v2490OpeningMeeting(){
+  let V=ensureV2490(),uncovered=v2490Routes().filter(r=>!r.driver&&!r.temporaryDriver).length,over=v2480Rows().filter(x=>x.over).length;
+  V.summer.openingReady=!uncovered&&!over;V.summer.phase='Opening Day';
+  openModal('🏫 Opening-Day Readiness Meeting',
+    `<div class="alert ${V.summer.openingReady?'priority-green':'priority-yellow'}"><b>${V.summer.openingReady?'Transportation is ready for opening day.':'A few items still need attention.'}</b></div>
+     <div class="kv"><span>Uncovered routes</span><b>${uncovered}</b></div><div class="kv"><span>Over-capacity routes</span><b>${over}</b></div>
+     <div class="kv"><span>Practice runs</span><b>${V.summer.practiceRuns.filter(x=>x.status==='Ready').length}/${v2490Routes().length} ready</b></div>`)
+}
+
+/* ---------- TRIP DRIVER SIGNUPS ---------- */
+function v2490Trips(){
+  return state.v240?.tripRequests||state.tripRequests||state.trips||[]
+}
+function v2490TripSignupCenter(){
+  let trips=v2490Trips(),V=ensureV2490();
+  openModal('🏟️ Activity Trip Driver Signups',
+    `<div class="alert"><b>Drivers can volunteer for daytime or after-route trips.</b><br><span class="small">Dispatch checks route conflicts and availability before assignment.</span></div>
+     ${trips.length?trips.map((t,i)=>{
+       let id=t.id||`trip${i}`,vol=V.tripVolunteers[id]||[];
+       return `<div class="panel"><b>${t.destination||t.name||'School Trip'}</b><div class="small">${t.date||state.gameDate} • ${t.time||t.departure||'TBD'} • ${t.students||t.studentCount||'?'} students</div>
+       <div class="small">Volunteers: ${vol.join(', ')||'None yet'}</div><button class="btn" onclick="v2490VolunteerDialog('${id}',${i})">Driver Signups</button></div>`
+     }).join(''):'<div class="alert">No active trip requests right now.</div>'}`)
+}
+function v2490VolunteerDialog(id,i){
+  let t=v2490Trips()[i],V=ensureV2490(),vol=V.tripVolunteers[id]||[];
+  openModal('🚌 Trip Volunteers',
+    `${(state.drivers||[]).map((d,di)=>{let signed=vol.includes(d.name);return `<div class="kv"><span>${d.name}<div class="small">${Number(d.years||d.yearsEmployed||0)} yrs • ${t?.time||'time TBD'}</div></span><button class="btn" onclick="v2490ToggleVolunteer('${id}',${di},${i})">${signed?'Withdraw':'Sign Up'}</button></div>`}).join('')}`)
+}
+function v2490ToggleVolunteer(id,di,ti){
+  let V=ensureV2490(),d=(state.drivers||[])[di];V.tripVolunteers[id]=V.tripVolunteers[id]||[];
+  let a=V.tripVolunteers[id],x=a.indexOf(d.name);if(x>=0)a.splice(x,1);else a.push(d.name);
+  v2490VolunteerDialog(id,ti)
+}
+
+/* ---------- EMPLOYEE LIFE / DELEGATION ---------- */
+function v2490DailyPeople(){
+  let V=ensureV2490(),key=String(state.gameDate||'')+'|'+state.year;if(V.lastDailyKey===key)return;V.lastDailyKey=key;
+  if(Math.random()<.045){
+    let staff=v2490Staff();if(staff.length){
+      let p=staff[Math.floor(Math.random()*staff.length)],events=[
+        `${p.name} received a compliment from a parent.`,
+        `${p.name} asked about future advancement opportunities.`,
+        `${p.name} is celebrating a work anniversary.`,
+        `${p.name} mentioned a family milestone and appreciates schedule flexibility.`,
+        `${p.name} volunteered to help a newer employee.`
+      ],text=events[Math.floor(Math.random()*events.length)];
+      V.lifeEvents.unshift({date:state.gameDate,person:p.name,text});V.lifeEvents=V.lifeEvents.slice(0,50);v2490PushHistory('People',text)
+    }
+  }
+}
+function v2490Delegate(issue){
+  let map={routing:'Marcus Reed',calloff:'Dana Brooks',training:'Terry Lawson',maintenance:'Mike Evans',special:'Nicole Grant',trip:'Trip/Activity Coordinator'};
+  let leader=map[issue]||'Rachel Owens';ensureV2490().delegationLog.unshift({date:state.gameDate,issue,leader,status:'Handled'});
+  notify?.(`${leader} handled the routine ${issue} issue and sent you the result.`,'good')
+}
+function v2490LeadershipDesk(){
+  let V=ensureV2490();
+  openModal('👥 Delegation & Employee Life',
+    `<div class="alert"><b>Your leadership team handles routine work.</b><br>Only meaningful exceptions should reach the Director.</div>
+     <div class="actions"><button class="btn" onclick="v2490Delegate('routing')">Delegate Routing Review</button><button class="btn" onclick="v2490Delegate('calloff')">Delegate Call-Off</button><button class="btn" onclick="v2490Delegate('training')">Delegate Training</button><button class="btn" onclick="v2490Delegate('maintenance')">Delegate Shop Issue</button></div>
+     <h3>Recent Employee Life</h3>${V.lifeEvents.slice(0,10).map(x=>`<div class="kv"><span>${x.person}</span><span>${x.text}</span></div>`).join('')||'<div class="small">No recent personal updates.</div>'}`)
+}
+
+/* ---------- BUDGET SEASON ---------- */
+const V2490_BUDGET_ITEMS=[
+  ['Replacement Bus',145000,'Capital'],
+  ['Additional Driver Position',52000,'Operating'],
+  ['Additional Mechanic Position',68000,'Operating'],
+  ['Camera/Radio Upgrade',45000,'Capital'],
+  ['Covered Bus Parking',350000,'Capital'],
+  ['Third Repair Bay',225000,'Capital'],
+  ['Driver Training Program',18000,'Operating']
+];
+function v2490BudgetCenter(){
+  let V=ensureV2490();
+  if(!V.budget.season)V.budget.season={year:Number(state.year||2026)+1,status:'Building Request'};
+  openModal('💰 Transportation Budget Season',
+    `<div class="alert"><b>Build your FY ${V.budget.season.year} request.</b><br><span class="small">Capital and operating requests are tracked separately.</span></div>
+     ${V2490_BUDGET_ITEMS.map((x,i)=>`<div class="kv"><span><b>${x[0]}</b><div class="small">${x[2]}</div></span><span><b>${v2490Money(x[1])}</b><br><button class="btn" onclick="v2490AddBudget(${i})">Request</button></span></div>`).join('')}
+     <h3>Current Request</h3>${V.budget.requests.map((x,i)=>`<div class="kv"><span>${x.item}</span><b>${v2490Money(x.cost)} • ${x.status}</b></div>`).join('')||'<div class="small">Nothing requested yet.</div>'}
+     <div class="actions"><button class="btn primary" onclick="v2490SubmitBudget()">Present to Superintendent/CFO</button></div>`)
+}
+function v2490AddBudget(i){
+  let x=V2490_BUDGET_ITEMS[i],V=ensureV2490();
+  V.budget.requests.push({item:x[0],cost:x[1],fund:x[2],status:'Requested',year:V.budget.season?.year});
+  v2490BudgetCenter()
+}
+function v2490SubmitBudget(){
+  let V=ensureV2490();if(!V.budget.requests.length)return alert('Add at least one request first.');
+  V.budget.requests.forEach(x=>{
+    let chance=x.cost>300000?.45:x.cost>150000?.60:.78;
+    x.status=Math.random()<chance?'Approved':Math.random()<.5?'Deferred':'Reduced/Counteroffer'
+  });
+  V.budget.season.status='Decision Received';
+  V.budget.requests.forEach(x=>v2490PushHistory('Budget',`${x.item}: ${x.status}.`));
+  v2490BudgetCenter()
+}
+
+/* ---------- FLEET REPLACEMENT ---------- */
+function v2490BuildFleetPlan(){
+  let year=Number(state.year||2026),V=ensureV2490();
+  V.fleetPlan=v2490Buses().map(b=>{
+    let age=Math.max(0,year-Number(b.year||year)),miles=Number(b.mileage||b.miles||0),
+        risk=age>=12?'Replace':age>=9||miles>=150000?'Plan Replacement':age>=6?'Monitor':'Retain',
+        replaceYear=risk==='Replace'?year:risk==='Plan Replacement'?year+1:Math.max(year+2,Number(b.year||year)+12);
+    return {bus:b.id,year:b.year,age,miles,risk,replaceYear,est:145000}
+  }).sort((a,b)=>a.replaceYear-b.replaceYear);
+  return V.fleetPlan
+}
+function v2490FleetPlan(){
+  let p=v2490BuildFleetPlan();
+  openModal('🚌 Five-Year Fleet Replacement Plan',
+    `<div class="alert"><b>Lifecycle plan based on age, mileage and replacement timing.</b></div>
+     ${p.map(x=>`<div class="kv"><span><b>Bus ${x.bus}</b><div class="small">${x.year} • ${x.age} yrs • ${Math.round(x.miles).toLocaleString()} mi</div></span><span><b>${x.risk}</b><br><span class="small">Target ${x.replaceYear} • ${v2490Money(x.est)}</span></span></div>`).join('')}`)
+}
+
+/* ---------- FACILITY EXPANSION ---------- */
+const V2490_FACILITY=[
+  ['Third Repair Bay',225000,'Adds shop capacity'],
+  ['Covered Bus Parking',350000,'Protects fleet from weather'],
+  ['Bus Wash Bay',180000,'Improves cleanliness and fleet appearance'],
+  ['Training Room',95000,'Improves annual and new-driver training'],
+  ['Office Expansion',140000,'Adds space for growing leadership staff'],
+  ['Fueling Upgrade',275000,'Improves fueling throughput'],
+  ['EV Charging Infrastructure',600000,'Prepares for future electric buses']
+];
+function v2490FacilityCenter(){
+  let V=ensureV2490();
+  openModal('🏗️ Transportation Facility Master Plan',
+    `<div class="alert"><b>Facility Level ${V.facility.level}</b><br>Completed: ${V.facility.completed.map(x=>x.name).join(', ')||'Original facility'}</div>
+     ${V2490_FACILITY.map((x,i)=>`<div class="kv"><span><b>${x[0]}</b><div class="small">${x[2]}</div></span><span><b>${v2490Money(x[1])}</b><br><button class="btn" onclick="v2490ProposeFacility(${i})">Propose</button></span></div>`).join('')}
+     <h3>Projects</h3>${V.facility.projects.map(x=>`<div class="kv"><span>${x.name}</span><b>${x.status}</b></div>`).join('')||'<div class="small">No active capital projects.</div>'}`)
+}
+function v2490ProposeFacility(i){
+  let x=V2490_FACILITY[i],V=ensureV2490(),approved=Math.random()<.62;
+  V.facility.projects.push({name:x[0],cost:x[1],status:approved?'Approved':'Deferred'});
+  if(approved){V.facility.completed.push({name:x[0],year:state.year});V.facility.level++;if(x[0]==='Third Repair Bay'&&state.v2452)state.v2452.bays=3}
+  v2490PushHistory('Facility',`${x[0]} was ${approved?'approved':'deferred'}.`);v2490FacilityCenter()
+}
+
+/* ---------- PARENT / PRINCIPAL CONTACTS ---------- */
+function v2490GenerateContact(){
+  let V=ensureV2490(),routes=v2490Routes(),r=routes[Math.floor(Math.random()*routes.length)];
+  if(!r)return;
+  let types=[
+    ['Parent','Bus was late this morning','calloff'],
+    ['Parent','Student ride time feels too long','routing'],
+    ['Principal','Arrival congestion needs review','routing'],
+    ['Parent','Driver received a compliment','compliment'],
+    ['Principal','Requests transportation help for an activity','trip'],
+    ['Parent','Concern about an overcrowded stop','routing']
+  ],t=types[Math.floor(Math.random()*types.length)];
+  V.contacts.unshift({id:Date.now(),date:state.gameDate,from:t[0],route:r.id,subject:t[1],type:t[2],status:'Open'});
+}
+function v2490Contacts(){
+  let V=ensureV2490();if(!V.contacts.length)v2490GenerateContact();
+  openModal('☎️ Parent & Principal Contacts',
+    `${V.contacts.slice(0,15).map((c,i)=>`<div class="panel"><b>${c.from} • Route ${c.route}</b><div>${c.subject}</div><div class="small">${c.date} • ${c.status}</div>${c.status==='Open'?`<button class="btn primary" onclick="v2490ResolveContact(${i},false)">Handle</button><button class="btn" onclick="v2490ResolveContact(${i},true)">Delegate</button>`:''}</div>`).join('')}`)
+}
+function v2490ResolveContact(i,delegate){
+  let c=ensureV2490().contacts[i];if(!c)return;c.status=delegate?'Resolved by staff':'Resolved by Director';
+  if(delegate&&c.type!=='compliment')v2490Delegate(c.type);
+  v2490PushHistory('Community',`${c.from} contact on Route ${c.route}: ${c.subject} — ${c.status}.`);v2490Contacts()
+}
+
+/* ---------- DEPARTMENT HISTORY ---------- */
+function v2490History(){
+  let V=ensureV2490(),retired=v2490Buses().filter(b=>/retired|disposed|sold/i.test(String(b.status||'')));
+  openModal('📚 Transportation Department History',
+    `<div class="alert"><b>${state.year} Department Archive</b><br><span class="small">People, buses, routes, budgets, facilities and major decisions remain part of district history.</span></div>
+     <div class="kv"><span>Current employees</span><b>${v2490Staff().length}</b></div>
+     <div class="kv"><span>Current buses</span><b>${v2490Buses().length}</b></div>
+     <div class="kv"><span>Retired/disposed buses</span><b>${retired.length}</b></div>
+     <div class="kv"><span>Routes</span><b>${v2490Routes().length}</b></div>
+     <h3>Timeline</h3>${V.history.slice(0,40).map(x=>`<div class="kv"><span><b>${x.year} • ${x.type}</b><div class="small">${x.date||''}</div></span><span>${x.text}</span></div>`).join('')||'<div class="small">History begins with this version.</div>'}`)
+}
+
+/* ---------- DIRECTOR OPERATIONS HUB ---------- */
+function v2490DirectorHub(){
+  openModal('🖥️ Director Operations Hub',
+    `<div class="alert priority-blue"><b>Run the department, not every individual task.</b></div>
+     <div class="actions">
+      <button class="btn primary" onclick="v2490ReviewRoutes()">🗺️ Route Optimization</button>
+      <button class="btn" onclick="v2490SummerCenter()">☀️ Summer & Bidding</button>
+      <button class="btn" onclick="v2490TripSignupCenter()">🏟️ Trip Signups</button>
+      <button class="btn" onclick="v2490LeadershipDesk()">👥 Delegation & People</button>
+      <button class="btn" onclick="v2490BudgetCenter()">💰 Budget Season</button>
+      <button class="btn" onclick="v2490FleetPlan()">🚌 5-Year Fleet Plan</button>
+      <button class="btn" onclick="v2490FacilityCenter()">🏗️ Facility Plan</button>
+      <button class="btn" onclick="v2490Contacts()">☎️ Parent/Principal Contacts</button>
+      <button class="btn" onclick="v2490History()">📚 Department History</button>
+     </div>`)
+}
+
+/* Add the hub to the existing Director Computer without replacing legacy tools. */
+const _v244DirectorComputer_2490=typeof v244DirectorComputer==='function'?v244DirectorComputer:null;
+if(_v244DirectorComputer_2490){
+  v244DirectorComputer=function(){
+    _v244DirectorComputer_2490.apply(this,arguments);
+    setTimeout(()=>{
+      let modal=document.querySelector('.modal-content,.modalCard,.modal');
+      if(!modal||document.getElementById('v2490HubBtn'))return;
+      let b=document.createElement('button');b.id='v2490HubBtn';b.className='btn primary';
+      b.textContent='🚌 Living Department Hub';b.onclick=v2490DirectorHub;
+      let actions=modal.querySelector('.actions');(actions||modal).appendChild(b)
+    },0)
+  }
+}
+
+/* Daily/annual living-world hooks. */
+function v2490Daily(){
+  ensureV2490();v2490DecorateStops();v2490DailyPeople();
+  if(Math.random()<.025)v2490GenerateContact();
+  let V=ensureV2490(),y=Number(state.year||2026);
+  if(V.lastYear!==y){
+    if(V.lastYear!==null)v2490PushHistory('School Year',`Transportation entered the ${y} school year.`);
+    V.lastYear=y;v2490BuildFleetPlan()
+  }
+}
+const _runTransportationDay_2490=typeof runTransportationDay==='function'?runTransportationDay:null;
+if(_runTransportationDay_2490){
+  runTransportationDay=function(){
+    let x=_runTransportationDay_2490.apply(this,arguments);
+    try{v2490Daily()}catch(e){console.error('V24.9 daily',e)}
+    return x
+  }
+}
+window.addEventListener('load',()=>setTimeout(()=>{
+  try{
+    ensureV2490();v2490DecorateStops();v2490BuildFleetPlan();
+    if(!state.v2490.history.length)v2490PushHistory('Milestone','Living Transportation Department system launched.');
+    autosaveGame?.()
+  }catch(e){console.error('V24.9 startup',e)}
+},1700));
+
+
+/* ===== V25.0.0 DISTRICT LEGACY TYCOON =====
+   Long-term district simulation: households/students, geography-aware routing,
+   school calendar, payroll/compliance, fleet lifecycle, board approvals,
+   staff careers, district growth, rare emergencies, reputation, annual reports,
+   historical archive, and visual facility evolution.
+*/
+function ensureV2500(){
+  state.v2500=state.v2500||{
+    version:'25.0.0',
+    households:[],
+    calendar:null,
+    payroll:{history:[],lastPeriod:null},
+    compliance:{records:[],alerts:[]},
+    board:{agenda:[],minutes:[],nextMeetingDay:15},
+    careers:{history:[]},
+    growth:{projects:[],lastYear:null},
+    emergencies:[],
+    reputation:{safety:88,onTime:84,staff:82,parent:78,board:80,budget:80,fleet:76},
+    annualReports:[],
+    archive:{years:{}},
+    world:{facilityLevel:1,coveredParking:false,washBay:false,trainingRoom:false,evInfrastructure:false,newSchools:[]},
+    lastProcessedDate:null
+  };
+  return state.v2500
+}
+function v2500DayKey(){return `${state.year||2026}|${state.gameDate||''}`}
+function v2500Num(n,d=0){n=Number(n);return Number.isFinite(n)?n:d}
+function v2500Rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function v2500Pick(a){return a[Math.floor(Math.random()*a.length)]}
+function v2500Money(n){return '$'+Math.round(v2500Num(n)).toLocaleString()}
+function v2500Staff(){return v2490Staff?.()||[]}
+function v2500Routes(){return state.routes||[]}
+function v2500Schools(){
+  let names=new Set();
+  v2500Routes().forEach(r=>(r.ops15?.schools||[]).forEach(s=>names.add(s)));
+  return [...names]
+}
+
+/* ---------- HOUSEHOLDS & REAL STUDENTS ---------- */
+const V2500_LAST=['Miller','Johnson','Smith','Reed','Taylor','Brown','Davis','Wilson','Martinez','Anderson','Thomas','Jackson','Moore','Clark','Lewis','Walker','Hall','Allen'];
+const V2500_STREETS=['Lakeview Dr','Meadow Ln','County Road 200 N','Oakwood Ct','Harrison St','Pine Ridge Dr','Fox Run','Maple Ave','River Lawn Dr','Prairie View','Deer Trail','Stonehenge Dr'];
+function v2500EnsureHouseholds(){
+  let V=ensureV2500();
+  if(V.households.length)return;
+  let students=(state.riders16?.students||[]).filter(s=>s.active!==false);
+  let byStop={};
+  students.forEach((s,i)=>{
+    let stop=s.stopName||s.stop||`Stop ${i+1}`;
+    byStop[stop]=byStop[stop]||[];
+    byStop[stop].push(s)
+  });
+  Object.entries(byStop).forEach(([stop,list],idx)=>{
+    let chunks=[];
+    for(let i=0;i<list.length;i+=v2500Rnd(1,3))chunks.push(list.slice(i,i+v2500Rnd(1,3)));
+    chunks.forEach((kids,j)=>{
+      let hh={
+        id:`HH-${idx}-${j}-${Math.random().toString(36).slice(2,6)}`,
+        family:`${v2500Pick(V2500_LAST)} Family`,
+        address:`${v2500Rnd(100,999)} ${v2500Pick(V2500_STREETS)}`,
+        stop,
+        movedInYear:Number(state.year||2026)-v2500Rnd(0,8),
+        students:[]
+      };
+      kids.forEach((s,k)=>{
+        s.householdId=hh.id;
+        if(!s.grade)s.grade=v2500Rnd(1,12);
+        if(!s.school)s.school=(v2500RouteForStudent(s)?.ops15?.schools||[])[0]||v2500Pick(v2500Schools())||'District School';
+        hh.students.push(s._v2480id||s._v2474id||s.id||`${idx}-${j}-${k}`)
+      });
+      V.households.push(hh)
+    })
+  });
+}
+function v2500RouteForStudent(s){
+  return v2500Routes().find(r=>Number(r.id)===Number(s.routeAM||s.routePM))
+}
+function v2500HouseholdsView(){
+  v2500EnsureHouseholds();let V=ensureV2500(),students=state.riders16?.students||[];
+  openModal('🏠 District Students & Families',
+    `<div class="alert"><b>${V.households.length} households • ${students.length} student records</b><br><span class="small">Students now belong to households and continue through the district year to year.</span></div>
+     ${V.households.slice(0,60).map(hh=>{
+       let kids=students.filter(s=>s.householdId===hh.id);
+       return `<div class="panel"><b>${hh.family}</b><div class="small">${hh.address} • ${hh.stop}</div>${kids.map(k=>`<div class="kv"><span>${k.name||'Student'} • Grade ${k.grade||'?'}</span><b>${k.school||'School'} • R${k.routeAM||k.routePM||'—'}</b></div>`).join('')}</div>`
+     }).join('')}`)
+}
+
+/* ---------- GEOGRAPHY-AWARE STOPS ---------- */
+function v2500Hash(s){
+  let h=0;for(let i=0;i<String(s).length;i++)h=(h*31+String(s).charCodeAt(i))>>>0;return h
+}
+function v2500StopGeo(stopName){
+  let h=v2500Hash(stopName);
+  return {x:10+(h%80),y:10+((h>>8)%80)}
+}
+function v2500RouteGeoMetrics(r){
+  let stops=v2480Groups(r.id),pts=stops.map(s=>v2500StopGeo(s.name));
+  let dist=0;
+  for(let i=1;i<pts.length;i++)dist+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y)*.18;
+  let miles=Math.max(v2500Num(r.ops15?.dailyMiles,0),Math.round(dist*2+8));
+  let minutes=Math.round(stops.length*3.5+miles*.45+12);
+  return {stops:stops.length,miles,minutes}
+}
+function v2500RecalcRouteGeography(){
+  v2500Routes().forEach(r=>{
+    let g=v2500RouteGeoMetrics(r);
+    r.ops15=r.ops15||{};
+    r.ops15.dailyMiles=g.miles;
+    r.ops15.routeMinutes=g.minutes
+  })
+}
+
+/* ---------- SCHOOL CALENDAR ---------- */
+function v2500BuildCalendar(year=Number(state.year||2026)){
+  let events=[
+    ['First Day','08-12'],['Labor Day','09-07'],['Fall Break','10-16'],
+    ['Thanksgiving Break','11-26'],['Winter Break Begins','12-21'],
+    ['Classes Resume','01-05'],['MLK Day','01-18'],['Spring Break','03-22'],
+    ['Good Friday','04-02'],['Last Day','05-27']
+  ];
+  ensureV2500().calendar={year,events:events.map(([name,md])=>({name,date:`${year}-${md}`})),snowClosures:[],pdDays:[`${year}-09-25`,`${year+1}-02-12`],earlyRelease:[`${year}-11-11`,`${year+1}-03-10`]};
+  return ensureV2500().calendar
+}
+function v2500CalendarView(){
+  let c=ensureV2500().calendar||v2500BuildCalendar();
+  openModal('📅 District School Calendar',
+    `<div class="alert"><b>${c.year}-${c.year+1} Transportation Calendar</b></div>
+     ${c.events.map(e=>`<div class="kv"><span>${e.name}</span><b>${e.date}</b></div>`).join('')}
+     <h3>Professional Development</h3>${c.pdDays.map(d=>`<div class="kv"><span>PD Day</span><b>${d}</b></div>`).join('')}
+     <h3>Early Release</h3>${c.earlyRelease.map(d=>`<div class="kv"><span>Early Release</span><b>${d}</b></div>`).join('')}
+     <h3>Weather Closures</h3>${c.snowClosures.map(d=>`<div class="kv"><span>School Closed</span><b>${d}</b></div>`).join('')||'<div class="small">None yet.</div>'}`)
+}
+
+/* ---------- PAYROLL ---------- */
+function v2500PayrollPeriod(){
+  let V=ensureV2500(),drivers=state.drivers||[],rows=[],total=0;
+  drivers.forEach(d=>{
+    let route=v2500Routes().find(r=>(r.driver||r.temporaryDriver)===d.name);
+    let routeHours=route?Math.max(3.5,v2500Num(route.ops15?.routeMinutes,60)/60*2):0;
+    let tripHours=v2500Rnd(0,3),training=Math.random()<.15?2:0;
+    let weekly=routeHours*5+tripHours+training,ot=Math.max(0,weekly-40),regular=weekly-ot;
+    let rate=v2500Num(d.hourlyRate||d.rate,22+Math.min(8,v2500Num(d.years||d.yearsEmployed)*.3));
+    let gross=regular*rate+ot*rate*1.5;total+=gross;
+    rows.push({driver:d.name,regular:regular.toFixed(1),ot:ot.toFixed(1),rate,gross})
+  });
+  let period={date:state.gameDate,year:state.year,rows,total};V.payroll.history.unshift(period);V.payroll.lastPeriod=period;
+  v2490PushHistory?.('Payroll',`Driver payroll processed: ${v2500Money(total)}.`);
+  return period
+}
+function v2500PayrollView(){
+  let p=ensureV2500().payroll.lastPeriod||v2500PayrollPeriod();
+  openModal('💵 Driver Payroll & Overtime',
+    `<div class="alert"><b>Current payroll: ${v2500Money(p.total)}</b><br><span class="small">Routes, trips, training and overtime feed payroll.</span></div>
+     ${p.rows.map(x=>`<div class="kv"><span><b>${x.driver}</b><div class="small">${x.regular} regular • ${x.ot} OT • ${v2500Money(x.rate)}/hr</div></span><b>${v2500Money(x.gross)}</b></div>`).join('')}`)
+}
+
+/* ---------- CDL / COMPLIANCE ---------- */
+function v2500InitCompliance(){
+  let V=ensureV2500();if(V.compliance.records.length)return;
+  (state.drivers||[]).forEach((d,i)=>{
+    V.compliance.records.push({driver:d.name,
+      cdlExpires:`${Number(state.year||2026)+v2500Rnd(1,4)}-${String(v2500Rnd(1,12)).padStart(2,'0')}-${String(v2500Rnd(1,28)).padStart(2,'0')}`,
+      physicalDue:`${Number(state.year||2026)+v2500Rnd(0,1)}-${String(v2500Rnd(1,12)).padStart(2,'0')}-${String(v2500Rnd(1,28)).padStart(2,'0')}`,
+      annualTraining:v2500Rnd(4,12),evaluation:v2500Rnd(1,12),status:'Current'})
+  })
+}
+function v2500ComplianceView(){
+  v2500InitCompliance();let V=ensureV2500();
+  V.compliance.records.forEach(r=>{r.status=(r.annualTraining<6||r.evaluation<3)?'Follow-up':'Current'});
+  openModal('🪪 CDL & Driver Compliance',
+    `<div class="alert"><b>Terry Lawson manages routine compliance follow-up.</b></div>
+     ${V.compliance.records.map(r=>`<div class="kv"><span><b>${r.driver}</b><div class="small">Physical ${r.physicalDue} • CDL ${r.cdlExpires}</div></span><span><b>${r.status}</b><br><span class="small">Training ${r.annualTraining} hrs • Eval score ${r.evaluation}/12</span></span></div>`).join('')}`)
+}
+
+/* ---------- BOARD MEETINGS ---------- */
+function v2500AddBoardItem(title,cost,type='Capital'){
+  ensureV2500().board.agenda.push({id:Date.now()+Math.random(),title,cost,type,status:'Agenda'});
+}
+function v2500BoardMeeting(){
+  let V=ensureV2500();
+  if(!V.board.agenda.length){
+    (ensureV2490().budget.requests||[]).filter(x=>x.status==='Requested').slice(0,3).forEach(x=>v2500AddBoardItem(x.item,x.cost,x.fund))
+  }
+  openModal('🏛️ School Board Transportation Agenda',
+    `<div class="alert"><b>Major purchases and permanent positions come to the board.</b></div>
+     ${V.board.agenda.map((a,i)=>`<div class="panel"><b>${a.title}</b><div class="small">${a.type} • ${v2500Money(a.cost)} • ${a.status}</div>${a.status==='Agenda'?`<button class="btn primary" onclick="v2500PresentBoard(${i})">Present Recommendation</button>`:''}</div>`).join('')||'<div class="small">No transportation items on the agenda.</div>'}`)
+}
+function v2500PresentBoard(i){
+  let V=ensureV2500(),a=V.board.agenda[i];if(!a)return;
+  let rep=V.reputation.board,chance=Math.min(.92,.45+rep/200-(a.cost>300000?.12:0));
+  a.status=Math.random()<chance?'Approved':'Tabled';
+  V.board.minutes.unshift({year:state.year,date:state.gameDate,title:a.title,status:a.status});
+  V.reputation.board=Math.max(0,Math.min(100,V.reputation.board+(a.status==='Approved'?2:-1)));
+  v2490PushHistory?.('Board',`${a.title} was ${a.status}.`);v2500BoardMeeting()
+}
+
+/* ---------- STAFF CAREERS ---------- */
+function v2500AnnualCareers(){
+  let V=ensureV2500();
+  v2500Staff().forEach(p=>{
+    if(p.age)p.age=Number(p.age)+1;
+    if(p.years!==undefined)p.years=Number(p.years)+1;
+    if(p.yearsEmployed!==undefined)p.yearsEmployed=Number(p.yearsEmployed)+1;
+    if(Math.random()<.03&&Number(p.age||0)>=62){
+      p.retirementIntent=true;V.careers.history.unshift({year:state.year,person:p.name,event:'Retirement planning'})
+    }else if(Math.random()<.025){
+      V.careers.history.unshift({year:state.year,person:p.name,event:'Interested in advancement'})
+    }
+  })
+}
+function v2500CareersView(){
+  let V=ensureV2500();
+  openModal('📈 Staff Careers & Succession',
+    `<div class="alert"><b>Employees age, gain seniority and build careers over decades.</b></div>
+     ${v2500Staff().map(p=>`<div class="kv"><span><b>${p.name}</b><div class="small">Age ${p.age||'—'} • ${p.years||p.yearsEmployed||0} yrs</div></span><b>${p.retirementIntent?'Retirement planning':p.role||p.position||p.title||'Transportation'}</b></div>`).join('')}
+     <h3>Career History</h3>${V.careers.history.slice(0,25).map(x=>`<div class="kv"><span>${x.year} • ${x.person}</span><b>${x.event}</b></div>`).join('')}`)
+}
+
+/* ---------- DISTRICT GROWTH ---------- */
+function v2500GenerateGrowth(){
+  let V=ensureV2500(),year=Number(state.year||2026);
+  if(V.growth.lastYear===year)return;V.growth.lastYear=year;
+  if(Math.random()<.55){
+    let type=v2500Pick(['Subdivision','Apartment Community','New Elementary School']);
+    let name=type==='New Elementary School'?`${v2500Pick(['Prairie','Deer Run','Winona','Pike Lake'])} Elementary`:`${v2500Pick(['Northgate','Maple Grove','Prairie View','Fox Run','Stone Ridge'])} ${type==='Subdivision'?'Subdivision':'Apartments'}`;
+    let riders=type==='New Elementary School'?v2500Rnd(40,90):v2500Rnd(12,42);
+    let project={year,type,name,riders,status:'Announced'};V.growth.projects.unshift(project);
+    if(type==='New Elementary School'){V.world.newSchools.push(name)}
+    v2490PushHistory?.('District Growth',`${name} announced; projected ${riders} transportation riders.`)
+  }
+}
+function v2500GrowthView(){
+  let V=ensureV2500();
+  openModal('🏘️ District Growth & Enrollment',
+    `<div class="alert"><b>Development changes future transportation demand.</b></div>
+     ${V.growth.projects.map(x=>`<div class="kv"><span><b>${x.name}</b><div class="small">${x.type} • ${x.year}</div></span><b>${x.riders} projected riders • ${x.status}</b></div>`).join('')||'<div class="small">No major growth projects yet.</div>'}`)
+}
+
+/* ---------- RARE EMERGENCIES ---------- */
+function v2500MaybeEmergency(){
+  let V=ensureV2500();if(Math.random()>=.008)return;
+  let route=v2500Pick(v2500Routes());if(!route)return;
+  let ev=v2500Pick([
+    ['Breakdown With Students','Dispatch sent spare bus and supervisor.'],
+    ['Road Closure','Marcus rerouted the bus and notified families.'],
+    ['Minor Bus Collision','Safety supervisor and administration responded.'],
+    ['Missing Student Concern','Dispatch verified boarding records and contacted school.'],
+    ['Severe Weather Escalation','Transportation leadership activated weather protocol.']
+  ]);
+  V.emergencies.unshift({date:state.gameDate,year:state.year,route:route.id,type:ev[0],response:ev[1],status:'Contained'});
+  V.reputation.safety=Math.max(0,V.reputation.safety-1);
+  v2490PushHistory?.('Emergency',`${ev[0]} on Route ${route.id}. ${ev[1]}`);
+  notify?.(`⚠️ ${ev[0]} — Route ${route.id}. ${ev[1]}`,'bad')
+}
+function v2500EmergencyView(){
+  let V=ensureV2500();
+  openModal('🚨 Significant Incident History',
+    `<div class="alert"><b>Rare events only — routine issues stay delegated.</b></div>
+     ${V.emergencies.map(x=>`<div class="panel"><b>${x.type} • Route ${x.route}</b><div>${x.response}</div><div class="small">${x.date} • ${x.status}</div></div>`).join('')||'<div class="small">No significant incidents.</div>'}`)
+}
+
+/* ---------- REPUTATION ---------- */
+function v2500UpdateReputation(){
+  let V=ensureV2500(),rows=v2480Rows();
+  let over=rows.filter(x=>x.over).length;
+  let avgOn=v2500Routes().length?Math.round(v2500Routes().reduce((n,r)=>n+v2500Num(r.ops15?.onTimePct,85),0)/v2500Routes().length):85;
+  V.reputation.onTime=Math.max(0,Math.min(100,avgOn));
+  V.reputation.fleet=Math.max(0,Math.min(100,90-Math.round(v2500Buses().filter(b=>Number(state.year)-Number(b.year)>=12).length*5)));
+  V.reputation.parent=Math.max(0,Math.min(100,V.reputation.parent+(over?-.5:.15)));
+}
+function v2500ReputationView(){
+  v2500UpdateReputation();let r=ensureV2500().reputation;
+  openModal('⭐ Transportation Director Reputation',
+    `<div class="alert"><b>Your long-term score is the health of the department.</b></div>
+     ${Object.entries(r).map(([k,v])=>`<div class="kv"><span>${k[0].toUpperCase()+k.slice(1)}</span><b>${Math.round(v)}/100</b></div>`).join('')}`)
+}
+
+/* ---------- ANNUAL REPORT / ARCHIVE ---------- */
+function v2500AnnualReport(){
+  let V=ensureV2500(),year=Number(state.year||2026);
+  let miles=v2500Routes().reduce((n,r)=>n+v2500Num(r.ops15?.dailyMiles)*180,0);
+  let report={
+    year,
+    riders:v2480DistrictLedgerTotal?.()||0,
+    routes:v2500Routes().length,
+    buses:v2500Buses().length,
+    miles:Math.round(miles),
+    trips:v2490Trips?.().length||0,
+    incidents:V.emergencies.filter(e=>Number(e.year)===year).length,
+    payroll:V.payroll.history.filter(p=>Number(p.year)===year).reduce((n,p)=>n+p.total,0),
+    reputation:JSON.parse(JSON.stringify(V.reputation)),
+    accomplishments:(ensureV2490().history||[]).filter(x=>Number(x.year)===year).slice(0,12)
+  };
+  V.annualReports=V.annualReports.filter(x=>Number(x.year)!==year);V.annualReports.unshift(report);
+  V.archive.years[String(year)]=JSON.parse(JSON.stringify(report));
+  v2490PushHistory?.('Annual Report',`${year} Transportation Annual Report completed.`);
+  return report
+}
+function v2500AnnualReportView(){
+  let r=v2500AnnualReport();
+  openModal(`📘 ${r.year} Transportation Annual Report`,
+    `<div class="alert priority-blue"><b>${r.riders} riders • ${r.routes} routes • ${r.buses} buses</b></div>
+     <div class="kv"><span>Annual route miles</span><b>${r.miles.toLocaleString()}</b></div>
+     <div class="kv"><span>Activity trips</span><b>${r.trips}</b></div>
+     <div class="kv"><span>Significant incidents</span><b>${r.incidents}</b></div>
+     <div class="kv"><span>Payroll tracked</span><b>${v2500Money(r.payroll)}</b></div>
+     <h3>Major Accomplishments</h3>${r.accomplishments.map(x=>`<div class="kv"><span>${x.type}</span><b>${x.text}</b></div>`).join('')||'<div class="small">No major entries yet.</div>'}`)
+}
+function v2500ArchiveView(){
+  let V=ensureV2500(),years=Object.keys(V.archive.years).sort((a,b)=>b-a);
+  openModal('🗄️ District Transportation Archive',
+    `<div class="alert"><b>Historical seasons remain available decades later.</b></div>
+     ${years.map(y=>{let r=V.archive.years[y];return `<div class="panel"><b>${y}</b><div class="small">${r.riders} riders • ${r.routes} routes • ${r.buses} buses • ${r.miles.toLocaleString()} miles • ${r.incidents} incidents</div></div>`}).join('')||'<div class="small">Generate an annual report to begin the archive.</div>'}`)
+}
+
+/* ---------- VISUAL WORLD EVOLUTION ---------- */
+function v2500WorldView(){
+  let V=ensureV2500(),f=ensureV2490().facility;
+  V.world.facilityLevel=Math.max(V.world.facilityLevel,f.level||1);
+  V.world.coveredParking=f.completed.some(x=>/Covered Bus Parking/i.test(x.name));
+  V.world.washBay=f.completed.some(x=>/Wash Bay/i.test(x.name));
+  V.world.trainingRoom=f.completed.some(x=>/Training Room/i.test(x.name));
+  V.world.evInfrastructure=f.completed.some(x=>/EV Charging/i.test(x.name));
+  openModal('🏢 Living Transportation Campus',
+    `<div class="alert"><b>Facility Level ${V.world.facilityLevel}</b><br><span class="small">The campus changes as capital projects are completed.</span></div>
+     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <div class="panel"><b>🛠️ Garage</b><div class="big-kpi">${state.v2452?.bays||2} bays</div></div>
+      <div class="panel"><b>🚌 Bus Lot</b><div class="big-kpi">${v2500Buses().length} buses</div></div>
+      <div class="panel"><b>${V.world.coveredParking?'🏗️':'⬜'} Covered Parking</b><div>${V.world.coveredParking?'Built':'Not built'}</div></div>
+      <div class="panel"><b>${V.world.washBay?'🚿':'⬜'} Wash Bay</b><div>${V.world.washBay?'Built':'Not built'}</div></div>
+      <div class="panel"><b>${V.world.trainingRoom?'🎓':'⬜'} Training Room</b><div>${V.world.trainingRoom?'Built':'Not built'}</div></div>
+      <div class="panel"><b>${V.world.evInfrastructure?'⚡':'⬜'} EV Infrastructure</b><div>${V.world.evInfrastructure?'Built':'Not built'}</div></div>
+     </div>
+     ${V.world.newSchools.length?`<h3>New District Schools</h3>${V.world.newSchools.map(s=>`<div class="kv"><span>🏫 ${s}</span><b>Added to district map</b></div>`).join('')}`:''}`)
+}
+
+/* ---------- V25 DIRECTOR HUB ---------- */
+function v2500LegacyHub(){
+  openModal('🏆 V25 District Legacy Tycoon',
+    `<div class="alert priority-blue"><b>Build and lead the transportation department for decades.</b></div>
+     <div class="actions">
+      <button class="btn primary" onclick="v2500HouseholdsView()">🏠 Students & Families</button>
+      <button class="btn" onclick="v2500CalendarView()">📅 School Calendar</button>
+      <button class="btn" onclick="v2500PayrollView()">💵 Payroll & OT</button>
+      <button class="btn" onclick="v2500ComplianceView()">🪪 CDL & Compliance</button>
+      <button class="btn" onclick="v2500BoardMeeting()">🏛️ Board Meeting</button>
+      <button class="btn" onclick="v2500CareersView()">📈 Staff Careers</button>
+      <button class="btn" onclick="v2500GrowthView()">🏘️ District Growth</button>
+      <button class="btn" onclick="v2500EmergencyView()">🚨 Incident History</button>
+      <button class="btn" onclick="v2500ReputationView()">⭐ Director Reputation</button>
+      <button class="btn" onclick="v2500AnnualReportView()">📘 Annual Report</button>
+      <button class="btn" onclick="v2500ArchiveView()">🗄️ Historical Archive</button>
+      <button class="btn" onclick="v2500WorldView()">🏢 Living Campus</button>
+      <button class="btn" onclick="v2490DirectorHub()">🖥️ V24.9 Department Hub</button>
+     </div>`)
+}
+
+/* Add V25 button to Living Department Hub without removing old tools. */
+const _v2490DirectorHub_2500=typeof v2490DirectorHub==='function'?v2490DirectorHub:null;
+if(_v2490DirectorHub_2500){
+  v2490DirectorHub=function(){
+    _v2490DirectorHub_2500.apply(this,arguments);
+    setTimeout(()=>{
+      let modal=document.querySelector('.modal-content,.modalCard,.modal');
+      if(!modal||document.getElementById('v2500LegacyBtn'))return;
+      let b=document.createElement('button');b.id='v2500LegacyBtn';b.className='btn primary';
+      b.textContent='🏆 V25 District Legacy Tycoon';b.onclick=v2500LegacyHub;
+      let actions=modal.querySelector('.actions');(actions||modal).appendChild(b)
+    },0)
+  }
+}
+
+/* ---------- YEAR PROGRESSION ---------- */
+function v2500AdvanceStudents(){
+  v2500EnsureHouseholds();
+  let students=state.riders16?.students||[],graduated=[];
+  students.forEach(s=>{
+    s.grade=v2500Num(s.grade,v2500Rnd(1,12))+1;
+    if(s.grade>12){s.active=false;graduated.push(s)}
+  });
+  // add younger siblings/new residents
+  let V=ensureV2500();
+  V.households.forEach(hh=>{
+    if(Math.random()<.09){
+      let route=v2500Routes().find(r=>v2480Groups(r.id).some(g=>String(g.name).includes(String(hh.stop).replace(/\s•\sStop\s\d+$/,''))))||v2500Pick(v2500Routes());
+      let s={name:`Student ${Math.random().toString(36).slice(2,6).toUpperCase()}`,grade:1,school:(route?.ops15?.schools||[])[0]||v2500Pick(v2500Schools()),
+        stopName:hh.stop,routeAM:route?.id,routePM:route?.id,ridesAM:true,ridesPM:true,active:true,householdId:hh.id};
+      (state.riders16=state.riders16||{}).students=(state.riders16.students||[]);state.riders16.students.push(s)
+    }
+  });
+  return graduated.length
+}
+function v2500AnnualProgression(){
+  let grad=v2500AdvanceStudents();v2500AnnualCareers();v2500GenerateGrowth();v2500BuildCalendar(Number(state.year||2026));
+  v2500AnnualReport();v2500RecalcRouteGeography();v2480SyncAll?.();
+  v2490PushHistory?.('School Year',`${grad} students graduated; staff seniority and district growth advanced.`)
+}
+
+/* ---------- DAILY HOOK ---------- */
+function v2500Daily(){
+  let V=ensureV2500(),key=v2500DayKey();if(V.lastProcessedDate===key)return;V.lastProcessedDate=key;
+  v2500EnsureHouseholds();if(!V.calendar)v2500BuildCalendar();
+  v2500RecalcRouteGeography();v2500UpdateReputation();v2500MaybeEmergency();
+  if(Math.random()<.04)v2500PayrollPeriod();
+  if(Math.random()<.015)v2500GenerateGrowth();
+}
+const _v2490Daily_2500=typeof v2490Daily==='function'?v2490Daily:null;
+if(_v2490Daily_2500){
+  v2490Daily=function(){
+    let x=_v2490Daily_2500.apply(this,arguments);
+    try{v2500Daily()}catch(e){console.error('V25 daily',e)}
+    return x
+  }
+}
+
+/* Wrap common new-school-year functions if present. */
+['startNewSchoolYear','v240StartNewSchoolYear','v2453StartNewSchoolYear'].forEach(fn=>{
+  try{
+    let old=window[fn];
+    if(typeof old==='function'&&!old._v2500wrapped){
+      let w=function(){let x=old.apply(this,arguments);try{v2500AnnualProgression()}catch(e){console.error('V25 annual',e)}return x};
+      w._v2500wrapped=true;window[fn]=w
+    }
+  }catch(e){}
+});
+
+window.addEventListener('load',()=>setTimeout(()=>{
+  try{
+    ensureV2500();v2500EnsureHouseholds();v2500InitCompliance();
+    if(!state.v2500.calendar)v2500BuildCalendar();
+    v2500BuildFleetPlan?.();v2500RecalcRouteGeography();v2500UpdateReputation();
+    v2490PushHistory?.('Milestone','V25 District Legacy Tycoon launched.');
+    autosaveGame?.()
+  }catch(e){console.error('V25 startup',e)}
+},1900));
 
 render();
 </script>
