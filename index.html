@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon — V26.2.1 — Fleet Archive Fix</title>
+<title>School Transportation Tycoon — V26.2.2 — Fleet Archive Fix</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — V26.2.1 — Fleet Archive Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — V26.2.2 — Fleet Archive Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -17957,17 +17957,17 @@ function v262Deliver(id){let q=v262().orders.find(q=>q.id===id);if(!q||q.status!
 function v262AnnualSnapshot(year){let x=v262();if(x.reports.some(r=>String(r.year)===String(year)))return;v261FinanceSync();let buses=state.buses||[],days=(state.v26?.days||[]).filter(d=>String(d.year)===String(year)),transactions=v261().finance.transactions.filter(t=>String(t.day||'').includes(String(year))||String(t.month||'').includes(String(year)));x.reports.unshift({year,created:v261Day(),fleet:buses.length,averageAge:buses.length?+(buses.reduce((a,b)=>a+Math.max(0,Number(year)-Number(b.year||year)),0)/buses.length).toFixed(1):0,staff:(state.staff||[]).length,drivers:(state.staff||[]).filter(p=>/driver/i.test(String(p.role||''))).length,days:days.length,routeCoverage:days.length?+(days.reduce((a,d)=>a+Number(d.covered||d.completed||0),0)/days.length).toFixed(1):null,maintenance:transactions.filter(t=>t.category==='Maintenance').reduce((a,t)=>a+Number(t.amount||0),0),payroll:transactions.filter(t=>t.category==='Payroll').reduce((a,t)=>a+Number(t.amount||0),0),fuel:transactions.filter(t=>t.category==='Fuel').reduce((a,t)=>a+Number(t.amount||0),0),incidents:(state.v26?.incidents||[]).filter(e=>String(e.day||'').includes(String(year))).length,disposals:x.archive.filter(a=>String(a.disposalYear)===String(year)).length,deliveries:x.orders.filter(q=>q.status==='Delivered'&&Number(q.deliveryYear)===Number(year)).length,accomplishments:(v261().archive||[]).filter(a=>String(a.year)===String(year)&&/milestone|district|board/i.test(a.kind||'')).slice(0,12).map(a=>a.text)});x.reports=x.reports.slice(0,100)}
 function v262Annual(){v262Migrate();let x=v262();openModal('📊 Annual Transportation Reports',`<div class="alert priority-blue">Snapshot reports are preserved at each school-year rollover. Current-year figures are provisional; older imported saves may lack historical transactions.</div><button class="btn primary" onclick="v262PreviewAnnual()">Generate Current-Year Snapshot</button>${x.reports.map(r=>`<div class="panel"><h3>${v262Esc(r.year)} Transportation Report</h3><div class="kv"><span>Fleet / average age</span><b>${r.fleet} / ${r.averageAge} years</b></div><div class="kv"><span>Employees / drivers</span><b>${r.staff} / ${r.drivers}</b></div><div class="kv"><span>Recorded operating days</span><b>${r.days}</b></div><div class="kv"><span>Route coverage (recorded average)</span><b>${r.routeCoverage??'Not recorded'}</b></div><div class="kv"><span>Maintenance / payroll / fuel</span><b>${v255money(r.maintenance)} / ${v255money(r.payroll)} / ${v255money(r.fuel)}</b></div><div class="kv"><span>Incidents / disposals / deliveries</span><b>${r.incidents} / ${r.disposals} / ${r.deliveries}</b></div>${r.accomplishments.map(t=>`<div class="small">🏆 ${v262Esc(t)}</div>`).join('')}</div>`).join('')||'<div class="small">No annual reports recorded yet.</div>'}`)}
 function v262PreviewAnnual(){let x=v262();x.reports=x.reports.filter(r=>String(r.year)!==String(state.year));v262AnnualSnapshot(state.year);autosaveGame?.();v262Annual()}
-function v262Hub(){v262Migrate();openModal('🚌 V26.2.1 — Fleet Lifecycle',`<div class="alert priority-blue">Permanent archive, active-only parking, board-approved replacement orders, delivery and annual reporting.</div><div class="actions"><button class="btn primary" onclick="v262FleetArchive()">📚 Sold Bus Archive</button><button class="btn primary" onclick="v262Lot()">🅿️ Garage Parking</button><button class="btn primary" onclick="v262Replacement()">🏛️ Bus Replacement</button><button class="btn primary" onclick="v262Annual()">📊 Annual Report</button><button class="btn" onclick="v262Disposal()">🏷️ Sell / Scrap</button></div>`)}
+function v262Hub(){v262Migrate();openModal('🚌 V26.2.2 — Fleet Lifecycle',`<div class="alert priority-blue">Permanent archive, active-only parking, board-approved replacement orders, delivery and annual reporting.</div><div class="actions"><button class="btn primary" onclick="v262FleetArchive()">📚 Sold Bus Archive</button><button class="btn primary" onclick="v262Lot()">🅿️ Garage Parking</button><button class="btn primary" onclick="v262Replacement()">🏛️ Bus Replacement</button><button class="btn primary" onclick="v262Annual()">📊 Annual Report</button><button class="btn" onclick="v262Disposal()">🏷️ Sell / Scrap</button></div>`)}
 /* Route all previous disposal entry points through the active-only archive. */
 v2510FleetDisposition=v262Disposal;
 v2510DisposeBus=function(id,method){return v262Dispose(id,method==='Auction'?'Auction':method==='Trade'?'Trade':method==='Scrap'?'Scrap':method==='Sale'?'Sale':method==='Training'||method==='Preserve'?alert('Training and preservation remain in the Bus Duty Assignment center.'):method)};
 v255Fleet=v262FleetArchive;
-const _v262Computer=v2506DirectorComputer;v2506DirectorComputer=function(){_v262Computer.apply(this,arguments);let m=document.getElementById('modalBody');if(m){let d=document.createElement('div');d.className='actions';d.innerHTML='<button class="btn primary" onclick="v262Hub()">🚌 V26.2.1 Fleet Lifecycle & Reports</button>';m.prepend(d)}};
+const _v262Computer=v2506DirectorComputer;v2506DirectorComputer=function(){_v262Computer.apply(this,arguments);let m=document.getElementById('modalBody');if(m){let d=document.createElement('div');d.className='actions';d.innerHTML='<button class="btn primary" onclick="v262Hub()">🚌 V26.2.2 Fleet Lifecycle & Reports</button>';m.prepend(d)}};
 const _v262Daily=v2500Daily;v2500Daily=function(){let previous=v262().lastYear??state.year,result=_v262Daily.apply(this,arguments);try{if(String(previous)!==String(state.year))v262AnnualSnapshot(previous);v262().lastYear=state.year;v262Migrate();for(let q of v262().orders.filter(q=>q.status==='Ordered'&&Number(q.deliveryYear)<=Number(state.year)))q.deliveryReady=true}catch(e){console.error('V26.2 daily',e)}return result};
 window.addEventListener('load',()=>{try{v262Migrate();v262().lastYear=state.year}catch(e){console.error('V26.2 migration',e)}});
 
 
-/* V26.2.1: repair historic disposals after every save restore; never infer a sale from bus number alone. */
+/* V26.2.2: repair historic disposals after every save restore; never infer a sale from bus number alone. */
 const _v2621Load=loadGame;
 loadGame=function(){let out=_v2621Load.apply(this,arguments);try{v262Migrate();render();autosaveGame()}catch(e){console.error('Fleet migration after load',e)}return out};
 const _v2621Slot=loadSlot;
@@ -17975,6 +17975,27 @@ loadSlot=function(){let out=_v2621Slot.apply(this,arguments);try{v262Migrate();r
 const _v2621Render=render;
 render=function(){try{v262Migrate()}catch(e){console.error('Fleet archive repair',e)}return _v2621Render.apply(this,arguments)};
 window.addEventListener('load',()=>{try{v262Migrate();render();autosaveGame()}catch(e){console.error('Fleet startup repair',e)}});
+
+/* V26.2.2: fuel and ride-along reliability fixes. */
+const V2622_VERSION='26.2.2';
+const _v2622Mileage=addDailyRouteMileage;
+addDailyRouteMileage=function(){let result=_v2622Mileage.apply(this,arguments);(state.buses||[]).forEach(b=>{if(Number.isFinite(Number(b.fuel)))b.fuelPct=Number(b.fuel)});return result};
+// The legacy fueling function required an assigned driver, so spare/temporarily
+// assigned buses could run low forever. Delegate to the fleet-wide card system.
+autoFuelLowBusesV10=function(){return v2510AutoFuel()};
+const _v2622FuelPct=v2510FuelPct;
+v2510FuelPct=function(b){let a=Number(b.fuel),p=Number(b.fuelPct);if(Number.isFinite(a)&&Number.isFinite(p)&&a!==p){return Math.max(0,Math.min(100,Math.min(a,p)))}return _v2622FuelPct(b)};
+// Driver records have moved between state.drivers, state.staff, and v242.
+v2507Drivers=function(){let out=[],seen=new Set();for(let group of [state.drivers,state.staff,state.v242?.employees])for(let d of (Array.isArray(group)?group:[])){if(!d||!d.name||seen.has(d.name))continue;let role=String(d.role||d.position||d.title||'Driver');if(!/driver|substitute|transport/i.test(role))continue;seen.add(d.name);out.push(d)}for(let r of (state.routes||[]))for(let name of [r.driver,r.temporaryDriver])if(typeof name==='string'&&name.trim()&&!seen.has(name)){seen.add(name);out.push({name,role:'Driver'})}return out};
+// Use a real select element in a stable container, with escaped labels and index
+// values (names with apostrophes cannot break the inline click handler).
+v2507RideAlongCenter=function(){let V=ensureV2507(),drivers=v2507Drivers();window.v2622RideNames=drivers.map(d=>d.name);let escapeText=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));openModal('👀 Driver Ride-Alongs',`<div class="alert priority-blue">Select a driver to conduct a ride-along.</div><div class="panel"><label for="v2507RideDriver">Driver</label><select id="v2507RideDriver" class="input" style="display:block;width:100%;min-height:42px;pointer-events:auto;position:relative;z-index:2">${drivers.map((d,i)=>`<option value="${i}">${escapeText(d.name)}${v2507DriverRoute(d.name)?' • Route '+escapeText(v2507DriverRoute(d.name).id):''}</option>`).join('')}</select>${drivers.length?'':'<p>No drivers found. Assign a driver to a route or hire a driver first.</p>'}<div class="actions"><button class="btn primary" ${drivers.length?'':'disabled'} onclick="v2622StartRideAlong()">Start Ride-Along</button></div></div><h3>Recent Ride-Alongs</h3>${V.rideAlongs.slice(0,20).map(x=>`<div class="panel"><b>${escapeText(x.driver)} • Route ${escapeText(x.route||'—')}</b><div class="small">${escapeText(x.date)} • Overall ${escapeText(x.overall)}/5</div>${escapeText(x.result)}</div>`).join('')||'<div class="small">No ride-alongs completed yet.</div>'}`)};
+function v2622StartRideAlong(){let i=Number(document.getElementById('v2507RideDriver')?.value),name=window.v2622RideNames?.[i];if(!name)return;let r=v2507DriverRoute(name);window.v2622RideName=name;openModal('👀 Ride-Along — '+name,`<div class="alert">${r?'Route '+r.id:'Unassigned / Substitute Driver'}</div>${[['safe','Safe driving / following distance'],['stops','Stop procedures / student loading'],['manage','Student management'],['route','Route knowledge / timing'],['professional','Professionalism / communication']].map(([id,label])=>`<div class="kv"><span>${label}</span><select id="v2507_${id}" class="input" style="min-width:130px;pointer-events:auto"><option value="5">5 - Excellent</option><option value="4" selected>4 - Good</option><option value="3">3 - Meets</option><option value="2">2 - Coaching</option><option value="1">1 - Concern</option></select></div>`).join('')}<label>Notes</label><textarea id="v2507RideNotes" class="input" rows="3"></textarea><div class="actions"><button class="btn primary" onclick="v2507CompleteRideAlong(window.v2622RideName)">Complete Ride-Along</button></div>`)};
+// Existing entry point used elsewhere in the game.
+v2507StartRideAlong=v2622StartRideAlong;
+const _v2622FuelCenter=v2510FuelCenter;
+v2510FuelCenter=function(){(state.buses||[]).forEach(b=>{if(Number.isFinite(Number(b.fuel)))b.fuelPct=Number(b.fuel)});return _v2622FuelCenter.apply(this,arguments)};
+
 render();
 </script>
 </body>
