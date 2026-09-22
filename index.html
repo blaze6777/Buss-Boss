@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon V27.3</title>
+<title>School Transportation Tycoon V27.3.1</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -1175,7 +1175,45 @@ function loadGame(){
  }catch(e){alert('That save could not be loaded. The current game was left unchanged.');}
 }
 
-function resetGame(){if(confirm('Start a new transportation district?')){state=JSON.parse(JSON.stringify(initial));render()}}
+/* V27.3.1: New Game explicitly chooses historical or original career. */
+function v2731NewGame(){openModal('🚌 Start a New Career',`<div class="alert priority-blue"><b>Choose your starting era.</b> Starting a career replaces the currently active game. Existing career slots remain available; export a backup first if this career has not been saved in a slot.</div><div class="actions"><button class="btn primary" onclick="v2731Start('historical')">Start in 1985 — historical district</button><button class="btn" onclick="v2731Start('modern')">Original modern starting district</button><button class="btn" onclick="closeModal()">Cancel</button></div>`)}
+function v2731Start(mode){
+ if(mode!=='historical'&&mode!=='modern')return;
+ if(!confirm('Start a new '+(mode==='historical'?'1985 historical':'original modern')+' career? This replaces the active game. Save it in a career slot or export a backup first.'))return;
+ let next=JSON.parse(JSON.stringify(initial));
+ if(mode==='historical'){
+   next.year=1985;
+   /* Keep original playable routes, drivers, student assignments and accessibility,
+      but give each starting bus a period-appropriate fictional fleet configuration. */
+   const models=[
+    ['1981','Thomas Conventional / Ford B-Series'],
+    ['1982','Blue Bird Conventional / International S-Series'],
+    ['1979','Wayne Lifeguard / Chevrolet'],
+    ['1984','Thomas Conventional / International S-Series'],
+    ['1980','Blue Bird Conventional / Ford B-Series'],
+    ['1978','Wayne Lifeguard / International'],
+    ['1983','Thomas Conventional / Ford B-Series'],
+    ['1981','Blue Bird All American FE'],
+    ['1984','Blue Bird Conventional / Chevrolet'],
+    ['1983','Thomas Minotour Special Needs']
+   ];
+   next.buses.forEach((b,i)=>{
+     let spec=models[i%models.length];b.year=Number(spec[0]);b.model=spec[1];
+     b.miles=Math.max(3500,Math.round((1985-b.year)*11500+4000+i*1370));
+     b.condition=Math.max(54,95-(1985-b.year)*5);b.status=b.status==='Inspection Due'?'Ready':b.status;
+     if(/special/i.test(String(b.designation||''))){b.model='1983 Thomas Minotour Special Needs';b.year=1983;}
+   });
+   next.v27={version:'27.3.1',enabled:true,historical:true,lastDay:'',lastYear:null,seq:0,events:[],leaves:[],notices:[],vacancies:[],employment:[],district:[],catalog:[],settings:{frequency:'realistic',autoCoverage:true},coverage:[],lastPayroll:'',startYear:1985};
+ }
+ state=next;
+ try{ensureAssignmentFields();ensureV4Data();ensureUXData();v262Migrate();if(mode==='historical')v27districtYear();}catch(e){console.error('Career initialization',e)}
+ try{autosaveGame()}catch(e){console.warn('Autosave failed',e)}
+ try{closeModal()}catch(e){}
+ render();
+ alert(mode==='historical'?'Historical career started in 1985 with a period-style starter fleet. Your previous career slots have not been overwritten.':'Original starting career created.');
+}
+function resetGame(){v2731NewGame()}
+
 
 function openModal(title,body){
  const overlay=$('modalOverlay'),titleEl=$('modalTitle'),bodyEl=$('modalBody');
@@ -18127,7 +18165,7 @@ function v272BoardMeeting(){let x=v272(),proposals=[...x.projects.filter(q=>q.st
 function v272Vote(id,kind,approve,note){let x=v272(),q=kind==='facility'?x.projects.find(q=>q.id===id):v262().orders.find(q=>q.id===id);if(!q||q.status!=='Proposed')return;q.status=approve?'Board Approved':'Denied';x.meetings.unshift({id:v272id(),year:state.year,project:id,result:q.status,notes:note||q.model||V272_UPGRADES[q.type]?.name||'Board vote'});try{v261().archive.unshift({id:'v272-board:'+id,year:state.year,day:v261Day(),kind:'Board',text:q.status+' '+(q.model||V272_UPGRADES[q.type]?.name||id)})}catch(e){}v272save();v272BoardMeeting()}
 function v272Defer(id,kind,note){let q=kind==='facility'?v272().projects.find(q=>q.id===id):v262().orders.find(q=>q.id===id);if(!q||q.status!=='Proposed')return;v272().meetings.unshift({id:v272id(),year:state.year,project:id,result:'Deferred',notes:note||'Further review requested'});v272save();v272BoardMeeting()}
 function v272Daily(){let x=v272();if(x.lastYear===state.year)return;x.lastYear=state.year;v272Finish();for(let p of v272staff()){let z=v272person(p),b=v272driverBus(p);if(z.lastYear===state.year)continue;z.lastYear=state.year;if(b&&!z.favorite){z.favorite=String(b.v262Uid||b.id);v272memory(p,'Developed attachment to assigned Bus '+v272BusNumber(b))}if(b&&Number(state.year)-Number(b.year||state.year)>=15&&!z.requests.some(r=>r.status==='Pending')&&Math.random()<.16){z.requests.unshift({id:v272id(),year:state.year,status:'Pending',current:b.id,desired:null});v272memory(p,'Requested replacement for aging Bus '+v272BusNumber(b))}}v272save()}
-function v272Hub(){openModal('🚌 School Transportation Tycoon V27.3',`<div class="alert priority-blue">Driver–bus memories, expandable garage, historical bus silhouettes, and recorded board meetings. Existing saves remain intact.</div><div class="actions"><button class="btn primary" onclick="v272Relationships()">🤝 Driver & Bus Relationships</button><button class="btn primary" onclick="v272Facility()">🏗️ Expandable Garage</button><button class="btn primary" onclick="v272Showroom()">🎨 Bus Showroom</button><button class="btn primary" onclick="v272BoardMeeting()">🏛️ Board Meeting</button><button class="btn" onclick="v271Catalog()">Historical Dealer</button></div>`)}
+function v272Hub(){openModal('🚌 School Transportation Tycoon V27.3.1',`<div class="alert priority-blue">Driver–bus memories, expandable garage, historical bus silhouettes, and recorded board meetings. Existing saves remain intact.</div><div class="actions"><button class="btn primary" onclick="v272Relationships()">🤝 Driver & Bus Relationships</button><button class="btn primary" onclick="v272Facility()">🏗️ Expandable Garage</button><button class="btn primary" onclick="v272Showroom()">🎨 Bus Showroom</button><button class="btn primary" onclick="v272BoardMeeting()">🏛️ Board Meeting</button><button class="btn" onclick="v271Catalog()">Historical Dealer</button></div>`)}
 const _v272Computer=v2506DirectorComputer;v2506DirectorComputer=function(){_v272Computer.apply(this,arguments);let m=document.getElementById('modalBody');if(m){let d=document.createElement('div');d.className='actions';d.innerHTML='<button class="btn primary" onclick="v272Hub()">🚌 V27.2 Garage, Drivers & Board</button>';m.prepend(d)}};
 const _v272Advance=advanceDay;advanceDay=function(){let result=_v272Advance.apply(this,arguments);try{v272Daily()}catch(e){console.error('V27.2 daily',e)}return result};
 const _v272Opening=openingDay;openingDay=function(){let result=_v272Opening.apply(this,arguments);try{v272Daily()}catch(e){console.error('V27.2 opening',e)}return result};
@@ -18135,7 +18173,7 @@ const _v272Lot=v262Lot;v262Lot=function(){return v272Facility()};
 
 
 /* V27.3 integrated operations: additive save fields; no migration resets. */
-const V273_VERSION='27.3.0';
+const V273_VERSION='27.3.1';
 function v273(){let x=state.v273||(state.v273={version:V273_VERSION,slots:[],audits:[],lastDay:null});x.version=V273_VERSION;x.audits=x.audits||[];return x}
 function v273Active(){return (state.buses||[]).filter(b=>!v262Dead(b))}
 function v273ShopBus(b){return /repair|maintenance|shop|out of service/i.test(String(b.status||''))||b.needsMaintenance===true}
@@ -18149,7 +18187,7 @@ function v273SaveSlots(){let slots=[0,1,2].map(i=>{let raw=localStorage.getItem(
 function v273Store(i){if(![0,1,2].includes(i))return;if(!confirm('Overwrite career slot '+(i+1)+' with the current career?'))return;try{let x={format:'STT-V273-slot',saved:new Date().toISOString(),label:'Year '+state.year+' • '+(state.buses||[]).length+' buses',state:JSON.parse(JSON.stringify(state))};localStorage.setItem('transportV273Slot'+i,JSON.stringify(x));v273SaveSlots()}catch(e){alert('Save failed: browser storage may be full. Export a backup instead.')}}
 function v273Restore(i){let raw=localStorage.getItem('transportV273Slot'+i),x;try{x=JSON.parse(raw);if(x.format!=='STT-V273-slot'||!Array.isArray(x.state?.buses)||!Array.isArray(x.state?.routes))throw Error('Invalid slot')}catch(e){return alert('Slot is invalid or missing.')}if(!confirm('Load slot '+(i+1)+'? Unsaved progress in the current career will be replaced.'))return;state=x.state;ensureAssignmentFields();ensureV4Data();ensureUXData();v262Migrate();autosaveGame();render();v273SaveSlots()}
 function v273Export(i){let raw=localStorage.getItem('transportV273Slot'+i);if(!raw)return;let a=document.createElement('a'),url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));a.href=url;a.download='transport-career-slot-'+(i+1)+'.json';a.click();URL.revokeObjectURL(url)}
-function v273Hub(){openModal('🚌 School Transportation Tycoon V27.3',`<div class="alert priority-green">V27.3.0 • Living garage, route/staff audit, and independent career slots. Existing V27.2 saves remain compatible.</div><div class="actions"><button class="btn primary" onclick="v273Garage()">🏭 Living garage</button><button class="btn primary" onclick="v273Audit()">🧪 Operations audit</button><button class="btn primary" onclick="v273SaveSlots()">💾 Career save slots</button><button class="btn" onclick="v272Hub()">V27.2 features</button></div>`)}
+function v273Hub(){openModal('🚌 School Transportation Tycoon V27.3.1',`<div class="alert priority-green">V27.3.1 • Living garage, route/staff audit, and independent career slots. Existing V27.2 saves remain compatible.</div><div class="actions"><button class="btn primary" onclick="v273Garage()">🏭 Living garage</button><button class="btn primary" onclick="v273Audit()">🧪 Operations audit</button><button class="btn primary" onclick="v273SaveSlots()">💾 Career save slots</button><button class="btn" onclick="v272Hub()">V27.2 features</button></div>`)}
 const _v273Computer=v2506DirectorComputer;v2506DirectorComputer=function(){_v273Computer.apply(this,arguments);let m=document.getElementById('modalBody');if(m){let d=document.createElement('div');d.className='actions';d.innerHTML='<button class="btn primary" onclick="v273Hub()">🚌 V27.3 Living Operations & Saves</button>';m.prepend(d)}};
 v262Lot=function(){v273Garage()};
 const _v273Load=loadGame;loadGame=function(){let result=_v273Load.apply(this,arguments);try{v262Migrate()}catch(e){console.warn('V27.3 migration',e)}return result};
