@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Transportation Tycoon V27.3.4</title>
+<title>School Transportation Tycoon V27.3.5</title>
 <style>
 :root{
   --bg:#eef2f5;--panel:#fff;--ink:#183042;--muted:#6d7f8c;--line:#d8e0e5;
@@ -526,7 +526,7 @@ button,.btn,select,input{touch-action:manipulation}
 <body>
 <div class="app">
   <div class="topbar">
-    <div><h1>School Transportation Tycoon — V27.3.4 — Historical Career & Route Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
+    <div><h1>School Transportation Tycoon — V27.3.5 — Historical Career & Route Fix</h1><div class="sub" id="clockText">Monday • August 24 • 5:35 AM • School Year 1</div></div>
     <div class="chips">
       <div class="chip">Budget <b id="budget">$462,500</b></div>
       <div class="chip">🚌 <b id="busCount">9</b> buses</div>
@@ -18133,9 +18133,9 @@ function v271Models(year=v271Year()){return V271_MODELS.filter(m=>year>=m.from&&
 function v271Price(m,year){return Math.round(m.base*Math.pow(1.029,Math.max(0,year-1985))/500)*500}
 function v271(){let x=state.v271||(state.v271={version:'27.1.0',quotes:[],used:[],history:[]});x.quotes=x.quotes||[];x.used=x.used||[];x.history=x.history||[];return x}
 function v271Save(){try{autosaveGame?.()}catch(e){console.warn('V27.1 autosave',e)}}
-function v271Catalog(){let y=v271Year(),models=v271Models(y);openModal('🚌 V27.2 Historical Dealer — '+y,`<div class="alert priority-blue">New-bus availability follows the simulated school year. Model windows are research-informed approximations and some historical variants differ by chassis/market. Prices are fictional gameplay estimates. Previously purchased buses stay in service.</div><div class="actions"><button class="btn" onclick="v271Used()">Used Bus Market</button><button class="btn" onclick="v271Orders()">Board Proposals & Orders</button></div>${models.map(m=>`<div class="panel"><b>${v27esc(y+' '+m.name)}</b><div class="small">New model years ${m.from}–${m.to===2099?'present / future simulation':m.to} • ${v27esc(m.type)} • ${m.seats} seats • simulated ${v255money(v271Price(m,y))}</div><button class="btn primary" onclick="v271Propose('${m.id}')">Propose Purchase</button></div>`).join('')||'<div class="alert">No models configured for this year.</div>'}`)}
+function v271Catalog(){let y=v271Year(),models=v271Models(y);openModal('🚌 V27.2 Historical Dealer — '+y,`<div class="alert priority-blue">New-bus availability follows the simulated school year. Model windows are research-informed approximations and some historical variants differ by chassis/market. Prices are fictional gameplay estimates. Previously purchased buses stay in service.</div><div class="actions"><button class="btn" onclick="v271Used()">Used Bus Market</button><button class="btn" onclick="v271Orders()">Board Proposals & Orders</button></div>${models.map(m=>`<div class="panel"><b>${v27esc(y+' '+m.name)}</b><div class="small">New model years ${m.from}–${m.to===2099?'present / future simulation':m.to} • ${v27esc(m.type)} • ${m.seats} seats • simulated ${v255money(v271Price(m,y))}</div><div class="actions"><button class="btn primary" onclick="v271Propose('${m.id}')">Propose Standard Bus</button><button class="btn" onclick="v2735AccessibleProposal('${m.id}')">♿ Propose Lift-Equipped Bus</button></div></div>`).join('')||'<div class="alert">No models configured for this year.</div>'}`)}
 function v271Propose(id,used=false){let y=v271Year(),m=V271_MODELS.find(m=>m.id===id);if(!m)return;if(!used&&(y<m.from||y>m.to))return alert('This model is not available new in '+y+'. Check the used market.');let price=used?Math.round(v271Price(m,Math.min(y,m.to))*Math.max(.09,.65-(y-Math.min(y,m.to))*.035)/500)*500:v271Price(m,y);let q={id:v262Id(),make:m.make,model:m.name,modelId:m.id,modelYear:used?Math.min(y,m.to):y,seats:m.seats,type:m.type,lift:false,price,tradeUid:null,tradeNumber:null,status:'Proposed',year:y,deliveryYear:y+1,used:!!used};v262().orders.unshift(q);v271().history.unshift({year:y,event:'Proposal '+q.id+': '+q.model});v271Save();v271Orders()}
-function v271Orders(){let x=v262();openModal('🏛️ Historical Bus Orders',`<div class="alert priority-blue">Board approval is required. Capital is charged once at order placement. New models are validated against their order year; vehicles already purchased remain in the fleet after production ends.</div><div class="actions"><button class="btn" onclick="v271Catalog()">New Dealer</button><button class="btn" onclick="v271Used()">Used Market</button></div>${x.orders.map(q=>`<div class="panel"><b>${v27esc(q.model||q.make)} ${v27esc(q.modelYear||q.year||'')}</b> • ${v255money(q.price)} • ${v27esc(q.status)}<div class="small">${q.used?'Used':'New'} • proposed ${q.year} • delivery year ${q.deliveryYear}</div><div class="actions">${q.status==='Proposed'?`<button class="btn primary" onclick="v262Board('${q.id}',true);v271Orders()">Board Approve</button><button class="btn" onclick="v262Board('${q.id}',false);v271Orders()">Deny</button>`:''}${q.status==='Board Approved'?`<button class="btn primary" onclick="v271Order('${q.id}')">Place Order</button>`:''}${q.status==='Ordered'&&y271CanDeliver(q)?`<button class="btn primary" onclick="v271Deliver('${q.id}')">Accept Delivery</button>`:''}</div></div>`).join('')||'No proposals yet.'}`)}
+function v271Orders(){let x=v262();openModal('🏛️ Historical Bus Orders',`<div class="alert priority-blue">Board approval is required. Capital is charged once at order placement. New models are validated against their order year; vehicles already purchased remain in the fleet after production ends.</div><div class="actions"><button class="btn" onclick="v271Catalog()">New Dealer</button><button class="btn" onclick="v271Used()">Used Market</button></div>${x.orders.map(q=>`<div class="panel"><b>${v27esc(q.model||q.make)} ${v27esc(q.modelYear||q.year||'')}</b> • ${v255money(q.price)} • ${v27esc(q.status)}<div class="small">${q.used?'Used':'New'} • ${q.lift?'♿ Lift-equipped • '+(q.wheelchairCapacity||2)+' wheelchair positions':'Standard'} • proposed ${q.year} • delivery year ${q.deliveryYear}</div><div class="actions">${q.status==='Proposed'?`<button class="btn primary" onclick="v262Board('${q.id}',true);v271Orders()">Board Approve</button><button class="btn" onclick="v262Board('${q.id}',false);v271Orders()">Deny</button>`:''}${q.status==='Board Approved'?`<button class="btn primary" onclick="v271Order('${q.id}')">Place Order</button>`:''}${q.status==='Ordered'&&y271CanDeliver(q)?`<button class="btn primary" onclick="v271Deliver('${q.id}')">Accept Delivery</button>`:''}</div></div>`).join('')||'No proposals yet.'}`)}
 function y271CanDeliver(q){return v271Year()>=Number(q.deliveryYear)}
 function v271Order(id){let q=v262().orders.find(q=>q.id===id);if(!q||q.status!=='Board Approved')return;let m=V271_MODELS.find(m=>m.id===q.modelId);if(m&&!q.used&&(Number(q.year)<m.from||Number(q.year)>m.to))return alert('Model not offered in the original order year.');let capital=Number(state.budget?.capital||0);if(capital<Number(q.price))return alert('Insufficient capital budget.');if(!confirm('Place order for '+q.model+' at '+v255money(q.price)+'?'))return;v262Order(id);v271Save();v271Orders()}
 function v271Deliver(id){let q=v262().orders.find(q=>q.id===id);if(!q||q.status!=='Ordered'||!y271CanDeliver(q))return;v262Deliver(id);if(q.status==='Delivered'){let b=(state.buses||[]).find(b=>b.v262Uid===q.deliveredBusUid);if(b){b.year=q.modelYear||q.year;b.make=q.make;b.model=q.model||b.model;b.type=q.type||b.type;b.capacity=q.seats;b.seats=q.seats;b.v271ModelId=q.modelId;b.v271Used=!!q.used;b.history=b.history||[];b.history.push({year:v271Year(),event:'Historical dealer delivery; model year '+b.year});v271().history.unshift({year:v271Year(),event:'Delivered Bus '+b.id+': '+b.year+' '+b.model});v271Save()}}v271Orders()}
@@ -18175,7 +18175,7 @@ function v272BoardMeeting(){let x=v272(),proposals=[...x.projects.filter(q=>q.st
 function v272Vote(id,kind,approve,note){let x=v272(),q=kind==='facility'?x.projects.find(q=>q.id===id):v262().orders.find(q=>q.id===id);if(!q||q.status!=='Proposed')return;q.status=approve?'Board Approved':'Denied';x.meetings.unshift({id:v272id(),year:state.year,project:id,result:q.status,notes:note||q.model||V272_UPGRADES[q.type]?.name||'Board vote'});try{v261().archive.unshift({id:'v272-board:'+id,year:state.year,day:v261Day(),kind:'Board',text:q.status+' '+(q.model||V272_UPGRADES[q.type]?.name||id)})}catch(e){}v272save();v272BoardMeeting()}
 function v272Defer(id,kind,note){let q=kind==='facility'?v272().projects.find(q=>q.id===id):v262().orders.find(q=>q.id===id);if(!q||q.status!=='Proposed')return;v272().meetings.unshift({id:v272id(),year:state.year,project:id,result:'Deferred',notes:note||'Further review requested'});v272save();v272BoardMeeting()}
 function v272Daily(){let x=v272();if(x.lastYear===state.year)return;x.lastYear=state.year;v272Finish();for(let p of v272staff()){let z=v272person(p),b=v272driverBus(p);if(z.lastYear===state.year)continue;z.lastYear=state.year;if(b&&!z.favorite){z.favorite=String(b.v262Uid||b.id);v272memory(p,'Developed attachment to assigned Bus '+v272BusNumber(b))}if(b&&Number(state.year)-Number(b.year||state.year)>=15&&!z.requests.some(r=>r.status==='Pending')&&Math.random()<.16){z.requests.unshift({id:v272id(),year:state.year,status:'Pending',current:b.id,desired:null});v272memory(p,'Requested replacement for aging Bus '+v272BusNumber(b))}}v272save()}
-function v272Hub(){openModal('🚌 School Transportation Tycoon V27.3.4',`<div class="alert priority-blue">Driver–bus memories, expandable garage, historical bus silhouettes, and recorded board meetings. Existing saves remain intact.</div><div class="actions"><button class="btn primary" onclick="v272Relationships()">🤝 Driver & Bus Relationships</button><button class="btn primary" onclick="v272Facility()">🏗️ Expandable Garage</button><button class="btn primary" onclick="v272Showroom()">🎨 Bus Showroom</button><button class="btn primary" onclick="v272BoardMeeting()">🏛️ Board Meeting</button><button class="btn" onclick="v271Catalog()">Historical Dealer</button></div>`)}
+function v272Hub(){openModal('🚌 School Transportation Tycoon V27.3.5',`<div class="alert priority-blue">Driver–bus memories, expandable garage, historical bus silhouettes, and recorded board meetings. Existing saves remain intact.</div><div class="actions"><button class="btn primary" onclick="v272Relationships()">🤝 Driver & Bus Relationships</button><button class="btn primary" onclick="v272Facility()">🏗️ Expandable Garage</button><button class="btn primary" onclick="v272Showroom()">🎨 Bus Showroom</button><button class="btn primary" onclick="v272BoardMeeting()">🏛️ Board Meeting</button><button class="btn" onclick="v271Catalog()">Historical Dealer</button></div>`)}
 const _v272Computer=v2506DirectorComputer;v2506DirectorComputer=function(){_v272Computer.apply(this,arguments);let m=document.getElementById('modalBody');if(m){let d=document.createElement('div');d.className='actions';d.innerHTML='<button class="btn primary" onclick="v272Hub()">🚌 V27.2 Garage, Drivers & Board</button>';m.prepend(d)}};
 const _v272Advance=advanceDay;advanceDay=function(){let result=_v272Advance.apply(this,arguments);try{v272Daily()}catch(e){console.error('V27.2 daily',e)}return result};
 const _v272Opening=openingDay;openingDay=function(){let result=_v272Opening.apply(this,arguments);try{v272Daily()}catch(e){console.error('V27.2 opening',e)}return result};
@@ -18183,7 +18183,7 @@ const _v272Lot=v262Lot;v262Lot=function(){return v272Facility()};
 
 
 /* V27.3 integrated operations: additive save fields; no migration resets. */
-const V273_VERSION='27.3.4';
+const V273_VERSION='27.3.5';
 function v273(){let x=state.v273||(state.v273={version:V273_VERSION,slots:[],audits:[],lastDay:null});x.version=V273_VERSION;x.audits=x.audits||[];return x}
 function v273Active(){return (state.buses||[]).filter(b=>!v262Dead(b))}
 function v273ShopBus(b){return /repair|maintenance|shop|out of service/i.test(String(b.status||''))||b.needsMaintenance===true}
@@ -18197,12 +18197,12 @@ function v273SaveSlots(){let slots=[0,1,2].map(i=>{let raw=localStorage.getItem(
 function v273Store(i){if(![0,1,2].includes(i))return;if(!confirm('Overwrite career slot '+(i+1)+' with the current career?'))return;try{let x={format:'STT-V273-slot',saved:new Date().toISOString(),label:'Year '+state.year+' • '+(state.buses||[]).length+' buses',state:JSON.parse(JSON.stringify(state))};localStorage.setItem('transportV273Slot'+i,JSON.stringify(x));v273SaveSlots()}catch(e){alert('Save failed: browser storage may be full. Export a backup instead.')}}
 function v273Restore(i){let raw=localStorage.getItem('transportV273Slot'+i),x;try{x=JSON.parse(raw);if(x.format!=='STT-V273-slot'||!Array.isArray(x.state?.buses)||!Array.isArray(x.state?.routes))throw Error('Invalid slot')}catch(e){return alert('Slot is invalid or missing.')}if(!confirm('Load slot '+(i+1)+'? Unsaved progress in the current career will be replaced.'))return;state=x.state;ensureAssignmentFields();ensureV4Data();ensureUXData();v262Migrate();autosaveGame();render();v273SaveSlots()}
 function v273Export(i){let raw=localStorage.getItem('transportV273Slot'+i);if(!raw)return;let a=document.createElement('a'),url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));a.href=url;a.download='transport-career-slot-'+(i+1)+'.json';a.click();URL.revokeObjectURL(url)}
-function v273Hub(){openModal('🚌 School Transportation Tycoon V27.3.4',`<div class="alert priority-green">V27.3.4 • Living garage, route/staff audit, and independent career slots. Existing V27.2 saves remain compatible.</div><div class="actions"><button class="btn primary" onclick="v273Garage()">🏭 Living garage</button><button class="btn primary" onclick="v273Audit()">🧪 Operations audit</button><button class="btn primary" onclick="v273SaveSlots()">💾 Career save slots</button><button class="btn" onclick="v272Hub()">V27.2 features</button></div>`)}
+function v273Hub(){openModal('🚌 School Transportation Tycoon V27.3.5',`<div class="alert priority-green">V27.3.5 • Living garage, route/staff audit, and independent career slots. Existing V27.2 saves remain compatible.</div><div class="actions"><button class="btn primary" onclick="v273Garage()">🏭 Living garage</button><button class="btn primary" onclick="v273Audit()">🧪 Operations audit</button><button class="btn primary" onclick="v273SaveSlots()">💾 Career save slots</button><button class="btn" onclick="v272Hub()">V27.2 features</button></div>`)}
 const _v273Computer=v2506DirectorComputer;v2506DirectorComputer=function(){_v273Computer.apply(this,arguments);let m=document.getElementById('modalBody');if(m){let d=document.createElement('div');d.className='actions';d.innerHTML='<button class="btn primary" onclick="v273Hub()">🚌 V27.3 Living Operations & Saves</button>';m.prepend(d)}};
 v262Lot=function(){v273Garage()};
 const _v273Load=loadGame;loadGame=function(){let result=_v273Load.apply(this,arguments);try{v262Migrate()}catch(e){console.warn('V27.3 migration',e)}return result};
 
-/* V27.3.4: Repair the new-career route ledger without changing existing saved careers.
+/* V27.3.5: Repair the new-career route ledger without changing existing saved careers.
    The old New Game copied only `initial` and skipped rider/route initialization.
    Route displays use several newer ledgers rather than the original route counts. */
 function v2732RepairNewCareer(){
@@ -18230,11 +18230,11 @@ function v2732RepairNewCareer(){
     if(r.specialNeeds)r.students=Math.max(Number(r.students||0),Number(seed.students||0));
     else {r.hsStudents=Math.max(Number(r.hsStudents||0),Number(seed.hsStudents||0));r.elemStudents=Math.max(Number(r.elemStudents||0),Number(seed.elemStudents||0))}
   }
-  state.v2732={version:'27.3.4',newCareerRoutesInitialized:true};
+  state.v2732={version:'27.3.5',newCareerRoutesInitialized:true};
 }
 
 
-/* V27.3.4: Unify every bus-purchasing entry with the era-filtered historical dealer.
+/* V27.3.5: Unify every bus-purchasing entry with the era-filtered historical dealer.
    The original Purchase Bus and Expanded Bus Catalog still exposed only 2020s models. */
 function v2734PurchaseEntry(){
   const year=v271Year();
@@ -18255,6 +18255,49 @@ v271Catalog=function(){
   if(year===1985&&!v271Models(year).length)console.warn('Historical dealer has no models for 1985');
   return _v2734OldCatalog();
 };
+
+
+/* V27.3.5 — Accessible bus configuration available for each year-eligible historical model. */
+function v2735AccessibleProposal(id){
+  const year=v271Year(),model=V271_MODELS.find(m=>m.id===id);
+  if(!model||year<model.from||year>model.to)return alert('This model is not available new in '+year+'.');
+  const positions=2,seatCount=Math.max(12,Number(model.seats||66)-12);
+  const price=v271Price(model,year)+Math.round(v271Price(model,year)*.16/500)*500;
+  const order={id:v262Id(),make:model.make,model:model.name,modelId:model.id,modelYear:year,
+    seats:seatCount,type:model.type,lift:true,wheelchairLift:true,wheelchairCapacity:positions,
+    price,tradeUid:null,tradeNumber:null,status:'Proposed',year,deliveryYear:year+1,used:false,
+    accessibleConfiguration:true};
+  v262().orders.unshift(order);
+  v271().history.unshift({year,event:'Accessible bus proposal '+order.id+': '+model.name});
+  v271Save();v271Orders();
+}
+// The historical dealer's delivery path calls v262Deliver, which creates the physical vehicle.
+// Wrap the final version of that function so the order's accessibility metadata survives delivery.
+const _v2735Deliver=v262Deliver;
+v262Deliver=function(id){
+  const order=v262().orders.find(q=>q.id===id);
+  const result=_v2735Deliver.apply(this,arguments);
+  if(order&&order.status==='Delivered'&&order.lift){
+    const bus=(state.buses||[]).find(b=>b.v262Uid===order.deliveredBusUid);
+    if(bus){
+      bus.wheelchairLift=true;
+      bus.wheelchairCapacity=Number(order.wheelchairCapacity)||2;
+      bus.wheelchairPositions=bus.wheelchairCapacity;
+      bus.accessible=true;
+      bus.seats=Number(order.seats)||bus.seats;
+      bus.capacity=bus.seats;
+      bus.assignment='Special Needs';
+      bus.designation='Special Needs';
+      bus.history=bus.history||[];
+      if(!bus.history.some(h=>h.event==='Delivered with wheelchair lift'))bus.history.push({year:v271Year(),event:'Delivered with wheelchair lift and '+bus.wheelchairCapacity+' wheelchair positions'});
+      v271Save();
+    }
+  }
+  return result;
+};
+// The historical dealer's dedicated delivery entry must preserve the accessible configuration too.
+const _v2735HistoricalDeliver=v271Deliver;
+v271Deliver=function(id){const result=_v2735HistoricalDeliver.apply(this,arguments);return result;};
 
 render();
 if (location.protocol === "https:" && "serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(e=>console.warn("Offline install unavailable",e));
